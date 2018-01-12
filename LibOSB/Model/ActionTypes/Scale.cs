@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    class Scale : Actions
+    public class Scale : Actions
     {
         public Scale this[int index] { get => S[index]; }
 

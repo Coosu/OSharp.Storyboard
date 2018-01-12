@@ -5,7 +5,7 @@ using System.Text;
 using LibOSB.Constants;
 namespace LibOSB.ActionTypes
 {
-    class Move : Actions
+    public class Move : Actions
     {
         /// <summary>
         /// 访问已存储的Move元素。

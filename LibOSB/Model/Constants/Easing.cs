@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LibOSB.Constants
 {
-    enum Easing
+    public enum Easing
     {
         Linear, EasingOut, EasingIn,
         QuadIn, QuadOut, QuadInOut,

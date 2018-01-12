@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    class Rotate : Actions
+    public class Rotate : Actions
     {
         public Rotate this[int index] { get => R[index]; }
 

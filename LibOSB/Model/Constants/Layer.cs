@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LibOSB.Constants
 {
-    enum Layers
+    public enum Layers
     {
         Background,
         Fail,

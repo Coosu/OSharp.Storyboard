@@ -47,14 +47,14 @@ namespace LibOSB
                 y2 = y1 - r * Math.Cos(degree);
 
                 var Sakura = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"sakura.png", 320, 240);
-                Sakura.Move.Add(0, timeA, timeB, x1, y1, x2, y2);
-                Sakura.Fade.Add(0, timeA, timeB, 0.5, 0.5);
+                Sakura.Move(0, timeA, timeB, x1, y1, x2, y2);
+                Sakura.Fade(timeA, timeB, 0.5);
                 Sakura.Scale.Add(0, timeA, timeB, s, s);
                 Sakura.Rotate.Add(0, timeA, timeB, rot1, rot2);
                 byte Cr = (byte)rnd.Next(253, 255);
                 byte Cg = (byte)rnd.Next(216, 255);
                 byte Cb = (byte)rnd.Next(238, 255);
-                Sakura.Color.Add(0, timeA, timeB, Cr, Cg, Cb, Cr, Cg, Cb);
+                Sakura._Color.Add(0, timeA, timeB, Cr, Cg, Cb, Cr, Cg, Cb);
 
                 Sakuras.Add(Sakura);
             }
@@ -89,14 +89,14 @@ namespace LibOSB
                 timeB = timeA + (int)(7000 * Math.Pow(s, -1));
 
                 var Sakura2 = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"sakura.png", 320, 240);
-                Sakura2.Move.Add(0, timeA, timeB, x1, y1, x2, y2);
-                Sakura2.Fade.Add(0, timeA, timeB, 0.5, 0.5);
+                Sakura2.Move(0, timeA, timeB, x1, y1, x2, y2);
+                Sakura2.Fade(timeA, timeB, 0.5);
                 Sakura2.Scale.Add(0, timeA, timeB, s, s);
                 Sakura2.Rotate.Add(0, timeA, timeB, rot1, rot2);
                 byte Cr = (byte)rnd.Next(253, 255);
                 byte Cg = (byte)rnd.Next(216, 255);
                 byte Cb = (byte)rnd.Next(238, 255);
-                Sakura2.Color.Add(0, timeA, timeB, Cr, Cg, Cb, Cr, Cg, Cb);
+                Sakura2._Color.Add(0, timeA, timeB, Cr, Cg, Cb, Cr, Cg, Cb);
 
                 Sakuras.Add(Sakura2);
             }
@@ -131,14 +131,14 @@ namespace LibOSB
                 timeB = timeA + (int)(7000 * Math.Pow(s, -1));
 
                 var Sakura3 = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"sakura.png", 320, 240);
-                Sakura3.Move.Add(0, timeA, timeB, x1, y1, x2, y2);
-                Sakura3.Fade.Add(0, timeA, timeB, 0.5, 0.5);
+                Sakura3.Move(0, timeA, timeB, x1, y1, x2, y2);
+                Sakura3.Fade(timeA, timeB, 0.5);
                 Sakura3.Scale.Add(0, timeA, timeB, s, s);
                 Sakura3.Rotate.Add(0, timeA, timeB, rot1, rot2);
                 byte Cr = (byte)rnd.Next(253, 255);
                 byte Cg = (byte)rnd.Next(216, 255);
                 byte Cb = (byte)rnd.Next(238, 255);
-                Sakura3.Color.Add(0, timeA, timeB, Cr, Cg, Cb, Cr, Cg, Cb);
+                Sakura3._Color.Add(0, timeA, timeB, Cr, Cg, Cb, Cr, Cg, Cb);
 
                 Sakuras.Add(Sakura3);
             }
@@ -173,20 +173,20 @@ namespace LibOSB
                 timeB = timeA + (int)(7000 * Math.Pow(s, -1));
 
                 var Sakura4 = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"sakura.png", 320, 240);
-                Sakura4.Move.Add(0, timeA, timeB, x1, y1, x2, y2);
-                Sakura4.Fade.Add(0, timeA, timeB, 0.5, 0.5);
+                Sakura4.Move(0, timeA, timeB, x1, y1, x2, y2);
+                Sakura4.Fade(timeA, timeB, 0.5);
                 Sakura4.Scale.Add(0, timeA, timeB, s, s);
                 Sakura4.Rotate.Add(0, timeA, timeB, rot1, rot2);
 
                 byte Cr = (byte)rnd.Next(253, 255);
                 byte Cg = (byte)rnd.Next(216, 255);
                 byte Cb = (byte)rnd.Next(238, 255);
-                Sakura4.Color.Add(0, timeA, timeB, Cr, Cg, Cb, Cr, Cg, Cb);
+                Sakura4._Color.Add(0, timeA, timeB, Cr, Cg, Cb, Cr, Cg, Cb);
 
                 Sakuras.Add(Sakura4);
             }
             return Sakuras.ToString();
         }
-      
+
     }
 }

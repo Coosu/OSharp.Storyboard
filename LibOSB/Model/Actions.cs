@@ -9,7 +9,7 @@ namespace LibOSB
     /// <summary>
     /// Parent class of all actions. Should not be instantiated directly.
     /// </summary>
-    abstract class Actions
+    public abstract class Actions
     {
         protected StringBuilder sb = new StringBuilder();
 

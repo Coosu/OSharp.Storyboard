@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    class MoveX : Actions
+    public class MoveX : Actions
     {
         public MoveX this[int index] { get => MX[index]; }
 

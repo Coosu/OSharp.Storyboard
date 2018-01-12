@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    class Trigger : Actions
+    public class Trigger : Actions
     {
         public Trigger this[int index]
         {

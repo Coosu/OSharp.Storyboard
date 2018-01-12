@@ -34,7 +34,7 @@ namespace LibOSB
             for (int i = 0; i < timings.Length - 1; i++)
             {
                 var subtitle = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\L" + (i + 1) + ".png", 320, 240);
-                subtitle.Move.Add(0, timings[i], timings[i + 1] - 200, 320, 450, 320, 450);
+                subtitle.Move(0, timings[i], timings[i + 1] - 200, 320, 450, 320, 450);
                 subtitle.Scale.Add(0, timings[i], timings[i + 1] - 200, 0.9, 0.9);
                 subtitles.Add(subtitle);
             }

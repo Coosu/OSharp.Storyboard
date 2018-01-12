@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    class Color : Actions
+    public class Color : Actions
     {
         public Color this[int index] { get => C[index]; }
 

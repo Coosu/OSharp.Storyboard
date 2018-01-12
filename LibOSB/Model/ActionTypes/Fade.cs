@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    class FadeOutTime
+    public class FadeOutTime
     {
         private int? startTime, endTime;
 
@@ -20,7 +20,7 @@ namespace LibOSB.ActionTypes
         }
     }
 
-    class Fade : Actions
+    public class Fade : Actions
     {
         public Fade this[int index]
         {

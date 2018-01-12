@@ -11,7 +11,7 @@ namespace LibOSB
     /// Base class of storyboard objects.
     /// </summary>
     [Serializable]
-    partial class SBObject
+    public class SBObject
     {
         StringBuilder sb = new StringBuilder();
 
@@ -99,11 +99,11 @@ namespace LibOSB
                 if (Scale.TmpMaxTime != null) max.Add(Scale.TmpMaxTime);
                 else if (Scale.MaxTime() != null) max.Add(Scale.MaxTime());
 
-                if (Move.TmpMaxTime != null) max.Add(Move.TmpMaxTime);
-                else if (Move.MaxTime() != null) max.Add(Move.MaxTime());
+                if (_Move.TmpMaxTime != null) max.Add(_Move.TmpMaxTime);
+                else if (_Move.MaxTime() != null) max.Add(_Move.MaxTime());
 
-                if (Fade.TmpMaxTime != null) max.Add(Fade.TmpMaxTime);
-                else if (Fade.MaxTime() != null) max.Add(Fade.MaxTime());
+                if (_Fade.TmpMaxTime != null) max.Add(_Fade.TmpMaxTime);
+                else if (_Fade.MaxTime() != null) max.Add(_Fade.MaxTime());
 
                 if (Rotate.TmpMaxTime != null) max.Add(Rotate.TmpMaxTime);
                 else if (Rotate.MaxTime() != null) max.Add(Rotate.MaxTime());
@@ -111,8 +111,8 @@ namespace LibOSB
                 if (Vector.TmpMaxTime != null) max.Add(Vector.TmpMaxTime);
                 else if (Vector.MaxTime() != null) max.Add(Vector.MaxTime());
 
-                if (Color.TmpMaxTime != null) max.Add(Color.TmpMaxTime);
-                else if (Color.MaxTime() != null) max.Add(Color.MaxTime());
+                if (_Color.TmpMaxTime != null) max.Add(_Color.TmpMaxTime);
+                else if (_Color.MaxTime() != null) max.Add(_Color.MaxTime());
 
                 if (MoveX.TmpMaxTime != null) max.Add(MoveX.TmpMaxTime);
                 else if (MoveX.MaxTime() != null) max.Add(MoveX.MaxTime());
@@ -154,11 +154,11 @@ namespace LibOSB
                 if (Scale.TmpMinTime != null) min.Add(Scale.TmpMinTime);
                 else if (Scale.MinTime() != null) min.Add(Scale.MinTime());
 
-                if (Move.TmpMinTime != null) min.Add(Move.TmpMinTime);
-                else if (Move.MinTime() != null) min.Add(Move.MinTime());
+                if (_Move.TmpMinTime != null) min.Add(_Move.TmpMinTime);
+                else if (_Move.MinTime() != null) min.Add(_Move.MinTime());
 
-                if (Fade.TmpMinTime != null) min.Add(Fade.TmpMinTime);
-                else if (Fade.MinTime() != null) min.Add(Fade.MinTime());
+                if (_Fade.TmpMinTime != null) min.Add(_Fade.TmpMinTime);
+                else if (_Fade.MinTime() != null) min.Add(_Fade.MinTime());
 
                 if (Rotate.TmpMinTime != null) min.Add(Rotate.TmpMinTime);
                 else if (Rotate.MinTime() != null) min.Add(Rotate.MinTime());
@@ -166,8 +166,8 @@ namespace LibOSB
                 if (Vector.TmpMinTime != null) min.Add(Vector.TmpMinTime);
                 else if (Vector.MinTime() != null) min.Add(Vector.MinTime());
 
-                if (Color.TmpMinTime != null) min.Add(Color.TmpMinTime);
-                else if (Color.MinTime() != null) min.Add(Color.MinTime());
+                if (_Color.TmpMinTime != null) min.Add(_Color.TmpMinTime);
+                else if (_Color.MinTime() != null) min.Add(_Color.MinTime());
 
                 if (MoveX.TmpMinTime != null) min.Add(MoveX.TmpMinTime);
                 else if (MoveX.MinTime() != null) min.Add(MoveX.MinTime());
@@ -216,12 +216,12 @@ namespace LibOSB
                 sb.Append(Looptype);
             }
             sb.AppendLine();
-            for (int i = 1; i <= Move.Count; i++) sb.AppendLine(Move[i - 1].ToString());
+            for (int i = 1; i <= _Move.Count; i++) sb.AppendLine(_Move[i - 1].ToString());
             for (int i = 1; i <= Scale.Count; i++) sb.AppendLine(Scale[i - 1].ToString());
-            for (int i = 1; i <= Fade.Count; i++) sb.AppendLine(Fade[i - 1].ToString());
+            for (int i = 1; i <= _Fade.Count; i++) sb.AppendLine(_Fade[i - 1].ToString());
             for (int i = 1; i <= Rotate.Count; i++) sb.AppendLine(Rotate[i - 1].ToString());
             for (int i = 1; i <= Vector.Count; i++) sb.AppendLine(Vector[i - 1].ToString());
-            for (int i = 1; i <= Color.Count; i++) sb.AppendLine(Color[i - 1].ToString());
+            for (int i = 1; i <= _Color.Count; i++) sb.AppendLine(_Color[i - 1].ToString());
             for (int i = 1; i <= MoveX.Count; i++) sb.AppendLine(MoveX[i - 1].ToString());
             for (int i = 1; i <= MoveY.Count; i++) sb.AppendLine(MoveY[i - 1].ToString());
             for (int i = 1; i <= Parameter.Count; i++) sb.AppendLine(Parameter[i - 1].ToString());
@@ -268,14 +268,14 @@ namespace LibOSB
             x = X;
             y = Y;
 
-            Move = new Move();
+            _Move = new Move();
             MoveX = new MoveX();
             MoveY = new MoveY();
             Scale = new Scale();
-            Fade = new Fade();
+            _Fade = new Fade();
             Rotate = new Rotate();
             Vector = new Vector();
-            Color = new Color();
+            _Color = new Color();
             Parameter = new Parameter();
             Loop = new Loop();
             Trigger = new Trigger();
@@ -294,14 +294,14 @@ namespace LibOSB
             framerate = FrameRate;
             looptype = LoopType;
 
-            Move = new Move();
+            _Move = new Move();
             MoveX = new MoveX();
             MoveY = new MoveY();
             Scale = new Scale();
-            Fade = new Fade();
+            _Fade = new Fade();
             Rotate = new Rotate();
             Vector = new Vector();
-            Color = new Color();
+            _Color = new Color();
             Parameter = new Parameter();
             Loop = new Loop();
             Trigger = new Trigger();
@@ -309,7 +309,27 @@ namespace LibOSB
         /// <summary>
         /// An action that controls the object to move. 
         /// </summary>
-        public Move Move { set; get; }
+        private Move _Move { set; get; }
+        public void Move(int startTime, System.Drawing.Point location)
+        {
+            _Move.Add(0, startTime, startTime, location.X, location.Y, location.X, location.Y);
+        }
+        public void Move(int startTime, double x, double y)
+        {
+            _Move.Add(0, startTime, startTime, x, y, x, y);
+        }
+        public void Move(int startTime, int endTime, double x, double y)
+        {
+            _Move.Add(0, startTime, endTime, x, y, x, y);
+        }
+        public void Move(Easing easing, int startTime, int endTime, System.Drawing.Point startLocation, System.Drawing.Point endLocation)
+        {
+            _Move.Add(easing, startTime, endTime, startLocation.X, startLocation.Y, endLocation.X, endLocation.Y);
+        }
+        public void Move(Easing easing, int startTime, int endTime, double x1, double y1, double x2, double y2)
+        {
+            _Move.Add(easing, startTime, endTime, x1, y1, x2, y2);
+        }
         /// <summary>
         /// An action that controls the object to zoom. 
         /// </summary>
@@ -317,7 +337,21 @@ namespace LibOSB
         /// <summary>
         /// An action that controls the object to change the transparency. 
         /// </summary>
-        public Fade Fade { set; get; }
+        private Fade _Fade { set; get; }
+        public void Fade(int startTime, double alpha)
+        {
+            if (alpha < 0 || alpha > 1)
+                throw new Exception("Value of alpha should be between 0 and 1");
+            _Fade.Add(0, startTime, startTime, alpha, alpha);
+        }
+        public void Fade(int startTime, int endTime, double alpha)
+        {
+            _Fade.Add(0, startTime, endTime, alpha, alpha);
+        }
+        public void Fade(Easing easing, int startTime, int endTime, double startAlpha, double endAlpha)
+        {
+            _Fade.Add(easing, startTime, endTime, startAlpha, endAlpha);
+        }
         /// <summary>
         /// An action that controls the object to change the degree. 
         /// </summary>
@@ -329,7 +363,7 @@ namespace LibOSB
         /// <summary>
         /// An action that controls the object to have addtional color. 
         /// </summary>
-        public Color Color { set; get; }
+        public Color _Color { set; get; }
         public MoveX MoveX { set; get; }
         public MoveY MoveY { set; get; }
         public Parameter Parameter { set; get; }

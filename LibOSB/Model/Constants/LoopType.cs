@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LibOSB.Constants
 {
-    enum LoopType
+    public enum LoopType
     {
         LoopForever,
         LoopOnce

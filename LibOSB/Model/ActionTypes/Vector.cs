@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    class Vector : Actions
+    public class Vector : Actions
     {
 
         public Vector this[int index] { get => V[index]; }

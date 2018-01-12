@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    class Loop : Actions
+    public class Loop : Actions
     {
         public Loop this[int index]
         {

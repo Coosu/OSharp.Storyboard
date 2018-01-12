@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    class Parameter : Actions
+    public class Parameter : Actions
     {
         public Parameter this[int index] { get => P[index]; }
 

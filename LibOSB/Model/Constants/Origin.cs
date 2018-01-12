@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LibOSB.Constants
 {
-    enum Origins
+    public enum Origins
     {
         BottomLeft = 1,
         BottomCentre,
