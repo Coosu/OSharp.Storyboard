@@ -47,7 +47,7 @@ namespace LibOSB
             return sbo;
         }
 
-        public SBObject CreateSprite(Layers layer, Origins origin, string filePath, double defaultX, double defaultY)
+        public SBObject CreateSprite(Layers layer, Origins origin, string filePath, int defaultX, int defaultY)
         {
             var sbo = new SBObject(Types.Sprite, layer, origin, filePath, defaultX, defaultY);
             Add(sbo);
