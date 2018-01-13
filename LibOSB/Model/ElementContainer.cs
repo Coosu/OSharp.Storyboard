@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace LibOSB
 {
-    static public class SBContainer
+    static public class ElementContainer
     {
-        private static List<SBGroup> sbGroup = new List<SBGroup>();
+        private static List<ElementGroup> sbGroup = new List<ElementGroup>();
 
-        public static List<SBGroup> SBGroup { get => sbGroup; set => sbGroup = value; }
+        public static List<ElementGroup> SBGroup { get => sbGroup; set => sbGroup = value; }
 
         public static new string ToString()
         {
@@ -34,7 +34,7 @@ namespace LibOSB
     /// SortTestObj2类排序用的比较器，继承IComparer<>接口，
     /// 实现接口中的Compare()方法。
     /// </summary>
-    public class GroupSort : IComparer<SBGroup>
+    public class GroupSort : IComparer<ElementGroup>
     {
         #region 类字段定义
         private GroupSortKind sortKind;
@@ -46,7 +46,7 @@ namespace LibOSB
         }
         #endregion
         #region IComparer接口比较方法的实现
-        public int Compare(SBGroup obj1, SBGroup obj2)
+        public int Compare(ElementGroup obj1, ElementGroup obj2)
         {
             int res = 0;
             if ((obj1 == null) && (obj2 == null))

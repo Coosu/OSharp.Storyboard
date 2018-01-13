@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace LibOSB.Function.Camera
 {
-    class Camera
+    class Camera2D
     {
-        private SBObject[] Objects;
-        public SBObject[] NewObjects { get; set; }
+        private Element[] Objects;
+        public Element[] NewObjects { get; set; }
         private int fps = 15;
 
 
-        public Camera(params SBObject[] Objects)
+        public Camera2D(params Element[] Objects)
         {
             this.Objects = Objects;
         }

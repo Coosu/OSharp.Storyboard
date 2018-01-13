@@ -29,6 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\LibOSB.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -52,7 +53,7 @@
     <Compile Include="DEMO_A_SAKA.cs" />
     <Compile Include="DEMO_BENIBOTAN.cs" />
     <Compile Include="DEMO.cs" />
-    <Compile Include="Function\Camera\Camera.cs" />
+    <Compile Include="Function\Camera\Camera2D.cs" />
     <Compile Include="Model\Actions.cs" />
     <Compile Include="Model\ActionTypes\Color.cs" />
     <Compile Include="Model\ActionTypes\Fade.cs" />
@@ -70,9 +71,9 @@
     <Compile Include="Model\Constants\LoopType.cs" />
     <Compile Include="Model\Constants\Origin.cs" />
     <Compile Include="Model\Constants\Type.cs" />
-    <Compile Include="Model\SBContainer.cs" />
-    <Compile Include="Model\SBGroup.cs" />
-    <Compile Include="Model\sbObject.cs" />
+    <Compile Include="Model\ElementContainer.cs" />
+    <Compile Include="Model\ElementGroup.cs" />
+    <Compile Include="Model\Element.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

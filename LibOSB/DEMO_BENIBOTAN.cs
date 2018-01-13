@@ -10,7 +10,7 @@ namespace LibOSB
     {
         public static string BGOrange()
         {
-            SBGroup BGs = new SBGroup(0);
+            ElementGroup BGs = new ElementGroup(0);
             int x;
             for (int i = 0; i < 40; i++)
             {
@@ -26,7 +26,7 @@ namespace LibOSB
         }
         public static string BGpatterns()
         {
-            SBGroup BGpatterns = new SBGroup(0);
+            ElementGroup BGpatterns = new ElementGroup(0);
 
             double x, y;
             for (int j = -1; j < 9; j++)
@@ -36,9 +36,9 @@ namespace LibOSB
                     x = i * (68 - 3.5);
                     if (j % 2 != 0) x -= 32;
                     y = j * (78 * 0.75 - 5);
-                    var Pattern = new SBObject(Types.Sprite, Layers.Foreground, Origins.TopLeft, @"SB\2dx_76.png", 320, 240);
-                    Pattern._Move.Add(0, 125, 5097, x, y, x, y);
-                    Pattern._Fade.Add(0, 125, 125, 0.3, 0.3);
+                    var Pattern = new Element(Types.Sprite, Layers.Foreground, Origins.TopLeft, @"SB\2dx_76.png", 320, 240);
+                    Pattern.Move(125, 5097, x, y);
+                    Pattern.Fade(125, 0.3);
 
                     BGpatterns.Add(Pattern);
                 }
@@ -47,7 +47,7 @@ namespace LibOSB
         }
         public static string SceneTransform()
         {
-            SBGroup Patterns = new SBGroup(0);
+            ElementGroup Patterns = new ElementGroup(0);
 
             double x, y;
 
@@ -55,11 +55,11 @@ namespace LibOSB
             {
                 x = i * 64;
                 y = 240;
-                var Pattern = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\w2.png", 320, 240);
-                Pattern._Move.Add(0, 4434, 5097, x, y, x, y);
+                var Pattern = new Element(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\w2.png", 320, 240);
+                Pattern.Move(4434, 5097, x, y);
                 Pattern.Vector.Add(0, 4434, 5097, 0, 1, 1, 1);
-                Pattern._Fade.Add(0, 4434, 5097, 0, 1);
-                Pattern._Fade.Add(0, 5097, 6092, 1, 1);
+                Pattern.Fade(0, 4434, 5097, 0, 1);
+                Pattern.Fade(5097, 6092, 1);
 
                 Patterns.Add(Pattern);
             }
@@ -68,20 +68,20 @@ namespace LibOSB
         }
         public static string BGPurple()
         {
-            using (SBGroup BGs = new SBGroup(0))
+            using (ElementGroup BGs = new ElementGroup(0))
             {
                 int x;
                 for (int i = 0; i < 29; i++)
                 {
                     x = i * 22;
-                    var BG = new SBObject(Types.Sprite, Layers.Foreground, Origins.CentreLeft, @"SB\2dx_8.png", 320, 240);
-                    BG._Move.Add(0, 5926, 6423, x + 640, 240, x, 240);
-                    BG._Fade.Add(0, 11064, 11064, 1, 1);
-                    BG._Move.Add(0, 10567, 11064, x, 240, x - 640, 240);
+                    var BG = new Element(Types.Sprite, Layers.Foreground, Origins.CentreLeft, @"SB\2dx_8.png", 320, 240);
+                    BG.Move(0, 5926, 6423, x + 640, 240, x, 240);
+                    BG.Fade(11064, 1);
+                    BG.Move(0, 10567, 11064, x, 240, x - 640, 240);
                     BGs.Add(BG);
                 }
             }
-            using (SBGroup BGpatterns = new SBGroup(1))
+            using (ElementGroup BGpatterns = new ElementGroup(1))
             {
                 double x, y;
                 for (int j = -1; j < 11; j++)
@@ -90,69 +90,69 @@ namespace LibOSB
                     {
                         x = i * (170 - 170 / 5) - 85;
                         y = j * (58 - 29 / 2 - 1);
-                        var Pattern = new SBObject(Types.Sprite, Layers.Foreground, Origins.TopLeft, @"SB\2dx_5.png", 320, 240);
-                        Pattern._Move.Add(0, 5926, 6423, x + 640, y, x, y);
-                        Pattern._Fade.Add(0, 11064, 11064, 0.9, 0.9);
-                        Pattern._Move.Add(0, 10567, 11064, x, y, x - 640, y);
+                        var Pattern = new Element(Types.Sprite, Layers.Foreground, Origins.TopLeft, @"SB\2dx_5.png", 320, 240);
+                        Pattern.Move(0, 5926, 6423, x + 640, y, x, y);
+                        Pattern.Fade(11064, 0.9);
+                        Pattern.Move(0, 10567, 11064, x, y, x - 640, y);
 
                         BGpatterns.Add(Pattern);
                     }
                 }
             }
-            using (SBGroup Frame = new SBGroup(3))
+            using (ElementGroup Frame = new ElementGroup(3))
             {
                 int x = 320, y = 240;
-                var TL = new SBObject(Types.Sprite, Layers.Foreground, Origins.TopLeft, @"SB\2dx_30.png", 320, 240);
-                TL._Move.Add(0, 5926, 6423, x + 640, y - 2, x, y - 2);
-                TL._Move.Add(0, 10567, 11064, x, y - 2, x - 640, y - 2);
-                TL._Fade.Add(0, 11064, 11064, 1, 1);
+                var TL = new Element(Types.Sprite, Layers.Foreground, Origins.TopLeft, @"SB\2dx_30.png", 320, 240);
+                TL.Move(0, 5926, 6423, x + 640, y - 2, x, y - 2);
+                TL.Move(0, 10567, 11064, x, y - 2, x - 640, y - 2);
+                TL.Fade(11064, 1);
                 TL.Parameter.Add(0, 5926, 5926, "V");
                 TL.Parameter.Add(0, 5926, 5926, "H");
 
-                var TR = new SBObject(Types.Sprite, Layers.Foreground, Origins.TopRight, @"SB\2dx_30.png", 320, 240);
-                TR._Move.Add(0, 5926, 6423, x + 640, y - 2, x, y - 2);
-                TR._Move.Add(0, 10567, 11064, x, y - 2, x - 640, y - 2);
-                TR._Fade.Add(0, 11064, 11064, 1, 1);
+                var TR = new Element(Types.Sprite, Layers.Foreground, Origins.TopRight, @"SB\2dx_30.png", 320, 240);
+                TR.Move(0, 5926, 6423, x + 640, y - 2, x, y - 2);
+                TR.Move(0, 10567, 11064, x, y - 2, x - 640, y - 2);
+                TR.Fade(11064, 1);
                 TR.Parameter.Add(0, 5926, 5926, "V");
 
-                var BL = new SBObject(Types.Sprite, Layers.Foreground, Origins.BottomLeft, @"SB\2dx_30.png", 320, 240);
-                BL._Move.Add(0, 5926, 6423, x + 640, y + 2, x, y + 2);
-                BL._Move.Add(0, 10567, 11064, x, y + 2, x - 640, y + 2);
-                BL._Fade.Add(0, 11064, 11064, 1, 1);
+                var BL = new Element(Types.Sprite, Layers.Foreground, Origins.BottomLeft, @"SB\2dx_30.png", 320, 240);
+                BL.Move(0, 5926, 6423, x + 640, y + 2, x, y + 2);
+                BL.Move(0, 10567, 11064, x, y + 2, x - 640, y + 2);
+                BL.Fade(11064, 1);
                 BL.Parameter.Add(0, 5926, 5926, "H");
 
-                var BR = new SBObject(Types.Sprite, Layers.Foreground, Origins.BottomRight, @"SB\2dx_30.png", 320, 240);
-                BR._Move.Add(0, 5926, 6423, x + 640, y + 2, x, y + 2);
-                BR._Move.Add(0, 10567, 11064, x, y + 2, x - 640, y + 2);
-                BR._Fade.Add(0, 11064, 11064, 1, 1);
+                var BR = new Element(Types.Sprite, Layers.Foreground, Origins.BottomRight, @"SB\2dx_30.png", 320, 240);
+                BR.Move(0, 5926, 6423, x + 640, y + 2, x, y + 2);
+                BR.Move(0, 10567, 11064, x, y + 2, x - 640, y + 2);
+                BR.Fade(11064, 1);
 
                 Frame.Add(TL, TR, BL, BR);
 
             }
-            using (SBGroup Panel = new SBGroup(2))
+            using (ElementGroup Panel = new ElementGroup(2))
             {
 
                 int x = 320, y = 240;
 
-                var Black = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\panel.jpg", 320, 240);
-                Black._Move.Add(0, 5926, 6423, x + 640, y, x, y);
-                Black._Fade.Add(0, 11064, 11064, 1, 1);
-                Black._Move.Add(0, 10567, 11064, x, y, x - 640, y);
+                var Black = new Element(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\panel.jpg", 320, 240);
+                Black.Move(0, 5926, 6423, x + 640, y, x, y);
+                Black.Fade(11064, 1);
+                Black.Move(0, 10567, 11064, x, y, x - 640, y);
 
                 Panel.Add(Black);
 
             }
-            using (SBGroup Title = new SBGroup(4))
+            using (ElementGroup Title = new ElementGroup(4))
             {
 
                 int x = 320, y = 240;
                 var rnd = new Random();
                 double rndx, rndy;
 
-                var t = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\2dx_97.png", 320, 240);
-                t._Move.Add(0, 5926, 6423, x + 640, y, x, y);
-                t._Fade.Add(0, 11064, 11064, 1, 1);
-                t._Move.Add(0, 10567, 11064, x, y, x - 640, y);
+                var t = new Element(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\2dx_97.png", 320, 240);
+                t.Move(0, 5926, 6423, x + 640, y, x, y);
+                t.Fade(11064, 1);
+                t.Move(0, 10567, 11064, x, y, x - 640, y);
                 t.Loop.Add(6423, (int)((10567 - 6423) / 150d));
                 for (int i = 0; i < 4; i++)
                 {
@@ -163,23 +163,23 @@ namespace LibOSB
                 Title.Add(t);
 
             }
-            return SBContainer.ToString();
+            return ElementContainer.ToString();
         }
         public static string BGGreen()
         {
-            using (SBGroup BGs = new SBGroup(0))
+            using (ElementGroup BGs = new ElementGroup(0))
             {
                 int x;
                 for (int i = 0; i < 29; i++)
                 {
                     x = i * 22;
-                    var BG = new SBObject(Types.Sprite, Layers.Foreground, Origins.CentreLeft, @"SB\2dx_6.png", 320, 240);
-                    BG._Move.Add(0, 10567, 11064, x + 640, 240, x, 240);
-                    BG._Fade.Add(0, 17031, 17031, 1, 1);
+                    var BG = new Element(Types.Sprite, Layers.Foreground, Origins.CentreLeft, @"SB\2dx_6.png", 320, 240);
+                    BG.Move(0, 10567, 11064, x + 640, 240, x, 240);
+                    BG.Fade(17031, 1);
                     BGs.Add(BG);
                 }
             }
-            using (SBGroup BGpatterns = new SBGroup(1))
+            using (ElementGroup BGpatterns = new ElementGroup(1))
             {
                 double x, y;
                 for (int j = 0; j < 7; j++)
@@ -188,63 +188,63 @@ namespace LibOSB
                     {
                         x = i * (78 - 3) - 3;
                         y = j * (78 - 3) - 3;
-                        var Pattern = new SBObject(Types.Sprite, Layers.Foreground, Origins.TopLeft, @"SB\2dx_98.png", 320, 240);
-                        Pattern._Move.Add(0, 10567, 11064, x + 640, y, x, y);
-                        Pattern._Fade.Add(0, 17031, 17031, 0.9, 0.9);
+                        var Pattern = new Element(Types.Sprite, Layers.Foreground, Origins.TopLeft, @"SB\2dx_98.png", 320, 240);
+                        Pattern.Move(0, 10567, 11064, x + 640, y, x, y);
+                        Pattern.Fade(17031, 0.9);
 
                         BGpatterns.Add(Pattern);
                     }
                 }
             }
-            using (SBGroup Frame = new SBGroup(3))
+            using (ElementGroup Frame = new ElementGroup(3))
             {
                 int x = 320, y = 240;
-                var TL = new SBObject(Types.Sprite, Layers.Foreground, Origins.TopLeft, @"SB\2dx_30.png", 320, 240);
-                TL._Move.Add(0, 10567, 11064, x + 640, y - 2, x, y - 2);
-                TL._Move.Add(0, 14048, 14545, x, y - 2, x - 640, y - 2);
+                var TL = new Element(Types.Sprite, Layers.Foreground, Origins.TopLeft, @"SB\2dx_30.png", 320, 240);
+                TL.Move(0, 10567, 11064, x + 640, y - 2, x, y - 2);
+                TL.Move(0, 14048, 14545, x, y - 2, x - 640, y - 2);
                 TL.Parameter.Add(0, 5926, 5926, "V");
                 TL.Parameter.Add(0, 5926, 5926, "H");
 
-                var TR = new SBObject(Types.Sprite, Layers.Foreground, Origins.TopRight, @"SB\2dx_30.png", 320, 240);
-                TR._Move.Add(0, 10567, 11064, x + 640, y - 2, x, y - 2);
-                TR._Move.Add(0, 14048, 14545, x, y - 2, x - 640, y - 2);
+                var TR = new Element(Types.Sprite, Layers.Foreground, Origins.TopRight, @"SB\2dx_30.png", 320, 240);
+                TR.Move(0, 10567, 11064, x + 640, y - 2, x, y - 2);
+                TR.Move(0, 14048, 14545, x, y - 2, x - 640, y - 2);
                 TR.Parameter.Add(0, 5926, 5926, "V");
 
-                var BL = new SBObject(Types.Sprite, Layers.Foreground, Origins.BottomLeft, @"SB\2dx_30.png", 320, 240);
-                BL._Move.Add(0, 10567, 11064, x + 640, y + 2, x, y + 2);
-                BL._Move.Add(0, 14048, 14545, x, y + 2, x - 640, y + 2);
+                var BL = new Element(Types.Sprite, Layers.Foreground, Origins.BottomLeft, @"SB\2dx_30.png", 320, 240);
+                BL.Move(0, 10567, 11064, x + 640, y + 2, x, y + 2);
+                BL.Move(0, 14048, 14545, x, y + 2, x - 640, y + 2);
                 BL.Parameter.Add(0, 5926, 5926, "H");
 
-                var BR = new SBObject(Types.Sprite, Layers.Foreground, Origins.BottomRight, @"SB\2dx_30.png", 320, 240);
-                BR._Move.Add(0, 10567, 11064, x + 640, y + 2, x, y + 2);
-                BR._Move.Add(0, 14048, 14545, x, y + 2, x - 640, y + 2);
+                var BR = new Element(Types.Sprite, Layers.Foreground, Origins.BottomRight, @"SB\2dx_30.png", 320, 240);
+                BR.Move(0, 10567, 11064, x + 640, y + 2, x, y + 2);
+                BR.Move(0, 14048, 14545, x, y + 2, x - 640, y + 2);
 
                 Frame.Add(TL, TR, BL, BR);
 
             }
-            using (SBGroup Panel = new SBGroup(2))
+            using (ElementGroup Panel = new ElementGroup(2))
             {
 
                 int x = 320, y = 240;
 
-                var Black = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\panel.jpg", 320, 240);
-                Black._Move.Add(0, 10567, 11064, x + 640, y, x, y);
-                Black._Fade.Add(0, 17031, 17031, 1, 1);
-                Black._Move.Add(0, 14048, 14545, x, y, x - 640, y);
+                var Black = new Element(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\panel.jpg", 320, 240);
+                Black.Move(0, 10567, 11064, x + 640, y, x, y);
+                Black.Fade(17031, 1);
+                Black.Move(0, 14048, 14545, x, y, x - 640, y);
 
                 Panel.Add(Black);
 
             }
-            using (SBGroup Title = new SBGroup(4))
+            using (ElementGroup Title = new ElementGroup(4))
             {
 
                 int x = 320, y = 240;
                 var rnd = new Random();
                 double rndx, rndy;
 
-                var t = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\2dx_60.png", 320, 240);
-                t._Move.Add(0, 10567, 11064, x + 640, y, x, y);
-                t._Move.Add(0, 14048, 14545, x, y, x - 640, y);
+                var t = new Element(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\2dx_60.png", 320, 240);
+                t.Move(0, 10567, 11064, x + 640, y, x, y);
+                t.Move(0, 14048, 14545, x, y, x - 640, y);
                 t.Loop.Add(11064, (int)((14048 - 11064) / 150d));
                 for (int i = 0; i < 4; i++)
                 {
@@ -259,16 +259,16 @@ namespace LibOSB
                 Title.Add(t);
 
             }
-            return SBContainer.ToString();
+            return ElementContainer.ToString();
         }
 
         public static string Animation1()
         {
-            var Anis = new SBGroup(0);
+            var Anis = new ElementGroup(0);
 
-            var Tail1 = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\2dx_108.png", 460, 240);
-            Tail1._Move.Add(0, 5926, 6175, 460, 410 + 200, 460, 410);
-            Tail1._Fade.Add(0, 15374, 15374, 1, 1);
+            var Tail1 = new Element(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\2dx_108.png", 460, 240);
+            Tail1.Move(0, 5926, 6175, 460, 410 + 200, 460, 410);
+            Tail1.Fade(15374, 1);
             Tail1.Parameter.Add(0, 5926, 5926, "H");
 
             Tail1.Loop.Add(5926, 24);
@@ -298,9 +298,9 @@ namespace LibOSB
 
             Anis.Add(Tail1);
 
-            var Tail2 = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\2dx_108.png", 180, 240);
-            Tail2._Move.Add(0, 5926, 6175, 180, 410 + 200, 180, 410);
-            Tail2._Fade.Add(0, 15374, 15374, 1, 1);
+            var Tail2 = new Element(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\2dx_108.png", 180, 240);
+            Tail2.Move(0, 5926, 6175, 180, 410 + 200, 180, 410);
+            Tail2.Fade(15374, 1);
 
             Tail2.Loop.Add(5926, 24);
             Tail2.Loop[0].Vector.Add(0, 0, 0, 1, 1.2, 1, 1.2);
@@ -331,10 +331,10 @@ namespace LibOSB
 
             Anis.Add(Tail2);
 
-            var Ani1 = new SBObject(Types.Animation, Layers.Foreground, Origins.BottomCentre, @"SB\Ani1\a.png",
+            var Ani1 = new Element(Types.Animation, Layers.Foreground, Origins.BottomCentre, @"SB\Ani1\a.png",
                 320, 240, 10, 80, LoopType.LoopForever);
-            Ani1._Move.Add(0, 5926, 6175, 480, 480 + 200, 480, 480);
-            Ani1._Fade.Add(0, 15374, 15374, 1, 1);
+            Ani1.Move(0, 5926, 6175, 480, 480 + 200, 480, 480);
+            Ani1.Fade(15374, 1);
 
             Ani1.Loop.Add(5926, 24);
             Ani1.Loop[0].Vector.Add(0, 0, 0, 1, 1, 1, 1);
@@ -346,9 +346,9 @@ namespace LibOSB
             Anis.Add(Ani1);
 
             #region Bell1
-            var Bell1 = new SBObject(Types.Sprite, Layers.Foreground, Origins.CentreLeft, @"SB\2dx_25.png", 480, 240);
+            var Bell1 = new Element(Types.Sprite, Layers.Foreground, Origins.CentreLeft, @"SB\2dx_25.png", 480, 240);
             Bell1.MoveY.Add(0, 5926, 6175, 440 + 200, 440);
-            Bell1._Fade.Add(0, 15374, 15374, 1, 1);
+            Bell1.Fade(15374, 1);
 
             Bell1.Loop.Add(5926, 12);
             Bell1.Loop[0].Rotate.Add(0, 0, 0, 2, 2);
@@ -373,11 +373,11 @@ namespace LibOSB
             Anis.Add(Bell1);
             #endregion
 
-            var Ani2 = new SBObject(Types.Animation, Layers.Foreground, Origins.BottomCentre, @"SB\Ani1\a.png",
+            var Ani2 = new Element(Types.Animation, Layers.Foreground, Origins.BottomCentre, @"SB\Ani1\a.png",
               320, 240, 10, 80, LoopType.LoopForever);
-            Ani2._Move.Add(0, 5926, 6175, 160, 480 + 200, 160, 480);
+            Ani2.Move(0, 5926, 6175, 160, 480 + 200, 160, 480);
             Ani2.Parameter.Add(0, 5926, 5926, "H");
-            Ani2._Fade.Add(0, 15374, 15374, 1, 1);
+            Ani2.Fade(15374, 1);
 
             Ani2.Loop.Add(5926, 24);
             Ani2.Loop[0].Vector.Add(0, 0, 0, 1, 1, 1, 1);
@@ -389,9 +389,9 @@ namespace LibOSB
             Anis.Add(Ani2);
 
             #region Bell2
-            var Bell2 = new SBObject(Types.Sprite, Layers.Foreground, Origins.CentreLeft, @"SB\2dx_24.png", 160, 240);
+            var Bell2 = new Element(Types.Sprite, Layers.Foreground, Origins.CentreLeft, @"SB\2dx_24.png", 160, 240);
             Bell2.MoveY.Add(0, 5926, 6175, 440 + 200, 440);
-            Bell2._Fade.Add(0, 15374, 15374, 1, 1);
+            Bell2.Fade(15374, 1);
 
             Bell2.Loop.Add(5926, 12);
             Bell2.Loop[0].Rotate.Add(0, 0, 0, 0.3, 0.3);
@@ -417,8 +417,6 @@ namespace LibOSB
             Anis.Add(Bell2);
 
             #endregion
-
-
 
             return Anis.ToString();
         }

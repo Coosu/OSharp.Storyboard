@@ -12,7 +12,7 @@ namespace LibOSB
         public static string Sakura()
         {
             var rnd = new Random();
-            SBGroup Sakuras = new SBGroup(0);
+            ElementGroup Sakuras = new ElementGroup(0);
             const double degree = 135f / 180 * Math.PI;
 
             //
@@ -46,7 +46,7 @@ namespace LibOSB
                 x2 = x1 + r * Math.Sin(degree);
                 y2 = y1 - r * Math.Cos(degree);
 
-                var Sakura = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"sakura.png", 320, 240);
+                var Sakura = new Element(Types.Sprite, Layers.Foreground, Origins.Centre, @"sakura.png", 320, 240);
                 Sakura.Move(0, timeA, timeB, x1, y1, x2, y2);
                 Sakura.Fade(timeA, timeB, 0.5);
                 Sakura.Scale.Add(0, timeA, timeB, s, s);
@@ -88,7 +88,7 @@ namespace LibOSB
                 timeA = i * 500;
                 timeB = timeA + (int)(7000 * Math.Pow(s, -1));
 
-                var Sakura2 = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"sakura.png", 320, 240);
+                var Sakura2 = new Element(Types.Sprite, Layers.Foreground, Origins.Centre, @"sakura.png", 320, 240);
                 Sakura2.Move(0, timeA, timeB, x1, y1, x2, y2);
                 Sakura2.Fade(timeA, timeB, 0.5);
                 Sakura2.Scale.Add(0, timeA, timeB, s, s);
@@ -130,7 +130,7 @@ namespace LibOSB
                 timeA = i * 5000;
                 timeB = timeA + (int)(7000 * Math.Pow(s, -1));
 
-                var Sakura3 = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"sakura.png", 320, 240);
+                var Sakura3 = new Element(Types.Sprite, Layers.Foreground, Origins.Centre, @"sakura.png", 320, 240);
                 Sakura3.Move(0, timeA, timeB, x1, y1, x2, y2);
                 Sakura3.Fade(timeA, timeB, 0.5);
                 Sakura3.Scale.Add(0, timeA, timeB, s, s);
@@ -172,7 +172,7 @@ namespace LibOSB
                 timeA = i * 10000;
                 timeB = timeA + (int)(7000 * Math.Pow(s, -1));
 
-                var Sakura4 = new SBObject(Types.Sprite, Layers.Foreground, Origins.Centre, @"sakura.png", 320, 240);
+                var Sakura4 = new Element(Types.Sprite, Layers.Foreground, Origins.Centre, @"sakura.png", 320, 240);
                 Sakura4.Move(0, timeA, timeB, x1, y1, x2, y2);
                 Sakura4.Fade(timeA, timeB, 0.5);
                 Sakura4.Scale.Add(0, timeA, timeB, s, s);

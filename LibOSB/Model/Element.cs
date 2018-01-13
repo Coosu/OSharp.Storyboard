@@ -11,17 +11,11 @@ namespace LibOSB
     /// Base class of storyboard objects.
     /// </summary>
     [Serializable]
-    public class SBObject
+    public class Element
     {
         StringBuilder sb = new StringBuilder();
 
-        private bool unusefulObj = false;
-        private bool issueObj = false;
-
-        private static bool autooptimize = false;
-        public static bool AutoOptimize { get => autooptimize; set => autooptimize = value; }
-
-        private Constants.Types type;
+        private Types type;
         private Layers layer;
         private Origins origin;
         private string filepath;
@@ -33,7 +27,7 @@ namespace LibOSB
         /// <summary>
         /// 获取物件的种类。
         /// </summary>
-        public Constants.Types Type { get => type; }
+        public Types Type { get => type; }
         /// <summary>
         /// 获取物件的图层。
         /// </summary>
@@ -64,142 +58,19 @@ namespace LibOSB
         public int? TmpMaxTime { get => tmpMaxTime; set => tmpMaxTime = value; }
         public int? TmpMinTime { get => tmpMinTime; set => tmpMinTime = value; }
 
-        protected bool TwoMin
-        {
-            get
-            {
-                return min.FindAll((int? x) => x == min.Min()).Count > 1;
-            }
-        }
-        protected bool TwoMax
-        {
-            get
-            {
-                return max.FindAll((int? x) => x == max.Max()).Count > 1;
-            }
-        }
-
-        private List<int?> max = new List<int?>();
-        private List<int?> min = new List<int?>();
-
-        public void ToNull()
-        {
-            TmpMaxTime = null; TmpMinTime = null;
-        }
         /// <summary>
         /// 获取当前所有动作的最大时间。
         /// </summary>
-        public int? MaxTime()
-        {
-
-            {
-                if (tmpMaxTime != null) return tmpMaxTime; //缓存
-
-                max.Clear();
-                if (Scale.TmpMaxTime != null) max.Add(Scale.TmpMaxTime);
-                else if (Scale.MaxTime() != null) max.Add(Scale.MaxTime());
-
-                if (_Move.TmpMaxTime != null) max.Add(_Move.TmpMaxTime);
-                else if (_Move.MaxTime() != null) max.Add(_Move.MaxTime());
-
-                if (_Fade.TmpMaxTime != null) max.Add(_Fade.TmpMaxTime);
-                else if (_Fade.MaxTime() != null) max.Add(_Fade.MaxTime());
-
-                if (Rotate.TmpMaxTime != null) max.Add(Rotate.TmpMaxTime);
-                else if (Rotate.MaxTime() != null) max.Add(Rotate.MaxTime());
-
-                if (Vector.TmpMaxTime != null) max.Add(Vector.TmpMaxTime);
-                else if (Vector.MaxTime() != null) max.Add(Vector.MaxTime());
-
-                if (_Color.TmpMaxTime != null) max.Add(_Color.TmpMaxTime);
-                else if (_Color.MaxTime() != null) max.Add(_Color.MaxTime());
-
-                if (MoveX.TmpMaxTime != null) max.Add(MoveX.TmpMaxTime);
-                else if (MoveX.MaxTime() != null) max.Add(MoveX.MaxTime());
-
-                if (MoveY.TmpMaxTime != null) max.Add(MoveY.TmpMaxTime);
-                else if (MoveY.MaxTime() != null) max.Add(MoveY.MaxTime());
-
-                if (Parameter.TmpMaxTime != null) max.Add(Parameter.TmpMaxTime);
-                else if (Parameter.MaxTime() != null) max.Add(Parameter.MaxTime());
-
-                for (int gg = 0; gg < Loop.Count; gg++)
-                {
-                    if (Loop[gg].TmpMaxTime != null) max.Add(Loop[gg].StartTime + (Loop[gg].TmpMaxTime * Loop[gg].Times));
-                    else if (Loop[gg].MaxTime() != null) max.Add(Loop[gg].StartTime + (Loop[gg].MaxTime() * Loop[gg].Times));
-                }
-
-                for (int gg = 0; gg < Trigger.Count; gg++)
-                {
-                    if (Trigger[gg].TmpMaxTime != null) max.Add(Trigger[gg].StartTime + Trigger[gg].TmpMaxTime);
-                    else if (Trigger[gg].MaxTime() != null) max.Add(Trigger[gg].StartTime + Trigger[gg].MaxTime());
-                }
-
-                if (max.Count < 1) return null;
-
-                TmpMaxTime = max.Max();
-                return max.Max();
-            }
-        }
+        public int MaxTime { get => maxTime; }
+        private int maxTime;
         /// <summary>
         /// 获取当前所有动作的最小时间。
         /// </summary>
-        public int? MinTime()
-        {
-
-            {
-                if (TmpMinTime != null) return TmpMinTime; //缓存
-
-                min.Clear();
-                if (Scale.TmpMinTime != null) min.Add(Scale.TmpMinTime);
-                else if (Scale.MinTime() != null) min.Add(Scale.MinTime());
-
-                if (_Move.TmpMinTime != null) min.Add(_Move.TmpMinTime);
-                else if (_Move.MinTime() != null) min.Add(_Move.MinTime());
-
-                if (_Fade.TmpMinTime != null) min.Add(_Fade.TmpMinTime);
-                else if (_Fade.MinTime() != null) min.Add(_Fade.MinTime());
-
-                if (Rotate.TmpMinTime != null) min.Add(Rotate.TmpMinTime);
-                else if (Rotate.MinTime() != null) min.Add(Rotate.MinTime());
-
-                if (Vector.TmpMinTime != null) min.Add(Vector.TmpMinTime);
-                else if (Vector.MinTime() != null) min.Add(Vector.MinTime());
-
-                if (_Color.TmpMinTime != null) min.Add(_Color.TmpMinTime);
-                else if (_Color.MinTime() != null) min.Add(_Color.MinTime());
-
-                if (MoveX.TmpMinTime != null) min.Add(MoveX.TmpMinTime);
-                else if (MoveX.MinTime() != null) min.Add(MoveX.MinTime());
-
-                if (MoveY.TmpMinTime != null) min.Add(MoveY.TmpMinTime);
-                else if (MoveY.MinTime() != null) min.Add(MoveY.MinTime());
-
-                if (Parameter.TmpMinTime != null) min.Add(Parameter.TmpMinTime);
-                else if (Parameter.MinTime() != null) min.Add(Parameter.MinTime());
-
-                for (int gg = 0; gg < Loop.Count; gg++)
-                {
-                    if (Loop[gg].TmpMinTime != null) max.Add(Loop[gg].StartTime + Loop[gg].TmpMinTime);
-                    else if (Loop[gg].MinTime() != null) max.Add(Loop[gg].StartTime + Loop[gg].MinTime());
-                }
-                for (int gg = 0; gg < Trigger.Count; gg++)
-                {
-                    if (Trigger[gg].TmpMinTime != null) max.Add(Trigger[gg].StartTime);
-                    else if (Trigger[gg].MinTime() != null) max.Add(Trigger[gg].StartTime);
-                }
-                if (min.Count < 1) return null;
-
-                TmpMinTime = min.Min();
-                return min.Min();
-            }
-        }
+        public int MinTime { get => minTime; }
+        private int minTime;
 
         public override string ToString()
         {
-            if (unusefulObj == true) return "";
-
-            //if (AutoOptimize == false) Optimize();
             sb.Clear();
             sb.Append(Type); sb.Append(",");
             sb.Append(Layer); sb.Append(",");
@@ -255,10 +126,9 @@ namespace LibOSB
             return sb.ToString();
         }
         /// <summary>
-        /// 创建一个Storyboard物件的实例。
+        /// Create a storyboard element by a static image.
         /// </summary>
-        public SBObject() { }
-        public SBObject(Types Type, Layers Layer, Origins Origin, string FilePath, double X, double Y)
+        public Element(Types Type, Layers Layer, Origins Origin, string FilePath, double X, double Y)
         {
             type = Type;
             layer = Layer;
@@ -267,20 +137,11 @@ namespace LibOSB
             filepath = FilePath;
             x = X;
             y = Y;
-
-            _Move = new Move();
-            MoveX = new MoveX();
-            MoveY = new MoveY();
-            Scale = new Scale();
-            _Fade = new Fade();
-            Rotate = new Rotate();
-            Vector = new Vector();
-            _Color = new Color();
-            Parameter = new Parameter();
-            Loop = new Loop();
-            Trigger = new Trigger();
         }
-        public SBObject(Types Type, Layers Layer, Origins Origin, string FilePath, double X, double Y, double FrameCount, double FrameRate, LoopType LoopType)
+        /// <summary>
+        /// Create a storyboard element by a dynamic image.
+        /// </summary>
+        public Element(Types Type, Layers Layer, Origins Origin, string FilePath, double X, double Y, double FrameCount, double FrameRate, LoopType LoopType)
         {
             type = Type;
             layer = Layer;
@@ -293,23 +154,11 @@ namespace LibOSB
             framecount = FrameCount;
             framerate = FrameRate;
             looptype = LoopType;
-
-            _Move = new Move();
-            MoveX = new MoveX();
-            MoveY = new MoveY();
-            Scale = new Scale();
-            _Fade = new Fade();
-            Rotate = new Rotate();
-            Vector = new Vector();
-            _Color = new Color();
-            Parameter = new Parameter();
-            Loop = new Loop();
-            Trigger = new Trigger();
         }
         /// <summary>
         /// An action that controls the object to move. 
         /// </summary>
-        private Move _Move { set; get; }
+        public Move _Move { get; } = new Move();
         public void Move(int startTime, System.Drawing.Point location)
         {
             _Move.Add(0, startTime, startTime, location.X, location.Y, location.X, location.Y);
@@ -333,11 +182,11 @@ namespace LibOSB
         /// <summary>
         /// An action that controls the object to zoom. 
         /// </summary>
-        public Scale Scale { set; get; }
+        public Scale Scale { set; get; } = new Scale();
         /// <summary>
         /// An action that controls the object to change the transparency. 
         /// </summary>
-        private Fade _Fade { set; get; }
+        private Fade _Fade { set; get; } = new Fade();
         public void Fade(int startTime, double alpha)
         {
             if (alpha < 0 || alpha > 1)
@@ -355,24 +204,20 @@ namespace LibOSB
         /// <summary>
         /// An action that controls the object to change the degree. 
         /// </summary>
-        public Rotate Rotate { set; get; }
+        public Rotate Rotate { set; get; } = new Rotate();
         /// <summary>
         /// An action that controls the object to zoom the width and height dividually. 
         /// </summary>
-        public Vector Vector { set; get; }
+        public Vector Vector { set; get; } = new Vector();
         /// <summary>
         /// An action that controls the object to have addtional color. 
         /// </summary>
-        public Color _Color { set; get; }
-        public MoveX MoveX { set; get; }
-        public MoveY MoveY { set; get; }
-        public Parameter Parameter { set; get; }
-        public Loop Loop { set; get; }
-        public Trigger Trigger { set; get; }
-
-        public bool UnusefulObj { get => unusefulObj; }
-
-        public bool IssueObj { get => issueObj; set => issueObj = value; }
+        public Color _Color { set; get; } = new Color();
+        public MoveX MoveX { set; get; } = new MoveX();
+        public MoveY MoveY { set; get; } = new MoveY();
+        public Parameter Parameter { set; get; } = new Parameter();
+        public Loop Loop { set; get; } = new Loop();
+        public Trigger Trigger { set; get; } = new Trigger();
     }
 
 }
