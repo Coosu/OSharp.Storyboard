@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    public class Trigger : Actions
+    public class Trigger : Action
     {
         public Trigger this[int index]
         {
@@ -40,10 +40,10 @@ namespace LibOSB.ActionTypes
             kg = " ";
             sb.Append(kg);
             sb.Append(Type);
-            if (@params != null)
+            if (scriptParams != null)
             {
                 sb.Append(",");
-                sb.Append(@params);
+                sb.Append(scriptParams);
             }
             sb.Append(",");
             sb.Append(StartTime);
@@ -56,7 +56,7 @@ namespace LibOSB.ActionTypes
         }
         private void BuildParams()
         {
-            @params = triggertype;
+            scriptParams = triggertype;
         }
 
         public Trigger() { }
@@ -68,8 +68,8 @@ namespace LibOSB.ActionTypes
         {
             int Lindex = T.Count;
             T.Add(new Trigger(TriggerType, StartTime, EndTime, Lindex));
-            starttime_L.Add(StartTime);
-            endtime_L.Add(EndTime);
+            startTime_L.Add(StartTime);
+            endTime_L.Add(EndTime);
         }
         private List<int?> max = new List<int?>();
         private List<int?> min = new List<int?>();

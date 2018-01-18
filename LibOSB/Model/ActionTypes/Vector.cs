@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    public class Vector : Actions
+    public class Vector : Action
     {
 
         public Vector this[int index] { get => V[index]; }
@@ -15,8 +15,8 @@ namespace LibOSB.ActionTypes
         public void Remove(int index)
         {
             V.Remove(V[index]);
-            starttime_L.RemoveAt(index);
-            endtime_L.RemoveAt(index);
+            startTime_L.RemoveAt(index);
+            endTime_L.RemoveAt(index);
         }
         public Vector(Easing easing, int starttime, int endtime,
          double VX1, double VY1, double VX2, double VY2, int? i, int? j)
@@ -36,8 +36,8 @@ namespace LibOSB.ActionTypes
 
         private void BuildParams()
         {
-            if (vx1 == vx2 && vy1 == vy2) @params = vx1 + "," + vy1;
-            else @params = vx1 + "," + vy1 + "," + vx2 + "," + vy2;
+            if (vx1 == vx2 && vy1 == vy2) scriptParams = vx1 + "," + vy1;
+            else scriptParams = vx1 + "," + vy1 + "," + vx2 + "," + vy2;
         }
 
         private List<Vector> V = new List<Vector>();
@@ -53,8 +53,8 @@ namespace LibOSB.ActionTypes
          double Vector_X2, double Vector_Y2)
         {
             V.Add(new Vector(Easing, StartTime, EndTime, Vector_X1, Vector_Y1, Vector_X2, Vector_Y2, indexL, indexT));
-            starttime_L.Add(StartTime);
-            endtime_L.Add(EndTime);
+            startTime_L.Add(StartTime);
+            endTime_L.Add(EndTime);
         }
 
     }

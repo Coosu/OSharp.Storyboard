@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    public class Color : Actions
+    public class Color : Action
     {
         public Color this[int index] { get => C[index]; }
 
@@ -31,15 +31,15 @@ namespace LibOSB.ActionTypes
 
         private void BuildParams()
         {
-            if (r1 == r2 && g1 == g2 && b1 == b2) @params = r1 + "," + g1 + "," + b1;
-            else @params = r1 + "," + g1 + "," + b1 +
+            if (r1 == r2 && g1 == g2 && b1 == b2) scriptParams = r1 + "," + g1 + "," + b1;
+            else scriptParams = r1 + "," + g1 + "," + b1 +
                         "," + r2 + "," + g2 + "," + b2;
         }
         public void Remove(int index)
         {
             C.Remove(C[index]);
-            starttime_L.RemoveAt(index);
-            endtime_L.RemoveAt(index);
+            startTime_L.RemoveAt(index);
+            endTime_L.RemoveAt(index);
         }
 
         private List<Color> C = new List<Color>();
@@ -57,8 +57,8 @@ namespace LibOSB.ActionTypes
       byte R1, byte G1, byte B1, byte R2, byte G2, byte B2)
         {
             C.Add(new Color(Easing, StartTime, EndTime, R1, G1, B1, R2, G2, B2, indexL, indexT));
-            starttime_L.Add(StartTime);
-            endtime_L.Add(EndTime);
+            startTime_L.Add(StartTime);
+            endTime_L.Add(EndTime);
         }
 
     }

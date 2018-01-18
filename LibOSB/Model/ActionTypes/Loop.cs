@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    public class Loop : Actions
+    public class Loop : Action
     {
         public Loop this[int index]
         {
@@ -43,16 +43,16 @@ namespace LibOSB.ActionTypes
 
             sb.Append(StartTime);
 
-            if (@params != null)
+            if (scriptParams != null)
             {
                 sb.Append(",");
-                sb.Append(@params);
+                sb.Append(scriptParams);
             }
             return sb.ToString();
         }
         private void BuildParams()
         {
-            @params = times.ToString();
+            scriptParams = times.ToString();
 
         }
 
@@ -65,7 +65,7 @@ namespace LibOSB.ActionTypes
         {
             int Lindex = L.Count;
             L.Add(new Loop(StartTime, Times, Lindex));
-            starttime_L.Add(StartTime);
+            startTime_L.Add(StartTime);
         }
         private List<int?> max = new List<int?>();
         private List<int?> min = new List<int?>();

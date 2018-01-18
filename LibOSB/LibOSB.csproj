@@ -54,7 +54,11 @@
     <Compile Include="DEMO_BENIBOTAN.cs" />
     <Compile Include="DEMO.cs" />
     <Compile Include="Function\Camera\Camera2D.cs" />
-    <Compile Include="Model\Actions.cs" />
+    <Compile Include="Model\ActionClass\ActionDouble.cs" />
+    <Compile Include="Model\ActionClass\ActionSingle.cs" />
+    <Compile Include="Model\ActionClass\ActionTriple.cs" />
+    <Compile Include="Model\ActionClass\FadeOutTime.cs" />
+    <Compile Include="Model\Action.cs" />
     <Compile Include="Model\ActionTypes\Color.cs" />
     <Compile Include="Model\ActionTypes\Fade.cs" />
     <Compile Include="Model\ActionTypes\Loop.cs" />

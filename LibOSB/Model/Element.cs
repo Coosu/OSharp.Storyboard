@@ -55,8 +55,8 @@ namespace LibOSB
 
         private int? tmpMaxTime;
         private int? tmpMinTime;
-        public int? TmpMaxTime { get => tmpMaxTime; set => tmpMaxTime = value; }
-        public int? TmpMinTime { get => tmpMinTime; set => tmpMinTime = value; }
+        public int? TmpMaxTime { get => tmpMaxTime; }
+        public int? TmpMinTime { get => tmpMinTime; }
 
         /// <summary>
         /// 获取当前所有动作的最大时间。

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    public class Parameter : Actions
+    public class Parameter : Action
     {
         public Parameter this[int index] { get => P[index]; }
 
@@ -25,7 +25,7 @@ namespace LibOSB.ActionTypes
 
         private void BuildParams()
         {
-            @params = ptype;
+            scriptParams = ptype;
         }
 
         public Parameter() { }
@@ -37,8 +37,8 @@ namespace LibOSB.ActionTypes
          string PType)
         {
             P.Add(new Parameter(Easing, StartTime, EndTime, PType, indexL, indexT));
-            starttime_L.Add(StartTime);
-            endtime_L.Add(EndTime);
+            startTime_L.Add(StartTime);
+            endTime_L.Add(EndTime);
         }
     }
 
