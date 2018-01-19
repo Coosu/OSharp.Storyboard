@@ -35,7 +35,7 @@ namespace LibOSB
             {
                 var subtitle = new Element(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\L" + (i + 1) + ".png", 320, 240);
                 subtitle.Move(0, timings[i], timings[i + 1] - 200, 320, 450, 320, 450);
-                subtitle.Scale.Add(0, timings[i], timings[i + 1] - 200, 0.9, 0.9);
+                subtitle.Scale(timings[i], timings[i + 1] - 200, 0.9);
                 subtitles.Add(subtitle);
             }
 

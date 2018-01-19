@@ -24,8 +24,8 @@ namespace LibOSB.Function.Camera
             int totalframes = lasttime / 1000 * fps;
             foreach (var obj in Objects)
             {
-                List<ActionTypes.Move> mv = obj._Move.M.ToList();
-                obj._Move.M.Clear();
+                List<ActionClass.ActionDouble> mv = obj._Move.listDouble.ToList();
+                obj._Move.listDouble.Clear();
                 for (int j = 0; j < mv.Count; j++)
                 {
                     for (int i = 0; i < totalframes; i++)

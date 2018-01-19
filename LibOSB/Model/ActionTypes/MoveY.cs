@@ -7,7 +7,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    public class MoveY : ActionSingle
+     class MoveY : ActionSingle
     {
         // Nothing here :p
     }

@@ -7,7 +7,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    public class Rotate : ActionSingle
+     class Rotate : ActionSingle
     {
         // Nothing here :p
     }

@@ -6,7 +6,7 @@ using LibOSB.Constants;
 
 namespace LibOSB.ActionClass
 {
-    public class ActionSingle : Action
+    class ActionSingle : Action
     {
         public ActionSingle this[int index]
         {
@@ -39,10 +39,10 @@ namespace LibOSB.ActionClass
             BuildParams();
         }
 
-        public void Add(Easing easing, int startTime, int endTime, double param1, double param2)
+        public void Add(Easing easing, int startTime, int endTime, double preParam, double postParam)
         {
             //if (easing < 0 || easing > 34) throw new Exception("Unknown Easing.");
-            listSingle.Add(new ActionSingle(easing, startTime, endTime, param1, param2, indexL, indexT));
+            listSingle.Add(new ActionSingle(easing, startTime, endTime, preParam, postParam, indexL, indexT));
             startTime_L.Add(startTime);
             endTime_L.Add(endTime);
         }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    public class Loop : Action
+    class Loop : Action
     {
         public Loop this[int index]
         {
@@ -33,7 +33,7 @@ namespace LibOSB.ActionTypes
             BuildParams();
         }
 
-        new public string ToString()
+        public new string ToString()
         {
             sb = new StringBuilder();
             kg = " ";
@@ -184,29 +184,29 @@ namespace LibOSB.ActionTypes
         /// <summary>
         /// An action that controls the object to move. 
         /// </summary>
-        public Move Move { set; get; }
+        internal Move Move { set; get; }
         /// <summary>
         /// An action that controls the object to zoom. 
         /// </summary>
-        public Scale Scale { set; get; }
+        internal Scale Scale { set; get; }
         /// <summary>
         /// An action that controls the object to change the transparency. 
         /// </summary>
-        public Fade Fade { set; get; }
+        internal Fade Fade { set; get; }
         /// <summary>
         /// An action that controls the object to change the degree. 
         /// </summary>
-        public Rotate Rotate { set; get; }
+        internal Rotate Rotate { set; get; }
         /// <summary>
         /// An action that controls the object to zoom the width and height dividually. 
         /// </summary>
-        public Vector Vector { set; get; }
+        internal Vector Vector { set; get; }
         /// <summary>
         /// An action that controls the object to have addtional color. 
         /// </summary>
-        public Color Color { set; get; }
-        public MoveX MoveX { set; get; }
-        public MoveY MoveY { set; get; }
-        public Parameter Parameter { set; get; }
+        internal Color Color { set; get; }
+        internal MoveX MoveX { set; get; }
+        internal MoveY MoveY { set; get; }
+        internal Parameter Parameter { set; get; }
     }
 }

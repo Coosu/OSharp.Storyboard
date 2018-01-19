@@ -7,6 +7,16 @@ namespace LibOSB.ActionTypes
 {
     public class Trigger : Action
     {
+        internal Move Move { set; get; }
+        internal Scale Scale { set; get; }
+        internal Fade Fade { set; get; }
+        internal Rotate Rotate { set; get; }
+        internal Vector Vector { set; get; }
+        internal Color Color { set; get; }
+        internal MoveX MoveX { set; get; }
+        internal MoveY MoveY { set; get; }
+        internal Parameter Parameter { set; get; }
+
         public Trigger this[int index]
         {
             get
@@ -14,6 +24,8 @@ namespace LibOSB.ActionTypes
                 return T[index];
             }
         }
+        public Trigger() { }
+
         public Trigger(string triggerType, int starttime, int endtime, int i = -1)
         {
             type = "T";
@@ -58,9 +70,7 @@ namespace LibOSB.ActionTypes
         {
             scriptParams = triggertype;
         }
-
-        public Trigger() { }
-
+     
         private List<Trigger> T = new List<Trigger>();
         private string triggertype;
         public string TriggerType { get => triggertype; }
@@ -185,32 +195,6 @@ namespace LibOSB.ActionTypes
                 else return false;
             }
         }
-        /// <summary>
-        /// An action that controls the object to move. 
-        /// </summary>
-        public Move Move { set; get; }
-        /// <summary>
-        /// An action that controls the object to zoom. 
-        /// </summary>
-        public Scale Scale { set; get; }
-        /// <summary>
-        /// An action that controls the object to change the transparency. 
-        /// </summary>
-        public Fade Fade { set; get; }
-        /// <summary>
-        /// An action that controls the object to change the degree. 
-        /// </summary>
-        public Rotate Rotate { set; get; }
-        /// <summary>
-        /// An action that controls the object to zoom the width and height dividually. 
-        /// </summary>
-        public Vector Vector { set; get; }
-        /// <summary>
-        /// An action that controls the object to have addtional color. 
-        /// </summary>
-        public Color Color { set; get; }
-        public MoveX MoveX { set; get; }
-        public MoveY MoveY { set; get; }
-        public Parameter Parameter { set; get; }
+
     }
 }

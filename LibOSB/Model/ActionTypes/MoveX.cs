@@ -7,7 +7,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    public class MoveX : ActionSingle
+    class MoveX : ActionSingle
     {
         // Nothing here :p
     }

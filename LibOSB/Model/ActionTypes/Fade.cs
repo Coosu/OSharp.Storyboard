@@ -7,7 +7,7 @@ using LibOSB.ActionClass;
 
 namespace LibOSB.ActionTypes
 {
-    public class Fade : ActionSingle
+    class Fade : ActionSingle
     {
         // Nothing here :p
     }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LibOSB.ActionClass
 {
-    public class ActionTriple
+    class ActionTriple
     {
     }
 }

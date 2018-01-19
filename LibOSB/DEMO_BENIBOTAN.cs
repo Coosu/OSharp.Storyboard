@@ -347,7 +347,7 @@ namespace LibOSB
 
             #region Bell1
             var Bell1 = new Element(Types.Sprite, Layers.Foreground, Origins.CentreLeft, @"SB\2dx_25.png", 480, 240);
-            Bell1.MoveY.Add(0, 5926, 6175, 440 + 200, 440);
+            Bell1.MoveY(0, 5926, 6175, 440 + 200, 440);
             Bell1.Fade(15374, 1);
 
             Bell1.Loop.Add(5926, 12);
@@ -390,7 +390,7 @@ namespace LibOSB
 
             #region Bell2
             var Bell2 = new Element(Types.Sprite, Layers.Foreground, Origins.CentreLeft, @"SB\2dx_24.png", 160, 240);
-            Bell2.MoveY.Add(0, 5926, 6175, 440 + 200, 440);
+            Bell2.MoveY(0, 5926, 6175, 440 + 200, 440);
             Bell2.Fade(15374, 1);
 
             Bell2.Loop.Add(5926, 12);

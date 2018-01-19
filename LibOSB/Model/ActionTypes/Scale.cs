@@ -7,7 +7,7 @@ using System.Text;
 
 namespace LibOSB.ActionTypes
 {
-    public class Scale : ActionSingle
+    class Scale : ActionSingle
     {
         // Nothing here :p
     }
