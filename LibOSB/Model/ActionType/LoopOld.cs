@@ -3,83 +3,72 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LibOSB.ActionTypes
+namespace LibOSB.Model.ActionType
 {
-    public class Trigger : Action
+    /// <summary>
+    /// Deprecated
+    /// </summary>
+    class LoopOld : Action
     {
-        internal Move Move { set; get; }
-        internal Scale Scale { set; get; }
-        internal Fade Fade { set; get; }
-        internal Rotate Rotate { set; get; }
-        internal Vector Vector { set; get; }
-        internal Color Color { set; get; }
-        internal MoveX MoveX { set; get; }
-        internal MoveY MoveY { set; get; }
-        internal Parameter Parameter { set; get; }
-
-        public Trigger this[int index]
+        public LoopOld this[int index]
         {
             get
             {
-                return T[index];
+                return L[index];
             }
         }
-        public Trigger() { }
-
-        public Trigger(string triggerType, int starttime, int endtime, int i = -1)
+        public LoopOld(int starttime, int times, int i = -1)
         {
-            type = "T";
-            indexT = i;
+            type = "L";
+            indexL = i;
             this.startTime = starttime;
-            this.endTime = endtime;
-            this.triggertype = triggerType;
+            this.times = times;
 
-            Move = new Move(); if (i != -1) Move.indexT = i;
-            MoveX = new MoveX(); if (i != -1) MoveX.indexT = i;
-            MoveY = new MoveY(); if (i != -1) MoveY.indexT = i;
-            Scale = new Scale(); if (i != -1) Scale.indexT = i;
-            Fade = new Fade(); if (i != -1) Fade.indexT = i;
-            Rotate = new Rotate(); if (i != -1) Rotate.indexT = i;
-            Vector = new Vector(); if (i != -1) Vector.indexT = i;
-            Color = new Color(); if (i != -1) Color.indexT = i;
-            Parameter = new Parameter(); if (i != -1) Parameter.indexT = i;
+            Move = new Move(); if (i != -1) Move.indexL = i;
+            MoveX = new MoveX(); if (i != -1) MoveX.indexL = i;
+            MoveY = new MoveY(); if (i != -1) MoveY.indexL = i;
+            Scale = new Scale(); if (i != -1) Scale.indexL = i;
+            Fade = new Fade(); if (i != -1) Fade.indexL = i;
+            Rotate = new Rotate(); if (i != -1) Rotate.indexL = i;
+            Vector = new Vector(); if (i != -1) Vector.indexL = i;
+            Color = new Color(); if (i != -1) Color.indexL = i;
+            Parameter = new Parameter(); if (i != -1) Parameter.indexL = i;
             BuildParams();
         }
 
-        new public string ToString()
+        public new string ToString()
         {
             sb = new StringBuilder();
             kg = " ";
             sb.Append(kg);
             sb.Append(Type);
+            sb.Append(",");
+
+            sb.Append(StartTime);
+
             if (scriptParams != null)
             {
                 sb.Append(",");
                 sb.Append(scriptParams);
             }
-            sb.Append(",");
-            sb.Append(StartTime);
-
-            sb.Append(",");
-            sb.Append(EndTime);
-
-
             return sb.ToString();
         }
         private void BuildParams()
         {
-            scriptParams = triggertype;
+            scriptParams = times.ToString();
+
         }
-     
-        private List<Trigger> T = new List<Trigger>();
-        private string triggertype;
-        public string TriggerType { get => triggertype; }
-        public void Add(string TriggerType, int StartTime, int EndTime)
+
+        public LoopOld() { }
+
+        private List<LoopOld> L = new List<LoopOld>();
+        private int times;
+        public int Times { get => times; }
+        public void Add(int StartTime, int Times)
         {
-            int Lindex = T.Count;
-            T.Add(new Trigger(TriggerType, StartTime, EndTime, Lindex));
+            int Lindex = L.Count;
+            L.Add(new LoopOld(StartTime, Times, Lindex));
             startTime_L.Add(StartTime);
-            endTime_L.Add(EndTime);
         }
         private List<int?> max = new List<int?>();
         private List<int?> min = new List<int?>();
@@ -89,7 +78,7 @@ namespace LibOSB.ActionTypes
             if (TmpMaxTime != null) return TmpMaxTime; //缓存
 
             max.Clear();
-            //Debug.WriteLine(T);
+            //Debug.WriteLine(L);
             if (Scale.TmpMaxTime != null) max.Add(Scale.TmpMaxTime);
             else if (Scale.MaxTime() != null) max.Add(Scale.MaxTime());
 
@@ -195,6 +184,32 @@ namespace LibOSB.ActionTypes
                 else return false;
             }
         }
-
+        /// <summary>
+        /// An action that controls the object to move. 
+        /// </summary>
+        internal Move Move { set; get; }
+        /// <summary>
+        /// An action that controls the object to zoom. 
+        /// </summary>
+        internal Scale Scale { set; get; }
+        /// <summary>
+        /// An action that controls the object to change the transparency. 
+        /// </summary>
+        internal Fade Fade { set; get; }
+        /// <summary>
+        /// An action that controls the object to change the degree. 
+        /// </summary>
+        internal Rotate Rotate { set; get; }
+        /// <summary>
+        /// An action that controls the object to zoom the width and height dividually. 
+        /// </summary>
+        internal Vector Vector { set; get; }
+        /// <summary>
+        /// An action that controls the object to have addtional color. 
+        /// </summary>
+        internal Color Color { set; get; }
+        internal MoveX MoveX { set; get; }
+        internal MoveY MoveY { set; get; }
+        internal Parameter Parameter { set; get; }
     }
 }

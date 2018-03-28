@@ -10,36 +10,15 @@ namespace LibOSB
 {
     class DEMO
     {
-        private static int[] GetBookmark()
+        static string Test()
         {
-            string fileroot = @"D:\Program Files (x86)\osu!\Songs\demo\demo - demo (yf_bmp) [demo].osu";
-            string[] lines = File.ReadAllLines(fileroot);
-            for (int i = 0; i < lines.Length; i++)
-            {
-                if (lines[i].IndexOf("Bookmarks") != -1)
-                {
-                    string text = lines[i].Replace("Bookmarks: ", "");
-                    string[] timings = text.Split(',');
-                    return Array.ConvertAll(timings, delegate (string s) { return int.Parse(s); });
-                }
-            }
-            return null;
-        }
-
-        public static string Subtitle()
-        {
-            int[] timings = GetBookmark();
-
-            ElementGroup subtitles = new ElementGroup(0);
-            for (int i = 0; i < timings.Length - 1; i++)
-            {
-                var subtitle = new Element(Types.Sprite, Layers.Foreground, Origins.Centre, @"SB\L" + (i + 1) + ".png", 320, 240);
-                subtitle.Move(0, timings[i], timings[i + 1] - 200, 320, 450, 320, 450);
-                subtitle.Scale(timings[i], timings[i + 1] - 200, 0.9);
-                subtitles.Add(subtitle);
-            }
-
-            return subtitles.ToString();
+            ElementGroup eg = new ElementGroup(0);
+            var something = eg.CreateSprite("test.png");
+            something.StartLoop(334, 5);
+            something.Move(EasingType.Linear, 0, 300, 320, 240, 640, 480);
+            something.Move(EasingType.BackInOut, 300, 600, 640, 480, 123, 45);
+            something.EndLoop();
+            return something.ToString();
         }
     }
 }

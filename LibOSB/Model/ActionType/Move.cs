@@ -1,15 +1,13 @@
-﻿using LibOSB.Constants;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using LibOSB.ActionClass;
-
-namespace LibOSB.ActionTypes
+using LibOSB.Constants;
+namespace LibOSB.Model.ActionType
 {
-    class Fade : ActionSingle
+    class Move : ActionDouble
     {
         // Nothing here :p
     }
-
 }

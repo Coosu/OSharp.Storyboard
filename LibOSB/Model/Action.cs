@@ -14,16 +14,16 @@ namespace LibOSB
         protected StringBuilder sb = new StringBuilder();
 
         public int? indexL, indexT;
-        protected string kg = " ";
+        protected string kg = "";
         protected string scriptParams;
         protected int? endTime = null;
-        protected Easing easing;
+        protected EasingType easing;
         protected int? startTime = null;
         protected string type;
 
         public List<int?> startTime_L = new List<int?>();
         public List<int?> endTime_L = new List<int?>();
-        
+
         /// <summary>
         /// Get one action's start time.
         /// </summary>
@@ -35,7 +35,7 @@ namespace LibOSB
         /// <summary>
         /// Get one action's easing.
         /// </summary>
-        public Easing Easing { get => easing; set => easing = value; }
+        public EasingType Easing { get => easing; set => easing = value; }
         /// <summary>
         /// Get one action's end type.
         /// </summary>
@@ -44,18 +44,12 @@ namespace LibOSB
         public new string ToString()
         {
             sb = new StringBuilder();
-            if (indexL != null)
-                kg = "  ";
-            else if (indexT != null)
-                kg = "  ";
-            else kg = " ";
-            sb.Append(kg);
-            sb.Append(Type);
-            sb.Append(",");
-            sb.Append((int)Enum.Parse(typeof(Easing), Easing.ToString()));
-            sb.Append(",");
-            sb.Append(StartTime);
-            sb.Append(",");
+            //if (indexL != null)
+            //    kg = "  ";
+            //else if (indexT != null)
+            //    kg = "  ";
+            //else kg = " ";
+            sb.Append(kg + Type + "," + (int)Enum.Parse(typeof(EasingType), Easing.ToString()) + "," + StartTime + ",");
 
             if (EndTime > StartTime)
             {

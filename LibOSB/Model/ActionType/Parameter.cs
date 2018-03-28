@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LibOSB.ActionTypes
+namespace LibOSB.Model.ActionType
 {
     public class Parameter : Action
     {
         public Parameter this[int index] { get => P[index]; }
 
-        public Parameter(Easing easing, int starttime, int endtime,
+        public Parameter(EasingType easing, int starttime, int endtime,
          string ptype, int? i, int? j)
         {
             type = "P";
@@ -33,7 +33,7 @@ namespace LibOSB.ActionTypes
         private List<Parameter> P = new List<Parameter>();
         private string ptype;
         public string Ptype { get => ptype; }
-        public void Add(Easing Easing, int StartTime, int EndTime,
+        public void Add(EasingType Easing, int StartTime, int EndTime,
          string PType)
         {
             P.Add(new Parameter(Easing, StartTime, EndTime, PType, indexL, indexT));

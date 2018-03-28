@@ -28,7 +28,7 @@ namespace LibOSB.ActionClass
         public double PostParam2 { get => postParam2; }
 
         public ActionDouble() { }
-        public ActionDouble(Easing easing, int startTime, int endTime, double preParam1, double preParam2, double postParam1, double postParam2, int? i, int? j)
+        public ActionDouble(EasingType easing, int startTime, int endTime, double preParam1, double preParam2, double postParam1, double postParam2, int? i, int? j)
         {
             type = "F";
             this.easing = easing;
@@ -43,7 +43,7 @@ namespace LibOSB.ActionClass
             BuildParams();
         }
 
-        public void Add(Easing easing, int startTime, int endTime, double preParam1, double preParam2, double postParam1, double postParam2)
+        public void Add(EasingType easing, int startTime, int endTime, double preParam1, double preParam2, double postParam1, double postParam2)
         {
             listDouble.Add(new ActionDouble(easing, startTime, endTime, preParam1, preParam2, postParam1, postParam2, indexL, indexT));
             startTime_L.Add(startTime);

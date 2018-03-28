@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LibOSB.Constants
 {
-    public enum Types
+    public enum ElementType
     {
         Sprite,
         Animation

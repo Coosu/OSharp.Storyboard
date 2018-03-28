@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{39F7E783-F770-47D0-BFBB-49BC30443B3E}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>LibOSB</RootNamespace>
     <AssemblyName>LibOSB</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -29,7 +29,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\LibOSB.xml</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -50,8 +51,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DEMO_A_SAKA.cs" />
-    <Compile Include="DEMO_BENIBOTAN.cs" />
     <Compile Include="DEMO.cs" />
     <Compile Include="Function\Camera\Camera2D.cs" />
     <Compile Include="Model\ActionClass\ActionDouble.cs" />
@@ -59,25 +58,29 @@
     <Compile Include="Model\ActionClass\ActionTriple.cs" />
     <Compile Include="Model\ActionClass\FadeOutTime.cs" />
     <Compile Include="Model\Action.cs" />
-    <Compile Include="Model\ActionTypes\Color.cs" />
-    <Compile Include="Model\ActionTypes\Fade.cs" />
-    <Compile Include="Model\ActionTypes\Loop.cs" />
-    <Compile Include="Model\ActionTypes\Move.cs" />
-    <Compile Include="Model\ActionTypes\MoveX.cs" />
-    <Compile Include="Model\ActionTypes\MoveY.cs" />
-    <Compile Include="Model\ActionTypes\Parameter.cs" />
-    <Compile Include="Model\ActionTypes\Rotate.cs" />
-    <Compile Include="Model\ActionTypes\Scale.cs" />
-    <Compile Include="Model\ActionTypes\Trigger.cs" />
-    <Compile Include="Model\ActionTypes\Vector.cs" />
-    <Compile Include="Model\Constants\Easing.cs" />
-    <Compile Include="Model\Constants\Layer.cs" />
+    <Compile Include="Model\ActionType\Color.cs" />
+    <Compile Include="Model\ActionType\Fade.cs" />
+    <Compile Include="Model\ActionType\LoopOld.cs" />
+    <Compile Include="Model\ActionType\Loop.cs" />
+    <Compile Include="Model\ActionType\Move.cs" />
+    <Compile Include="Model\ActionType\MoveX.cs" />
+    <Compile Include="Model\ActionType\MoveY.cs" />
+    <Compile Include="Model\ActionType\Parameter.cs" />
+    <Compile Include="Model\ActionType\Rotate.cs" />
+    <Compile Include="Model\ActionType\Scale.cs" />
+    <Compile Include="Model\ActionType\Trigger.cs" />
+    <Compile Include="Model\ActionType\TriggerOld.cs" />
+    <Compile Include="Model\ActionType\Vector.cs" />
+    <Compile Include="Model\Constants\EasingType.cs" />
+    <Compile Include="Model\Constants\TriggerType.cs" />
+    <Compile Include="Model\Constants\LayerType.cs" />
     <Compile Include="Model\Constants\LoopType.cs" />
-    <Compile Include="Model\Constants\Origin.cs" />
-    <Compile Include="Model\Constants\Type.cs" />
+    <Compile Include="Model\Constants\OriginType.cs" />
+    <Compile Include="Model\Constants\ElementType.cs" />
     <Compile Include="Model\ElementContainer.cs" />
     <Compile Include="Model\ElementGroup.cs" />
     <Compile Include="Model\Element.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

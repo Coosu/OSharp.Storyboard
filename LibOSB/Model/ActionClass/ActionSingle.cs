@@ -26,7 +26,7 @@ namespace LibOSB.ActionClass
         public double PostParam { get => postParam; }
 
         public ActionSingle() { }
-        public ActionSingle(Easing easing, int startTime, int endTime, double preParam, double postParam, int? i, int? j)
+        public ActionSingle(EasingType easing, int startTime, int endTime, double preParam, double postParam, int? i, int? j)
         {
             type = "F";
             this.easing = easing;
@@ -39,7 +39,7 @@ namespace LibOSB.ActionClass
             BuildParams();
         }
 
-        public void Add(Easing easing, int startTime, int endTime, double preParam, double postParam)
+        public void Add(EasingType easing, int startTime, int endTime, double preParam, double postParam)
         {
             //if (easing < 0 || easing > 34) throw new Exception("Unknown Easing.");
             listSingle.Add(new ActionSingle(easing, startTime, endTime, preParam, postParam, indexL, indexT));

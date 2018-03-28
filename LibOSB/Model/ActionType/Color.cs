@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LibOSB.ActionTypes
+namespace LibOSB.Model.ActionType
 {
     public class Color : Action
     {
         public Color this[int index] { get => C[index]; }
 
         public Color() { }
-        public Color(Easing easing, int starttime, int endtime,
+        public Color(EasingType easing, int starttime, int endtime,
         byte R1, byte G1, byte B1, byte R2, byte G2, byte B2, int? i, int? j)
         {
             type = "C";
@@ -53,7 +53,7 @@ namespace LibOSB.ActionTypes
         public byte? R1 { get => r1; }
 
 
-        public void Add(Easing Easing, int StartTime, int EndTime,
+        public void Add(EasingType Easing, int StartTime, int EndTime,
       byte R1, byte G1, byte B1, byte R2, byte G2, byte B2)
         {
             C.Add(new Color(Easing, StartTime, EndTime, R1, G1, B1, R2, G2, B2, indexL, indexT));

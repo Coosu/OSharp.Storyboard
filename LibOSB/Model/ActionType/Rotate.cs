@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LibOSB.ActionTypes
+namespace LibOSB.Model.ActionType
 {
-    class MoveX : ActionSingle
+     class Rotate : ActionSingle
     {
         // Nothing here :p
     }

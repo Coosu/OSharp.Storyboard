@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LibOSB.ActionTypes
+namespace LibOSB.Model.ActionType
 {
     public class Vector : Action
     {
@@ -18,7 +18,7 @@ namespace LibOSB.ActionTypes
             startTime_L.RemoveAt(index);
             endTime_L.RemoveAt(index);
         }
-        public Vector(Easing easing, int starttime, int endtime,
+        public Vector(EasingType easing, int starttime, int endtime,
          double VX1, double VY1, double VX2, double VY2, int? i, int? j)
         {
             type = "V";
@@ -48,7 +48,7 @@ namespace LibOSB.ActionTypes
         public double VX2 { get => vx2; }
         public double VY2 { get => vy2; }
 
-        public void Add(Easing Easing, int StartTime, int EndTime,
+        public void Add(EasingType Easing, int StartTime, int EndTime,
          double Vector_X1, double Vector_Y1,
          double Vector_X2, double Vector_Y2)
         {
