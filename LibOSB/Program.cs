@@ -11,22 +11,30 @@ namespace LibOSB
     {
         static void Main(string[] args)
         {
-            ElementGroup eg = new ElementGroup(0);
-            var something = eg.CreateSprite("test.png");
-            something.Fade(EasingType.Linear, 0, 1000, 0, 1);
-            something.Fade(1000, 3000, 1);
+            ElementGroup scene2 = new ElementGroup(1);
+            var tree = scene2.CreateSprite("tree.png");
+            tree.Fade(EasingType.Linear, 0, 1000, 0, 1);
+            tree.Fade(1000, 3000, 1);
 
-            something.StartLoop(3000, 5);
-            something.Move(EasingType.Linear, 0, 300, 320, 240, 640, 480);
-            something.Move(EasingType.BackInOut, 300, 600, 640, 480, 123, 45);
-            something.EndLoop();
+            tree.StartLoop(3000, 5);
+            tree.Move(EasingType.Linear, 0, 300, 320, 240, 640, 480);
+            tree.Move(EasingType.BackInOut, 300, 600, 640, 480, 123, 45);
+            tree.EndLoop();
 
-            something.StartLoop(56000, 5);
-            something.Move(0, 320, 240);
-            something.Move(300, 480, 320);
-            something.EndLoop();
-            
-            Console.WriteLine(something.ToString());
+            tree.StartLoop(56000, 5);
+            tree.Move(0, 320, 240);
+            tree.Move(300, 480, 320);
+            tree.EndLoop();
+
+            ElementGroup scene1 = new ElementGroup(0);
+            var sky = scene1.CreateSprite("sky.png");
+            sky.Fade(EasingType.Linear, 0, 1000, 0, 1);
+            sky.Fade(3000, 3000, 1);
+
+            ElementContainer.SortByIndex();
+
+            Console.WriteLine(ElementContainer.ToString());
+
             Console.Read();
             return;
         }

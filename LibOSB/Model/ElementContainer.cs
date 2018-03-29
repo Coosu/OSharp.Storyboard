@@ -24,7 +24,7 @@ namespace LibOSB
 
             return sb.ToString();
         }
-        private static void SortByIndex()
+        public static void SortByIndex()
         {
             SBGroup.Sort(new GroupSort(GroupSortKind.Index));
         }

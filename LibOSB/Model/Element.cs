@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 using LibOSB.Constants;
 using System.Diagnostics;
-using LibOSB.Model.ActionType;
+using LibOSB.Model.EventType;
+using LibOSB.Model.Constants;
 
 namespace LibOSB
 {
@@ -14,35 +15,6 @@ namespace LibOSB
     [Serializable]
     public class Element
     {
-        #region non-public member
-        private bool isTriggering = false, isLooping = false;
-        protected bool isInnerClass = false;
-
-        internal Move _Move { get; } = new Move();
-        internal Scale _Scale { get; } = new Scale();
-        internal Fade _Fade { get; } = new Fade();
-        internal Rotate _Rotate { get; } = new Rotate();
-        internal Vector _Vector { set; get; } = new Vector();
-        internal Color _Color { get; } = new Color();
-        internal MoveX _MoveX { get; } = new MoveX();
-        internal MoveY _MoveY { get; } = new MoveY();
-        internal Parameter Parameter { set; get; } = new Parameter();
-        internal LoopOld LoopOld { set; get; } = new LoopOld();
-        internal TriggerOld TriggerOld { set; get; } = new TriggerOld();
-
-        private double CheckAlpha(double a)
-        {
-            if (a < 0 || a > 1)
-            {
-                if (a < 0) a = 0;
-                else a = 1;
-                Debug.WriteLine("[Warning] Alpha of fade should be between 0 and 1.");
-            }
-
-            return a;
-        }
-        #endregion
-
         public ElementType Type { get; private set; }
         public LayerType Layer { get; private set; }
         public OriginType Origin { get; private set; }
@@ -52,7 +24,7 @@ namespace LibOSB
         public LoopType LoopType { get; private set; }
         public double? FrameCount { get; private set; }
         public double? FrameRate { get; private set; }
-        public List<Loop> LoopList { protected set; get; } = new List<Loop>();
+        public List<Loop> Loop { protected set; get; } = new List<Loop>();
         public List<Trigger> Trigger { protected set; get; } = new List<Trigger>();
 
         /// <summary>
@@ -105,13 +77,14 @@ namespace LibOSB
         {
             if (isLooping || isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
             isLooping = true;
-            LoopList.Add(new Loop(startTime, time));
+            Loop.Add(new Loop(startTime, time));
         }
 
-        public void StartTrigger(int startTime, int time)
+        public void StartTrigger(int startTime, int time, TriggerType[] triggerType, int customSampleSet = -1)
         {
             if (isLooping || isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
             isTriggering = true;
+            Trigger.Add(new Trigger(startTime, time, triggerType, customSampleSet));
         }
 
         public void EndLoop()
@@ -123,107 +96,142 @@ namespace LibOSB
 
         public void Move(int startTime, System.Drawing.Point location)
         {
-            _add_move(0, startTime, startTime, location.X, location.Y, location.X, location.Y);
+            _Add_Move(0, startTime, startTime, location.X, location.Y, location.X, location.Y);
         }
         public void Move(int startTime, double x, double y)
         {
-            _add_move(0, startTime, startTime, x, y, x, y);
+            _Add_Move(0, startTime, startTime, x, y, x, y);
         }
         public void Move(int startTime, int endTime, double x, double y)
         {
-            _add_move(0, startTime, endTime, x, y, x, y);
+            _Add_Move(0, startTime, endTime, x, y, x, y);
         }
         public void Move(EasingType easing, int startTime, int endTime, System.Drawing.Point startLocation, System.Drawing.Point endLocation)
         {
-            _add_move(easing, startTime, endTime, startLocation.X, startLocation.Y, endLocation.X, endLocation.Y);
+            _Add_Move(easing, startTime, endTime, startLocation.X, startLocation.Y, endLocation.X, endLocation.Y);
         }
         public void Move(EasingType easing, int startTime, int endTime, double x1, double y1, double x2, double y2)
         {
-            _add_move(easing, startTime, endTime, x1, y1, x2, y2);
+            _Add_Move(easing, startTime, endTime, x1, y1, x2, y2);
         }
 
         public void Fade(int startTime, double alpha)
         {
-            _add_fade(0, startTime, startTime, alpha, alpha);
+            _Add_Fade(0, startTime, startTime, alpha, alpha);
         }
         public void Fade(int startTime, int endTime, double alpha)
         {
-            _add_fade(0, startTime, endTime, alpha, alpha);
+            _Add_Fade(0, startTime, endTime, alpha, alpha);
         }
         public void Fade(EasingType easing, int startTime, int endTime, double startAlpha, double endAlpha)
         {
-            _add_fade(easing, startTime, endTime, startAlpha, endAlpha);
+            _Add_Fade(easing, startTime, endTime, startAlpha, endAlpha);
         }
 
         public void Scale(int startTime, double scale)
         {
-            _Scale.Add(0, startTime, startTime, scale, scale);
+            _Add_Scale(0, startTime, startTime, scale, scale);
         }
         public void Scale(int startTime, int endTime, double scale)
         {
-            _Scale.Add(0, startTime, endTime, scale, scale);
+            _Add_Scale(0, startTime, endTime, scale, scale);
         }
         public void Scale(EasingType easing, int startTime, int endTime, double startScale, double endScale)
         {
-            _Scale.Add(easing, startTime, endTime, startScale, endScale);
+            _Add_Scale(easing, startTime, endTime, startScale, endScale);
         }
 
         public void Rotate(int startTime, double rotate)
         {
-            _Rotate.Add(0, startTime, startTime, rotate, rotate);
+            _Add_Scale(0, startTime, startTime, rotate, rotate);
         }
         public void Rotate(int startTime, int endTime, double rotate)
         {
-            _Rotate.Add(0, startTime, endTime, rotate, rotate);
+            _Add_Scale(0, startTime, endTime, rotate, rotate);
         }
         public void Rotate(EasingType easing, int startTime, int endTime, double startRotate, double endRotate)
         {
-            _Rotate.Add(easing, startTime, endTime, startRotate, endRotate);
+            _Add_Scale(easing, startTime, endTime, startRotate, endRotate);
         }
 
         public void MoveX(int startTime, double x)
         {
-            _MoveX.Add(0, startTime, startTime, x, x);
+            _Add_MoveX(0, startTime, startTime, x, x);
         }
         public void MoveX(int startTime, int endTime, double x)
         {
-            _MoveX.Add(0, startTime, endTime, x, x);
+            _Add_MoveX(0, startTime, endTime, x, x);
         }
         public void MoveX(EasingType easing, int startTime, int endTime, double startX, double endX)
         {
-            _MoveX.Add(easing, startTime, endTime, startX, endX);
+            _Add_MoveX(easing, startTime, endTime, startX, endX);
         }
 
         public void MoveY(int startTime, double y)
         {
-            _MoveY.Add(0, startTime, startTime, y, y);
+            _Add_MoveY(0, startTime, startTime, y, y);
         }
         public void MoveY(int startTime, int endTime, double y)
         {
-            _MoveY.Add(0, startTime, endTime, y, y);
+            _Add_MoveY(0, startTime, endTime, y, y);
         }
         public void MoveY(EasingType easing, int startTime, int endTime, double startY, double endY)
         {
-            _MoveY.Add(easing, startTime, endTime, startY, endY);
+            _Add_MoveY(easing, startTime, endTime, startY, endY);
         }
 
-        private void _add_move(EasingType easing, int startTime, int endTime, double x1, double y1, double x2, double y2)
+        public void Color(int startTime, System.Drawing.Color color)
         {
-            if (!isLooping)
-                _Move.Add(easing, startTime, endTime, x1, y1, x2, y2);
-            else
-                LoopList[LoopList.Count - 1]._Move.Add(easing, startTime, endTime, x1, y1, x2, y2);
+            _Add_Color(0, startTime, startTime, color.R, color.G, color.B, color.R, color.G, color.B);
+        }
+        public void Color(int startTime, int endTime, System.Drawing.Color color)
+        {
+            _Add_Color(0, startTime, endTime, color.R, color.G, color.B, color.R, color.G, color.B);
+        }
+        public void Color(EasingType easing, int startTime, int endTime, System.Drawing.Color color1, System.Drawing.Color color2)
+        {
+            _Add_Color(easing, startTime, endTime, color1.R, color1.G, color1.B, color2.R, color2.G, color2.B);
+        }
+        public void Color(int startTime, int R, int G, int B)
+        {
+            _Add_Color(0, startTime, startTime, R, G, B, R, G, B);
+        }
+        public void Color(int startTime, int endTime, int R, int G, int B)
+        {
+            _Add_Color(0, startTime, endTime, R, G, B, R, G, B);
+        }
+        public void Color(EasingType easing, int startTime, int endTime, int startR, int startG, int startB, int endR, int endG, int endB)
+        {
+            _Add_Color(easing, startTime, endTime, startR, startG, startB, endR, endG, endB);
         }
 
-        private void _add_fade(EasingType easing, int startTime, int endTime, double startAlpha, double endAlpha)
+        public void FlipH(int startTime)
         {
-            startAlpha = CheckAlpha(startAlpha);
-            endAlpha = CheckAlpha(endAlpha);
-            if (!isLooping)
-                _Fade.Add(easing, startTime, endTime, startAlpha, endAlpha);
-            else
-                LoopList[LoopList.Count - 1]._Fade.Add(easing, startTime, endTime, startAlpha, endAlpha);
+            _Add_Param(0, startTime, startTime, "H");
         }
+        public void FlipH(int startTime, int endTime)
+        {
+            _Add_Param(0, startTime, endTime, "H");
+        }
+
+        public void FlipV(int startTime)
+        {
+            _Add_Param(0, startTime, startTime, "V");
+        }
+        public void FlipV(int startTime, int endTime)
+        {
+            _Add_Param(0, startTime, endTime, "V");
+        }
+
+        public void Lighting(int startTime)
+        {
+            _Add_Param(0, startTime, startTime, "A");
+        }
+        public void Lighting(int startTime, int endTime)
+        {
+            _Add_Param(0, startTime, endTime, "A");
+        }
+
 
         public override string ToString()
         {
@@ -245,37 +253,134 @@ namespace LibOSB
             for (int i = 1; i <= _Color.Count; i++) sb.AppendLine(index + _Color[i - 1].ToString());
             for (int i = 1; i <= _MoveX.Count; i++) sb.AppendLine(index + _MoveX[i - 1].ToString());
             for (int i = 1; i <= _MoveY.Count; i++) sb.AppendLine(index + _MoveY[i - 1].ToString());
-            for (int i = 1; i <= Parameter.Count; i++) sb.AppendLine(index + Parameter[i - 1].ToString());
-            for (int i = 1; i <= LoopList.Count; i++) sb.Append(LoopList[i - 1].ToString());
-            //for (int i = 1; i <= Loop.Count; i++)
-            //{
-            //    sb.AppendLine(Loop[i - 1].ToString());
-            //    for (int j = 1; j <= Loop[i - 1]._Move.Count; j++) sb.AppendLine(Loop[i - 1]._Move[j - 1].ToString());
-            //    for (int j = 1; j <= Loop[i - 1]._Scale.Count; j++) sb.AppendLine(Loop[i - 1]._Scale[j - 1].ToString());
-            //    for (int j = 1; j <= Loop[i - 1]._Fade.Count; j++) sb.AppendLine(Loop[i - 1]._Fade[j - 1].ToString());
-            //    for (int j = 1; j <= Loop[i - 1]._Rotate.Count; j++) sb.AppendLine(Loop[i - 1]._Rotate[j - 1].ToString());
-            //    for (int j = 1; j <= Loop[i - 1]._Vector.Count; j++) sb.AppendLine(Loop[i - 1]._Vector[j - 1].ToString());
-            //    for (int j = 1; j <= Loop[i - 1]._Color.Count; j++) sb.AppendLine(Loop[i - 1]._Color[j - 1].ToString());
-            //    for (int j = 1; j <= Loop[i - 1]._MoveX.Count; j++) sb.AppendLine(Loop[i - 1]._MoveX[j - 1].ToString());
-            //    for (int j = 1; j <= Loop[i - 1]._MoveY.Count; j++) sb.AppendLine(Loop[i - 1]._MoveY[j - 1].ToString());
-            //    for (int j = 1; j <= Loop[i - 1].Parameter.Count; j++) sb.AppendLine(Loop[i - 1].Parameter[j - 1].ToString());
-            //}
-            //for (int i = 1; i <= Trigger.Count; i++)
-            //{
-            //    sb.AppendLine(Trigger[i - 1].ToString());
-            //    for (int j = 1; j <= Trigger[i - 1].Move.Count; j++) sb.AppendLine(Trigger[i - 1].Move[j - 1].ToString());
-            //    for (int j = 1; j <= Trigger[i - 1].Scale.Count; j++) sb.AppendLine(Trigger[i - 1].Scale[j - 1].ToString());
-            //    for (int j = 1; j <= Trigger[i - 1].Fade.Count; j++) sb.AppendLine(Trigger[i - 1].Fade[j - 1].ToString());
-            //    for (int j = 1; j <= Trigger[i - 1].Rotate.Count; j++) sb.AppendLine(Trigger[i - 1].Rotate[j - 1].ToString());
-            //    for (int j = 1; j <= Trigger[i - 1].Vector.Count; j++) sb.AppendLine(Trigger[i - 1].Vector[j - 1].ToString());
-            //    for (int j = 1; j <= Trigger[i - 1].Color.Count; j++) sb.AppendLine(Trigger[i - 1].Color[j - 1].ToString());
-            //    for (int j = 1; j <= Trigger[i - 1].MoveX.Count; j++) sb.AppendLine(Trigger[i - 1].MoveX[j - 1].ToString());
-            //    for (int j = 1; j <= Trigger[i - 1].MoveY.Count; j++) sb.AppendLine(Trigger[i - 1].MoveY[j - 1].ToString());
-            //    for (int j = 1; j <= Trigger[i - 1].Parameter.Count; j++) sb.AppendLine(Trigger[i - 1].Parameter[j - 1].ToString());
-
-            //}
+            for (int i = 1; i <= _Parameter.Count; i++) sb.AppendLine(index + _Parameter[i - 1].ToString());
+            for (int i = 1; i <= Loop.Count; i++) sb.Append(Loop[i - 1].ToString());
             return sb.ToString();
         }
+
+        #region non-public member
+        private bool isTriggering = false, isLooping = false;
+        protected bool isInnerClass = false;
+
+        internal List<Move> _Move { get; } = new List<Move>();
+        internal List<Scale> _Scale { get; } = new List<Scale>();
+        internal List<Fade> _Fade { get; } = new List<Fade>();
+        internal List<Rotate> _Rotate { get; } = new List<Rotate>();
+        internal List<Vector> _Vector { set; get; } = new List<Vector>();
+        internal List<Color> _Color { get; } = new List<Color>();
+        internal List<MoveX> _MoveX { get; } = new List<MoveX>();
+        internal List<MoveY> _MoveY { get; } = new List<MoveY>();
+        internal List<Parameter> _Parameter { set; get; } = new List<Parameter>();
+
+        private double CheckAlpha(double a)
+        {
+            if (a < 0 || a > 1)
+            {
+                if (a < 0) a = 0;
+                else a = 1;
+                Debug.WriteLine("[Warning] Alpha of fade should be between 0 and 1.");
+            }
+
+            return a;
+        }
+
+        private void _Add_Move(EasingType easing, int startTime, int endTime, double x1, double y1, double x2, double y2)
+        {
+            var obj = new Move(easing, startTime, endTime, x1, y1, x2, y2);
+            if (!isLooping && !isTriggering)
+                _Move.Add(obj);
+            else if (isLooping)
+                Loop[Loop.Count - 1]._Move.Add(obj);
+            else
+                Trigger[Trigger.Count - 1]._Move.Add(obj);
+        }
+
+        private void _Add_Fade(EasingType easing, int startTime, int endTime, double f1, double f2)
+        {
+            var obj = new Fade(easing, startTime, endTime, f1, f2);
+            f1 = CheckAlpha(f1);
+            f2 = CheckAlpha(f2);
+            if (!isLooping)
+                _Fade.Add(obj);
+            else if (isLooping)
+                Loop[Loop.Count - 1]._Fade.Add(obj);
+            else
+                Trigger[Trigger.Count - 1]._Fade.Add(obj);
+        }
+
+        private void _Add_Scale(EasingType easing, int startTime, int endTime, double s1, double s2)
+        {
+            var obj = new Scale(easing, startTime, endTime, s1, s2);
+            if (!isLooping && !isTriggering)
+                _Scale.Add(obj);
+            else if (isLooping)
+                Loop[Loop.Count - 1]._Scale.Add(obj);
+            else
+                Trigger[Trigger.Count - 1]._Scale.Add(obj);
+        }
+
+        private void _Add_Rotate(EasingType easing, int startTime, int endTime, double r1, double r2)
+        {
+            var obj = new Rotate(easing, startTime, endTime, r1, r2);
+            if (!isLooping && !isTriggering)
+                _Rotate.Add(obj);
+            else if (isLooping)
+                Loop[Loop.Count - 1]._Rotate.Add(obj);
+            else
+                Trigger[Trigger.Count - 1]._Rotate.Add(obj);
+        }
+
+        private void _Add_Color(EasingType easing, int startTime, int endTime, int r1, int g1, int b1, int r2, int g2, int b2)
+        {
+            var obj = new Color(easing, startTime, endTime, r1, g1, b1, r2, g2, b2);
+            if (!isLooping && !isTriggering)
+                _Color.Add(obj);
+            else if (isLooping)
+                Loop[Loop.Count - 1]._Color.Add(obj);
+            else
+                Trigger[Trigger.Count - 1]._Color.Add(obj);
+        }
+        private void _Add_MoveX(EasingType easing, int startTime, int endTime, double x1, double x2)
+        {
+            var obj = new MoveX(easing, startTime, endTime, x1, x2);
+            if (!isLooping && !isTriggering)
+                _MoveX.Add(obj);
+            else if (isLooping)
+                Loop[Loop.Count - 1]._MoveX.Add(obj);
+            else
+                Trigger[Trigger.Count - 1]._MoveX.Add(obj);
+        }
+        private void _Add_MoveY(EasingType easing, int startTime, int endTime, double y1, double y2)
+        {
+            var obj = new MoveY(easing, startTime, endTime, y1, y2);
+            if (!isLooping && !isTriggering)
+                _MoveY.Add(obj);
+            else if (isLooping)
+                Loop[Loop.Count - 1]._MoveY.Add(obj);
+            else
+                Trigger[Trigger.Count - 1]._MoveY.Add(obj);
+        }
+        private void _Add_Param(EasingType easing, int startTime, int endTime, string p)
+        {
+            var obj = new Parameter(easing, startTime, endTime, p);
+            if (!isLooping && !isTriggering)
+                _Parameter.Add(obj);
+            else if (isLooping)
+                Loop[Loop.Count - 1]._Parameter.Add(obj);
+            else
+                Trigger[Trigger.Count - 1]._Parameter.Add(obj);
+        }
+        private void _Add_Vector(EasingType easing, int startTime, int endTime, double vx1, double vy1, double vx2, double vy2)
+        {
+            var obj = new Vector(easing, startTime, endTime, vx1, vy1, vx2, vy2);
+            if (!isLooping && !isTriggering)
+                _Vector.Add(obj);
+            else if (isLooping)
+                Loop[Loop.Count - 1]._Vector.Add(obj);
+            else
+                Trigger[Trigger.Count - 1]._Vector.Add(obj);
+        }
+        #endregion
     }
 
 }

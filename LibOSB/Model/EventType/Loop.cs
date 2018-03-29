@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LibOSB.Model.ActionType
+namespace LibOSB.Model.EventType
 {
     public class Loop : Element
     {
-        StringBuilder sb = new StringBuilder();
         public int StartTime { get; private set; }
         public int LoopCount { get; private set; }
 
@@ -20,9 +19,7 @@ namespace LibOSB.Model.ActionType
         }
         public override string ToString()
         {
-            sb.Clear();
-            sb.AppendLine(" L," + StartTime + "," + LoopCount);
-            return sb + base.ToString();
+            return string.Join(",", " L", StartTime, LoopCount) + "\r\n" + base.ToString();
         }
     }
 }

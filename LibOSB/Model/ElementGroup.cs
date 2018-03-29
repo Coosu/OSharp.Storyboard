@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LibOSB.Model.ActionType;
+using LibOSB.Model.EventType;
 using LibOSB.Constants;
 namespace LibOSB
 {

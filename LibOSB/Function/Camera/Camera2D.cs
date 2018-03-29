@@ -24,18 +24,18 @@ namespace LibOSB.Function.Camera
             int totalframes = lasttime / 1000 * fps;
             foreach (var obj in Objects)
             {
-                List<ActionClass.ActionDouble> mv = obj._Move.listDouble.ToList();
-                obj._Move.listDouble.Clear();
-                for (int j = 0; j < mv.Count; j++)
-                {
-                    for (int i = 0; i < totalframes; i++)
-                    {
-                        double Ddegree = degree / (double)totalframes;
-                        //obj.Move.Add( obj.Move[j].X1 * Math.Cos(Ddegree) - obj.Move[j].Y1 * Math.Sin(Ddegree);
-                        //obj.Move[j].Y1 = obj.Move[j].X1 * Math.Sin(Ddegree) + obj.Move[j].Y1 * Math.Cos(Ddegree);
-                        //Console.WriteLine("{" + obj.X1 + "," + obj.Y1 + "}");
-                    }
-                }
+                //List<ActionClass.ActionDouble> mv = obj._Move;
+                //obj._Move.listDouble.Clear();
+                //for (int j = 0; j < mv.Count; j++)
+                //{
+                //    for (int i = 0; i < totalframes; i++)
+                //    {
+                //        double Ddegree = degree / (double)totalframes;
+                //        //obj.Move.Add( obj.Move[j].X1 * Math.Cos(Ddegree) - obj.Move[j].Y1 * Math.Sin(Ddegree);
+                //        //obj.Move[j].Y1 = obj.Move[j].X1 * Math.Sin(Ddegree) + obj.Move[j].Y1 * Math.Cos(Ddegree);
+                //        //Console.WriteLine("{" + obj.X1 + "," + obj.Y1 + "}");
+                //    }
+                //}
             }
         }
 
