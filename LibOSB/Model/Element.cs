@@ -70,7 +70,27 @@ namespace LibOSB
             FrameRate = frameRate;
             LoopType = loopType;
         }
-
+        public Element(string type, string layer, string origin, string imagePath, double defaultX, double defaultY)
+        {
+            Type = (ElementType)Enum.Parse(typeof(ElementType), type);
+            Layer = (LayerType)Enum.Parse(typeof(LayerType), layer);
+            Origin = (OriginType)Enum.Parse(typeof(OriginType), origin);
+            ImagePath = imagePath;
+            DefaultX = defaultX;
+            DefaultY = defaultY;
+        }
+        public Element(string type, string layer, string origin, string imagePath, double defaultX, double defaultY, double frameCount, double frameRate, string loopType)
+        {
+            Type = (ElementType)Enum.Parse(typeof(ElementType), type);
+            Layer = (LayerType)Enum.Parse(typeof(LayerType), layer);
+            Origin = (OriginType)Enum.Parse(typeof(OriginType), origin);
+            ImagePath = imagePath;
+            DefaultX = defaultX;
+            DefaultY = defaultY;
+            FrameCount = frameCount;
+            FrameRate = frameRate;
+            LoopType = (LoopType)Enum.Parse(typeof(LoopType), loopType);
+        }
         internal Element() { }
 
         public void StartLoop(int startTime, int time)
@@ -256,6 +276,143 @@ namespace LibOSB
             for (int i = 1; i <= _Parameter.Count; i++) sb.AppendLine(index + _Parameter[i - 1].ToString());
             for (int i = 1; i <= Loop.Count; i++) sb.Append(Loop[i - 1].ToString());
             return sb.ToString();
+        }
+
+        internal static Element Parse(string osbString)
+        {
+            Element obj = null;
+            try
+            {
+                var lines = osbString.Replace("\r", "").Split('\n');
+                int currentLine = 1;
+                bool is_looping = false, is_triggring = false;
+                foreach (var line in lines)
+                {
+                    var pars = line.Split(',');
+
+                    if (pars[0] == "Sprite" || pars[0] == "Animation")
+                    {
+                        if (obj != null)
+                            throw new Exception("Line :" + currentLine + " (Sprite declared repeatly)");
+
+                        if (pars.Length == 6)
+                            obj = new Element(pars[0], pars[1], pars[2], pars[3].Trim('\"'), double.Parse(pars[4]), double.Parse(pars[5]));
+                        else if (pars.Length == 9)
+                            obj = new Element(pars[0], pars[1], pars[2], pars[3], double.Parse(pars[4]), double.Parse(pars[5]),
+                                double.Parse(pars[6]), double.Parse(pars[7]), pars[8]);
+                        else
+                            throw new Exception("Line :" + currentLine + " (Sprite declared wrongly)");
+
+                    }
+                    else
+                    {
+                        // 验证层次是否合法
+                        if (pars[0].IndexOf("  ") == 0)
+                        {
+                            if (!is_looping && !is_triggring)
+                                throw new Exception("Line :" + currentLine + " (The event should be looping or triggering)");
+                        }
+                        else if (pars[0].IndexOf(" ") == 0)
+                        {
+                            if (is_looping || is_triggring) obj.EndLoop();
+                        }
+                        else
+                        {
+                            throw new Exception("Line :" + currentLine + " (Unknown relation of the event)");
+                        }
+
+                        // 开始验证event类别
+                        pars[0] = pars[0].Trim();
+
+                        if (pars.Length < 5 || pars.Length > 10)
+                            throw new Exception("Line :" + currentLine + " (Wrong parameter for all events)");
+
+                        string _event = pars[0];
+                        int _easing = int.Parse(pars[1]);
+                        int _start_time = int.Parse(pars[2]);
+                        int _end_time = pars[2] == "" ? _start_time : int.Parse(pars[3]);
+
+                        switch (pars[0])
+                        {
+                            // EventSingle
+                            case "F":
+                            case "S":
+                            case "R":
+                            case "MX":
+                            case "MY":
+                                double p1_1, p2_1;
+
+                                // 验证是否存在缺省
+                                if (pars.Length == 5)
+                                    p1_1 = p2_1 = double.Parse(pars[4]);
+                                else if (pars.Length == 6)
+                                {
+                                    p1_1 = double.Parse(pars[4]);
+                                    p2_1 = double.Parse(pars[5]);
+                                }
+                                else
+                                {
+                                    throw new Exception("Line :" + currentLine + $" (Wrong parameter for event: \"{_event}\")");
+                                }
+
+                                // 开始添加成员
+                                switch (_event)
+                                {
+                                    case "F":
+                                        obj.Fade((EasingType)_easing, _start_time, _end_time, p1_1, p2_1);
+                                        break;
+                                    case "S":
+                                        obj.Scale((EasingType)_easing, _start_time, _end_time, p1_1, p2_1);
+                                        break;
+                                    case "R":
+                                        obj.Rotate((EasingType)_easing, _start_time, _end_time, p1_1, p2_1);
+                                        break;
+                                    case "MX":
+                                        obj.MoveX((EasingType)_easing, _start_time, _end_time, p1_1, p2_1);
+                                        break;
+                                    case "MY":
+                                        obj.MoveY((EasingType)_easing, _start_time, _end_time, p1_1, p2_1);
+                                        break;
+                                }
+                                break;
+
+                            // EventDouble
+                            case "M":
+                            case "V":
+                                // todo
+                                break;
+
+                            // EventTriple
+                            case "C":
+                                // todo
+                                break;
+
+                            case "P":
+                                // todo
+                                break;
+
+                            case "L":
+                                // todo
+                                // obj.StartLoop();
+                                break;
+
+                            case "T":
+                                // todo
+                                // obj.StartTrigger();
+                                break;
+                            default:
+                                throw new Exception("Line :" + currentLine + " (Unknown event)");
+                        }
+                    }
+
+                    currentLine++;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException("You have an syntax error in your osb code.", ex);
+            }
+            return obj;
         }
 
         #region non-public member

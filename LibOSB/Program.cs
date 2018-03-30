@@ -35,6 +35,9 @@ namespace LibOSB
 
             Console.WriteLine(ElementContainer.ToString());
 
+            string ok = "Sprite,Background,Centre,\"BG/OCHIBA1.jpg\",320,240\r\n F,0,26053,26099,0,0.06\r\n M,0,26053,38492,320,240,331,252\r\n S,1,26053,38492,0.64,0.67\r\n R,1,26053,38492,0,0.014\r\n F,0,26099,26145,0.122,0";
+            var sb = Element.Parse(ok);
+
             Console.Read();
             return;
         }
