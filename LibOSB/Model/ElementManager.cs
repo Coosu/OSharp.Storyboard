@@ -6,32 +6,46 @@ using System.Threading.Tasks;
 
 namespace LibOSB
 {
-    static public class ElementContainer
+    public class ElementManager
     {
-        private static List<ElementGroup> sbGroup = new List<ElementGroup>();
+        internal List<ElementGroup> GroupList { get; set; }
 
-        public static List<ElementGroup> SBGroup { get => sbGroup; set => sbGroup = value; }
-
-        public static new string ToString()
+        public void SortByIndex()
+        {
+            GroupList.Sort(new GroupSort(GroupSortKind.Index));
+        }
+        public void CreateGroup(int layerIndex)
+        {
+            GroupList.Add(new ElementGroup(layerIndex));
+        }
+        public void Add(ElementGroup elementGroup)
+        {
+            GroupList.Add(elementGroup);
+        }
+        public static ElementGroup Adjust(ElementGroup elementGroup, double offsetX, double offsetY, int offsetTiming)
+        {
+            foreach (var obj in elementGroup.ElementList)
+            {
+                obj._Adjust(offsetX, offsetY, offsetTiming);
+            }
+            return elementGroup;
+        }
+        public override string ToString()
         {
             SortByIndex();
             StringBuilder sb = new StringBuilder();
 
-            foreach (var a in SBGroup)
+            foreach (var a in GroupList)
             {
                 sb.Append(a.ToString());
             }
 
             return sb.ToString();
         }
-        public static void SortByIndex()
-        {
-            SBGroup.Sort(new GroupSort(GroupSortKind.Index));
-        }
     }
     public enum GroupSortKind { Index }
     /// <summary>
-    /// SortTestObj2类排序用的比较器，继承IComparer<>接口，
+    /// SortTestObj2类排序用的比较器，继承IComparer接口，
     /// 实现接口中的Compare()方法。
     /// </summary>
     public class GroupSort : IComparer<ElementGroup>

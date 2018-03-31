@@ -15,17 +15,15 @@ namespace LibOSB
     [Serializable]
     public class Element
     {
-        public ElementType Type { get; private set; }
-        public LayerType Layer { get; private set; }
-        public OriginType Origin { get; private set; }
-        public string ImagePath { get; private set; }
-        public double DefaultY { get; private set; }
-        public double DefaultX { get; private set; }
-        public LoopType LoopType { get; private set; }
-        public double? FrameCount { get; private set; }
-        public double? FrameRate { get; private set; }
-        public List<Loop> Loop { protected set; get; } = new List<Loop>();
-        public List<Trigger> Trigger { protected set; get; } = new List<Trigger>();
+        public ElementType Type { get; protected set; }
+        public LayerType Layer { get; protected set; }
+        public OriginType Origin { get; protected set; }
+        public string ImagePath { get; protected set; }
+        public double? DefaultY { get; protected set; }
+        public double? DefaultX { get; protected set; }
+        public LoopType LoopType { get; protected set; }
+        public double? FrameCount { get; protected set; }
+        public double? FrameRate { get; protected set; }
 
         /// <summary>
         /// Create a storyboard element by a static image.
@@ -97,24 +95,31 @@ namespace LibOSB
         {
             if (isLooping || isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
             isLooping = true;
-            Loop.Add(new Loop(startTime, time));
+            _Loop.Add(new Loop(startTime, time));
         }
 
         public void StartTrigger(int startTime, int time, TriggerType[] triggerType, int customSampleSet = -1)
         {
             if (isLooping || isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
             isTriggering = true;
-            Trigger.Add(new Trigger(startTime, time, triggerType, customSampleSet));
+            _Trigger.Add(new Trigger(startTime, time, triggerType, customSampleSet));
+        }
+
+        public void StartTrigger(int startTime, int time, string triggerType)
+        {
+            if (isLooping || isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
+            isTriggering = true;
+            _Trigger.Add(new Trigger(startTime, time, triggerType));
         }
 
         public void EndLoop()
         {
-            if (!isLooping) throw new Exception("You can not stop a loop when a loop isn't started.");
+            if (!isLooping && !isTriggering) throw new Exception("You can not stop a loop when a loop isn't started.");
             isLooping = false;
             isTriggering = false;
         }
 
-        public void Move(int startTime, System.Drawing.Point location)
+        public void Move(int startTime, System.Drawing.PointF location)
         {
             _Add_Move(0, startTime, startTime, location.X, location.Y, location.X, location.Y);
         }
@@ -126,7 +131,7 @@ namespace LibOSB
         {
             _Add_Move(0, startTime, endTime, x, y, x, y);
         }
-        public void Move(EasingType easing, int startTime, int endTime, System.Drawing.Point startLocation, System.Drawing.Point endLocation)
+        public void Move(EasingType easing, int startTime, int endTime, System.Drawing.PointF startLocation, System.Drawing.PointF endLocation)
         {
             _Add_Move(easing, startTime, endTime, startLocation.X, startLocation.Y, endLocation.X, endLocation.Y);
         }
@@ -163,15 +168,15 @@ namespace LibOSB
 
         public void Rotate(int startTime, double rotate)
         {
-            _Add_Scale(0, startTime, startTime, rotate, rotate);
+            _Add_Rotate(0, startTime, startTime, rotate, rotate);
         }
         public void Rotate(int startTime, int endTime, double rotate)
         {
-            _Add_Scale(0, startTime, endTime, rotate, rotate);
+            _Add_Rotate(0, startTime, endTime, rotate, rotate);
         }
         public void Rotate(EasingType easing, int startTime, int endTime, double startRotate, double endRotate)
         {
-            _Add_Scale(easing, startTime, endTime, startRotate, endRotate);
+            _Add_Rotate(easing, startTime, endTime, startRotate, endRotate);
         }
 
         public void MoveX(int startTime, double x)
@@ -225,6 +230,27 @@ namespace LibOSB
             _Add_Color(easing, startTime, endTime, startR, startG, startB, endR, endG, endB);
         }
 
+        public void Vector(int startTime, System.Drawing.SizeF zoom)
+        {
+            _Add_Vector(0, startTime, startTime, zoom.Width, zoom.Height, zoom.Width, zoom.Height);
+        }
+        public void Vector(int startTime, double w, double h)
+        {
+            _Add_Vector(0, startTime, startTime, w, h, w, h);
+        }
+        public void Vector(int startTime, int endTime, double w, double h)
+        {
+            _Add_Vector(0, startTime, endTime, w, h, w, h);
+        }
+        public void Vector(EasingType easing, int startTime, int endTime, System.Drawing.SizeF startZoom, System.Drawing.SizeF endZoom)
+        {
+            _Add_Vector(easing, startTime, endTime, startZoom.Width, startZoom.Height, endZoom.Width, endZoom.Height);
+        }
+        public void Vector(EasingType easing, int startTime, int endTime, double w1, double h1, double w2, double h2)
+        {
+            _Add_Vector(easing, startTime, endTime, w1, h1, w2, h2);
+        }
+
         public void FlipH(int startTime)
         {
             _Add_Param(0, startTime, startTime, "H");
@@ -252,6 +278,10 @@ namespace LibOSB
             _Add_Param(0, startTime, endTime, "A");
         }
 
+        internal void Parameter(EasingType easing, int startTime, int endTime, string type)
+        {
+            _Add_Param(easing, startTime, endTime, type);
+        }
 
         public override string ToString()
         {
@@ -274,18 +304,18 @@ namespace LibOSB
             for (int i = 1; i <= _MoveX.Count; i++) sb.AppendLine(index + _MoveX[i - 1].ToString());
             for (int i = 1; i <= _MoveY.Count; i++) sb.AppendLine(index + _MoveY[i - 1].ToString());
             for (int i = 1; i <= _Parameter.Count; i++) sb.AppendLine(index + _Parameter[i - 1].ToString());
-            for (int i = 1; i <= Loop.Count; i++) sb.Append(Loop[i - 1].ToString());
+            for (int i = 1; i <= _Loop.Count; i++) sb.Append(_Loop[i - 1].ToString());
+            for (int i = 1; i <= _Trigger.Count; i++) sb.Append(_Trigger[i - 1].ToString());
             return sb.ToString();
         }
-
-        internal static Element Parse(string osbString)
+        internal static Element Parse(string osbString, int baseLine)
         {
             Element obj = null;
+            int currentLine = baseLine + 0;
             try
             {
                 var lines = osbString.Replace("\r", "").Split('\n');
-                int currentLine = 1;
-                bool is_looping = false, is_triggring = false;
+                bool is_looping = false, is_triggring = false, is_blank = false;
                 foreach (var line in lines)
                 {
                     var pars = line.Split(',');
@@ -293,45 +323,65 @@ namespace LibOSB
                     if (pars[0] == "Sprite" || pars[0] == "Animation")
                     {
                         if (obj != null)
-                            throw new Exception("Line :" + currentLine + " (Sprite declared repeatly)");
+                            throw new Exception("Sprite declared repeatly");
 
                         if (pars.Length == 6)
                             obj = new Element(pars[0], pars[1], pars[2], pars[3].Trim('\"'), double.Parse(pars[4]), double.Parse(pars[5]));
                         else if (pars.Length == 9)
-                            obj = new Element(pars[0], pars[1], pars[2], pars[3], double.Parse(pars[4]), double.Parse(pars[5]),
+                            obj = new Element(pars[0], pars[1], pars[2], pars[3].Trim('\"'), double.Parse(pars[4]), double.Parse(pars[5]),
                                 double.Parse(pars[6]), double.Parse(pars[7]), pars[8]);
                         else
-                            throw new Exception("Line :" + currentLine + " (Sprite declared wrongly)");
-
+                            throw new Exception("Sprite declared wrongly");
+                    }
+                    else if (line.Trim() == "")
+                    {
+                        is_blank = true;
                     }
                     else
                     {
+                        if (obj == null)
+                            throw new Exception("Sprite need to be declared before using");
+                        if (is_blank)
+                            throw new Exception("Events shouldn't be declared after blank line");
+
                         // 验证层次是否合法
-                        if (pars[0].IndexOf("  ") == 0)
+                        if (pars[0].Length - pars[0].TrimStart(' ').Length > 2)
+                        {
+                            throw new Exception("Unknown relation of the event");
+                        }
+                        else if (pars[0].IndexOf("  ") == 0)
                         {
                             if (!is_looping && !is_triggring)
-                                throw new Exception("Line :" + currentLine + " (The event should be looping or triggering)");
+                                throw new Exception("The event should be looping or triggering");
                         }
                         else if (pars[0].IndexOf(" ") == 0)
                         {
-                            if (is_looping || is_triggring) obj.EndLoop();
+                            if (is_looping || is_triggring)
+                            {
+                                obj.EndLoop();
+                                is_looping = false;
+                                is_triggring = false;
+                            }
                         }
                         else
                         {
-                            throw new Exception("Line :" + currentLine + " (Unknown relation of the event)");
+                            throw new Exception("Unknown relation of the event");
                         }
 
                         // 开始验证event类别
                         pars[0] = pars[0].Trim();
 
-                        if (pars.Length < 5 || pars.Length > 10)
-                            throw new Exception("Line :" + currentLine + " (Wrong parameter for all events)");
+                        //if (pars.Length < 5 || pars.Length > 10)
+                        //    throw new Exception("Line :" + currentLine + " (Wrong parameter for all events)");
 
                         string _event = pars[0];
-                        int _easing = int.Parse(pars[1]);
-                        int _start_time = int.Parse(pars[2]);
-                        int _end_time = pars[2] == "" ? _start_time : int.Parse(pars[3]);
-
+                        int _easing = -1, _start_time = -1, _end_time = -1;
+                        if (_event != "T" && _event != "L")
+                        {
+                            _easing = int.Parse(pars[1]);
+                            _start_time = int.Parse(pars[2]);
+                            _end_time = pars[3] == "" ? _start_time : int.Parse(pars[3]);
+                        }
                         switch (pars[0])
                         {
                             // EventSingle
@@ -340,38 +390,38 @@ namespace LibOSB
                             case "R":
                             case "MX":
                             case "MY":
-                                double p1_1, p2_1;
+                                double p1, p2;
 
                                 // 验证是否存在缺省
                                 if (pars.Length == 5)
-                                    p1_1 = p2_1 = double.Parse(pars[4]);
+                                    p1 = p2 = double.Parse(pars[4]);
                                 else if (pars.Length == 6)
                                 {
-                                    p1_1 = double.Parse(pars[4]);
-                                    p2_1 = double.Parse(pars[5]);
+                                    p1 = double.Parse(pars[4]);
+                                    p2 = double.Parse(pars[5]);
                                 }
                                 else
                                 {
-                                    throw new Exception("Line :" + currentLine + $" (Wrong parameter for event: \"{_event}\")");
+                                    throw new Exception($"Wrong parameter for event: \"{_event}\"");
                                 }
 
                                 // 开始添加成员
                                 switch (_event)
                                 {
                                     case "F":
-                                        obj.Fade((EasingType)_easing, _start_time, _end_time, p1_1, p2_1);
+                                        obj.Fade((EasingType)_easing, _start_time, _end_time, p1, p2);
                                         break;
                                     case "S":
-                                        obj.Scale((EasingType)_easing, _start_time, _end_time, p1_1, p2_1);
+                                        obj.Scale((EasingType)_easing, _start_time, _end_time, p1, p2);
                                         break;
                                     case "R":
-                                        obj.Rotate((EasingType)_easing, _start_time, _end_time, p1_1, p2_1);
+                                        obj.Rotate((EasingType)_easing, _start_time, _end_time, p1, p2);
                                         break;
                                     case "MX":
-                                        obj.MoveX((EasingType)_easing, _start_time, _end_time, p1_1, p2_1);
+                                        obj.MoveX((EasingType)_easing, _start_time, _end_time, p1, p2);
                                         break;
                                     case "MY":
-                                        obj.MoveY((EasingType)_easing, _start_time, _end_time, p1_1, p2_1);
+                                        obj.MoveY((EasingType)_easing, _start_time, _end_time, p1, p2);
                                         break;
                                 }
                                 break;
@@ -379,29 +429,113 @@ namespace LibOSB
                             // EventDouble
                             case "M":
                             case "V":
-                                // todo
+                                double p1_1, p1_2, p2_1, p2_2;
+
+                                // 验证是否存在缺省
+                                if (pars.Length == 6)
+                                {
+                                    p1_1 = p2_1 = double.Parse(pars[4]);
+                                    p1_2 = p2_2 = double.Parse(pars[5]);
+                                }
+                                else if (pars.Length == 8)
+                                {
+                                    p1_1 = double.Parse(pars[4]);
+                                    p1_2 = double.Parse(pars[5]);
+                                    p2_1 = double.Parse(pars[6]);
+                                    p2_2 = double.Parse(pars[7]);
+                                }
+                                else
+                                {
+                                    throw new Exception($"Wrong parameter for event: \"{_event}\"");
+                                }
+                                // 开始添加成员
+                                switch (_event)
+                                {
+                                    case "M":
+                                        obj.Move((EasingType)_easing, _start_time, _end_time, p1_1, p1_2, p2_1, p2_2);
+                                        break;
+                                    case "V":
+                                        obj.Vector((EasingType)_easing, _start_time, _end_time, p1_1, p1_2, p2_1, p2_2);
+                                        break;
+                                }
                                 break;
 
                             // EventTriple
                             case "C":
-                                // todo
+                                int c1_1, c1_2, c1_3, c2_1, c2_2, c2_3;
+
+                                // 验证是否存在缺省
+                                if (pars.Length == 7)
+                                {
+                                    c1_1 = c2_1 = int.Parse(pars[4]);
+                                    c1_2 = c2_2 = int.Parse(pars[5]);
+                                    c1_3 = c2_3 = int.Parse(pars[6]);
+                                }
+                                else if (pars.Length == 10)
+                                {
+                                    c1_1 = int.Parse(pars[4]);
+                                    c1_2 = int.Parse(pars[5]);
+                                    c1_3 = int.Parse(pars[6]);
+                                    c2_1 = int.Parse(pars[7]);
+                                    c2_2 = int.Parse(pars[8]);
+                                    c2_3 = int.Parse(pars[9]);
+                                }
+                                else
+                                {
+                                    throw new Exception($"Wrong parameter for event: \"{_event}\"");
+                                }
+                                // 开始添加成员
+                                switch (_event)
+                                {
+                                    case "C":
+                                        obj.Color((EasingType)_easing, _start_time, _end_time, c1_1, c1_2, c1_2, c2_1, c2_2, c2_3);
+                                        break;
+                                }
                                 break;
 
                             case "P":
-                                // todo
+                                string type;
+                                if (pars.Length == 5)
+                                {
+                                    type = pars[4];
+                                    obj.Parameter((EasingType)_easing, _start_time, _end_time, type);
+                                }
+                                else
+                                {
+                                    throw new Exception($"Wrong parameter for event: \"{_event}\"");
+                                }
                                 break;
 
                             case "L":
-                                // todo
-                                // obj.StartLoop();
+                                if (pars.Length == 3)
+                                {
+                                    _start_time = int.Parse(pars[1]);
+                                    int loop_count = int.Parse(pars[2]);
+                                    obj.StartLoop(_start_time, loop_count);
+                                    is_looping = true;
+                                }
+                                else
+                                {
+                                    throw new Exception($"Wrong parameter for event: \"{_event}\"");
+                                }
                                 break;
 
                             case "T":
-                                // todo
-                                // obj.StartTrigger();
+                                if (pars.Length == 4)
+                                {
+                                    string trigger_type = pars[1];
+                                    _start_time = int.Parse(pars[2]);
+                                    _end_time = int.Parse(pars[3]);
+                                    obj.StartTrigger(_start_time, _end_time, trigger_type);
+                                    is_triggring = true;
+                                }
+                                else
+                                {
+                                    throw new Exception($"Wrong parameter for event: \"{_event}\"");
+                                }
                                 break;
                             default:
-                                throw new Exception("Line :" + currentLine + " (Unknown event)");
+                                throw new Exception($"Unknown event: \"{_event}\"");
                         }
                     }
 
@@ -410,7 +544,7 @@ namespace LibOSB
             }
             catch (Exception ex)
             {
-                throw new FormatException("You have an syntax error in your osb code.", ex);
+                throw new FormatException("You have an syntax error in your osb code at line: " + currentLine, ex);
             }
             return obj;
         }
@@ -419,26 +553,104 @@ namespace LibOSB
         private bool isTriggering = false, isLooping = false;
         protected bool isInnerClass = false;
 
-        internal List<Move> _Move { get; } = new List<Move>();
-        internal List<Scale> _Scale { get; } = new List<Scale>();
-        internal List<Fade> _Fade { get; } = new List<Fade>();
-        internal List<Rotate> _Rotate { get; } = new List<Rotate>();
-        internal List<Vector> _Vector { set; get; } = new List<Vector>();
-        internal List<Color> _Color { get; } = new List<Color>();
-        internal List<MoveX> _MoveX { get; } = new List<MoveX>();
-        internal List<MoveY> _MoveY { get; } = new List<MoveY>();
+        List<Move> _Move { get; set; } = new List<Move>();
+        internal List<Scale> _Scale { get; set; } = new List<Scale>();
+        internal List<Fade> _Fade { get; set; } = new List<Fade>();
+        internal List<Rotate> _Rotate { get; set; } = new List<Rotate>();
+        internal List<Vector> _Vector { get; set; } = new List<Vector>();
+        internal List<Color> _Color { get; set; } = new List<Color>();
+        internal List<MoveX> _MoveX { get; set; } = new List<MoveX>();
+        internal List<MoveY> _MoveY { get; set; } = new List<MoveY>();
         internal List<Parameter> _Parameter { set; get; } = new List<Parameter>();
+        internal List<Loop> _Loop { get; set; } = new List<Loop>();
+        internal List<Trigger> _Trigger { get; set; } = new List<Trigger>();
 
         private double CheckAlpha(double a)
         {
             if (a < 0 || a > 1)
             {
-                if (a < 0) a = 0;
-                else a = 1;
+                a = (a > 1 ? 1 : 0);
                 Debug.WriteLine("[Warning] Alpha of fade should be between 0 and 1.");
             }
 
             return a;
+        }
+        /// <summary>
+        /// 调整
+        /// </summary>
+        internal void _Adjust(double offsetX, double offsetY, int offsetTiming)
+        {
+            if (DefaultX != null) DefaultX += offsetX;
+            if (DefaultY != null) DefaultY += offsetY;
+
+            for (int i = 0; i < _Move.Count; i++)
+            {
+                _Move[i]._Adjust(offsetX, offsetY);
+                if (isInnerClass)
+                    continue;
+                _Move[i]._AdjustTime(offsetTiming);
+            }
+            for (int i = 0; i < _MoveX.Count; i++)
+            {
+                _MoveX[i]._Adjust(offsetX);
+                if (isInnerClass)
+                    continue;
+                _MoveX[i]._AdjustTime(offsetTiming);
+            }
+            for (int i = 0; i < _MoveY.Count; i++)
+            {
+                _MoveY[i]._Adjust(offsetY);
+                if (isInnerClass)
+                    continue;
+                _MoveY[i]._AdjustTime(offsetTiming);
+            }
+            for (int i = 0; i < _Color.Count; i++)
+            {
+                if (isInnerClass)
+                    break;
+                _Color[i]._AdjustTime(offsetTiming);
+            }
+            for (int i = 0; i < _Fade.Count; i++)
+            {
+                if (isInnerClass)
+                    break;
+                _Fade[i]._AdjustTime(offsetTiming);
+            }
+            for (int i = 0; i < _Parameter.Count; i++)
+            {
+                if (isInnerClass)
+                    break;
+                _Parameter[i]._AdjustTime(offsetTiming);
+            }
+            for (int i = 0; i < _Rotate.Count; i++)
+            {
+                if (isInnerClass)
+                    break;
+                _Rotate[i]._AdjustTime(offsetTiming);
+            }
+            for (int i = 0; i < _Scale.Count; i++)
+            {
+                if (isInnerClass)
+                    break;
+                _Scale[i]._AdjustTime(offsetTiming);
+            }
+            for (int i = 0; i < _Vector.Count; i++)
+            {
+                if (isInnerClass)
+                    break;
+                _Vector[i]._AdjustTime(offsetTiming);
+            }
+            for (int i = 0; i < _Loop.Count; i++)
+            {
+                _Loop[i].StartTime += offsetTiming;
+                _Loop[i]._Adjust(offsetX, offsetY, offsetTiming);
+            }
+            for (int i = 0; i < _Trigger.Count; i++)
+            {
+                _Trigger[i].StartTime += offsetTiming;
+                _Trigger[i].EndTime += offsetTiming;
+                _Trigger[i]._Adjust(offsetX, offsetY, offsetTiming);
+            }
         }
 
         private void _Add_Move(EasingType easing, int startTime, int endTime, double x1, double y1, double x2, double y2)
@@ -447,9 +659,9 @@ namespace LibOSB
             if (!isLooping && !isTriggering)
                 _Move.Add(obj);
             else if (isLooping)
-                Loop[Loop.Count - 1]._Move.Add(obj);
+                _Loop[_Loop.Count - 1]._Move.Add(obj);
             else
-                Trigger[Trigger.Count - 1]._Move.Add(obj);
+                _Trigger[_Trigger.Count - 1]._Move.Add(obj);
         }
 
         private void _Add_Fade(EasingType easing, int startTime, int endTime, double f1, double f2)
@@ -460,9 +672,9 @@ namespace LibOSB
             if (!isLooping)
                 _Fade.Add(obj);
             else if (isLooping)
-                Loop[Loop.Count - 1]._Fade.Add(obj);
+                _Loop[_Loop.Count - 1]._Fade.Add(obj);
             else
-                Trigger[Trigger.Count - 1]._Fade.Add(obj);
+                _Trigger[_Trigger.Count - 1]._Fade.Add(obj);
         }
 
         private void _Add_Scale(EasingType easing, int startTime, int endTime, double s1, double s2)
@@ -471,9 +683,9 @@ namespace LibOSB
             if (!isLooping && !isTriggering)
                 _Scale.Add(obj);
             else if (isLooping)
-                Loop[Loop.Count - 1]._Scale.Add(obj);
+                _Loop[_Loop.Count - 1]._Scale.Add(obj);
             else
-                Trigger[Trigger.Count - 1]._Scale.Add(obj);
+                _Trigger[_Trigger.Count - 1]._Scale.Add(obj);
         }
 
         private void _Add_Rotate(EasingType easing, int startTime, int endTime, double r1, double r2)
@@ -482,9 +694,9 @@ namespace LibOSB
             if (!isLooping && !isTriggering)
                 _Rotate.Add(obj);
             else if (isLooping)
-                Loop[Loop.Count - 1]._Rotate.Add(obj);
+                _Loop[_Loop.Count - 1]._Rotate.Add(obj);
             else
-                Trigger[Trigger.Count - 1]._Rotate.Add(obj);
+                _Trigger[_Trigger.Count - 1]._Rotate.Add(obj);
         }
 
         private void _Add_Color(EasingType easing, int startTime, int endTime, int r1, int g1, int b1, int r2, int g2, int b2)
@@ -493,9 +705,9 @@ namespace LibOSB
             if (!isLooping && !isTriggering)
                 _Color.Add(obj);
             else if (isLooping)
-                Loop[Loop.Count - 1]._Color.Add(obj);
+                _Loop[_Loop.Count - 1]._Color.Add(obj);
             else
-                Trigger[Trigger.Count - 1]._Color.Add(obj);
+                _Trigger[_Trigger.Count - 1]._Color.Add(obj);
         }
         private void _Add_MoveX(EasingType easing, int startTime, int endTime, double x1, double x2)
         {
@@ -503,9 +715,9 @@ namespace LibOSB
             if (!isLooping && !isTriggering)
                 _MoveX.Add(obj);
             else if (isLooping)
-                Loop[Loop.Count - 1]._MoveX.Add(obj);
+                _Loop[_Loop.Count - 1]._MoveX.Add(obj);
             else
-                Trigger[Trigger.Count - 1]._MoveX.Add(obj);
+                _Trigger[_Trigger.Count - 1]._MoveX.Add(obj);
         }
         private void _Add_MoveY(EasingType easing, int startTime, int endTime, double y1, double y2)
         {
@@ -513,9 +725,9 @@ namespace LibOSB
             if (!isLooping && !isTriggering)
                 _MoveY.Add(obj);
             else if (isLooping)
-                Loop[Loop.Count - 1]._MoveY.Add(obj);
+                _Loop[_Loop.Count - 1]._MoveY.Add(obj);
             else
-                Trigger[Trigger.Count - 1]._MoveY.Add(obj);
+                _Trigger[_Trigger.Count - 1]._MoveY.Add(obj);
         }
         private void _Add_Param(EasingType easing, int startTime, int endTime, string p)
         {
@@ -523,9 +735,9 @@ namespace LibOSB
             if (!isLooping && !isTriggering)
                 _Parameter.Add(obj);
             else if (isLooping)
-                Loop[Loop.Count - 1]._Parameter.Add(obj);
+                _Loop[_Loop.Count - 1]._Parameter.Add(obj);
             else
-                Trigger[Trigger.Count - 1]._Parameter.Add(obj);
+                _Trigger[_Trigger.Count - 1]._Parameter.Add(obj);
         }
         private void _Add_Vector(EasingType easing, int startTime, int endTime, double vx1, double vy1, double vx2, double vy2)
         {
@@ -533,9 +745,9 @@ namespace LibOSB
             if (!isLooping && !isTriggering)
                 _Vector.Add(obj);
             else if (isLooping)
-                Loop[Loop.Count - 1]._Vector.Add(obj);
+                _Loop[_Loop.Count - 1]._Vector.Add(obj);
             else
-                Trigger[Trigger.Count - 1]._Vector.Add(obj);
+                _Trigger[_Trigger.Count - 1]._Vector.Add(obj);
         }
         #endregion
     }

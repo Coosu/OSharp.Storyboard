@@ -8,8 +8,8 @@ namespace LibOSB.Model.EventType
 {
     public class Loop : Element
     {
-        public int StartTime { get; private set; }
-        public int LoopCount { get; private set; }
+        public int StartTime { get; internal set; }
+        public int LoopCount { get; internal set; }
 
         internal Loop(int startTime, int loopCount)
         {

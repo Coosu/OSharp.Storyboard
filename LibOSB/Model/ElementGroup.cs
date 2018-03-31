@@ -15,12 +15,11 @@ namespace LibOSB
 
         public ElementGroup(int layerIndex)
         {
-            ElementContainer.SBGroup.Add(this);
             Index = layerIndex;
         }
 
-        private List<Element> ListObj = new List<Element>();
-        internal Element this[int index] { get => ListObj[index]; set => ListObj[index] = value; }
+        internal List<Element> ElementList { get; set; } = new List<Element>();
+        internal Element this[int index] { get => ElementList[index]; set => ElementList[index] = value; }
 
         /// <summary>
         /// Create a storyboard element by a static image.
@@ -94,14 +93,14 @@ namespace LibOSB
 
         public void Add(Element obj)
         {
-            ListObj.Add(obj);
+            ElementList.Add(obj);
         }
 
         public void Add(params Element[] objs)
         {
             foreach (var obj in objs)
             {
-                ListObj.Add(obj);
+                ElementList.Add(obj);
             }
         }
 
@@ -109,12 +108,68 @@ namespace LibOSB
         {
             StringBuilder sb = new StringBuilder();
 
-            foreach (var a in ListObj)
+            foreach (var a in ElementList)
             {
                 sb.Append(a.ToString());
             }
 
             return sb.ToString();
+        }
+        public static ElementGroup Parse(string osbString, int layerIndex)
+        {
+            StringBuilder sb = new StringBuilder();
+            ElementGroup obj = null;
+            int currentLine = 1;
+
+            try
+            {
+                var lines = osbString.Replace("\r", "").Split('\n');
+                bool isFirst = true, isOpen = false;
+                int lineCount = 0;
+                foreach (var line in lines)
+                {
+                    var pars = line.Split(',');
+                    if (pars[0] == "Sprite" || pars[0] == "Animation")
+                    {
+                        isOpen = true;
+                        if (isFirst)
+                        {
+                            isFirst = false;
+                        }
+                        else
+                        {
+                            if (obj == null)
+                                obj = new ElementGroup(layerIndex);
+                            obj.Add(Element.Parse(sb.ToString(), currentLine - lineCount));
+                            sb.Clear();
+                            lineCount = 0;
+                        }
+                    }
+                    else if (isFirst)
+                    {
+                        throw new Exception($"Unknown script: \"{pars[0]}\" at line: {currentLine}");
+                    }
+                    lineCount++;
+                    sb.AppendLine(line);
+                    currentLine++;
+                }
+                if (isOpen)
+                {
+                    if (obj == null)
+                        obj = new ElementGroup(layerIndex);
+                    obj.Add(Element.Parse(sb.ToString(), currentLine - lineCount));
+                    sb.Clear();
+                    isOpen = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+
+                //throw new FormatException("You have an syntax error in your osb code at line: " + currentLine, ex);
+            }
+
+            return obj;
         }
     }
 }

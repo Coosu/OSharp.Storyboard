@@ -13,6 +13,12 @@ namespace LibOSB.Model.EventType
         {
             Init("MX", easing, startTime, endTime, preParam, postParam);
         }
+        internal void _Adjust(double x)
+        {
+            P1_1 += x;
+            P2_1 += x;
+            BuildParams();
+        }
     }
 
 }

@@ -11,11 +11,13 @@ namespace LibOSB
     /// </summary>
     public abstract class Event
     {
-        public int StartTime { get; protected set; }
-        public int EndTime { get; protected set; }
+        public int StartTime { get; internal set; }
+        public int EndTime { get; internal set; }
         public EasingType Easing { get; protected set; }
         public string Type { get; protected set; }
         public string ScriptParams { get; protected set; }
+
+        internal abstract void BuildParams();
 
         public override string ToString()
         {
@@ -36,6 +38,12 @@ namespace LibOSB
         public int MinTime()
         {
             return -1;
+        }
+
+        internal void _AdjustTime(int time)
+        {
+            StartTime += time;
+            EndTime += time;
         }
     }
 }

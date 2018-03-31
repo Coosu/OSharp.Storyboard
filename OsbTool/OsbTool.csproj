@@ -4,12 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{39F7E783-F770-47D0-BFBB-49BC30443B3E}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>LibOSB</RootNamespace>
-    <AssemblyName>Milkitic.LibOSB</AssemblyName>
+    <ProjectGuid>{AD984DEB-2818-438C-B861-C548A249A72D}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Milkitic.OsbTool</RootNamespace>
+    <AssemblyName>Milkitic.OsbTool</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -20,8 +22,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,58 +31,57 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Milkitic.LibOSB">
+      <HintPath>..\LibOSB\bin\Release\Milkitic.LibOSB.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DEMO.cs" />
-    <Compile Include="Function\Camera\Camera2D.cs" />
-    <Compile Include="Model\EventClass\EventDouble.cs" />
-    <Compile Include="Model\EventClass\EventSingle.cs" />
-    <Compile Include="Model\EventClass\EventTriple.cs" />
-    <Compile Include="Model\EventClass\FadeOutTime.cs" />
-    <Compile Include="Model\Event.cs" />
-    <Compile Include="Model\EventType\Color.cs" />
-    <Compile Include="Model\EventType\Fade.cs" />
-    <Compile Include="Model\EventType\Loop.cs" />
-    <Compile Include="Model\EventType\Move.cs" />
-    <Compile Include="Model\EventType\MoveX.cs" />
-    <Compile Include="Model\EventType\MoveY.cs" />
-    <Compile Include="Model\EventType\Parameter.cs" />
-    <Compile Include="Model\EventType\Rotate.cs" />
-    <Compile Include="Model\EventType\Scale.cs" />
-    <Compile Include="Model\EventType\Trigger.cs" />
-    <Compile Include="Model\EventType\Vector.cs" />
-    <Compile Include="Model\Constants\EasingType.cs" />
-    <Compile Include="Model\Constants\TriggerType.cs" />
-    <Compile Include="Model\Constants\LayerType.cs" />
-    <Compile Include="Model\Constants\LoopType.cs" />
-    <Compile Include="Model\Constants\OriginType.cs" />
-    <Compile Include="Model\Constants\ElementType.cs" />
-    <Compile Include="Model\ElementManager.cs" />
-    <Compile Include="Model\ElementGroup.cs" />
-    <Compile Include="Model\Element.cs" />
+    <Compile Include="frmMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmMain.Designer.cs">
+      <DependentUpon>frmMain.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="frmMain.resx">
+      <DependentUpon>frmMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

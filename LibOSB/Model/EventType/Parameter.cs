@@ -17,6 +17,10 @@ namespace LibOSB.Model.EventType
             StartTime = starttime;
             EndTime = endtime;
             PType = ptype;
+            BuildParams();
+        }
+        internal override void BuildParams()
+        {
             ScriptParams = PType;
         }
     }

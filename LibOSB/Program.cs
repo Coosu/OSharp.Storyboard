@@ -31,13 +31,44 @@ namespace LibOSB
             sky.Fade(EasingType.Linear, 0, 1000, 0, 1);
             sky.Fade(3000, 3000, 1);
 
-            ElementContainer.SortByIndex();
+            // ElementManager.SortByIndex();
 
-            Console.WriteLine(ElementContainer.ToString());
+            //Console.WriteLine(ElementManager.ToString());
+            StringBuilder ok = new StringBuilder();
+            ok.AppendLine("Sprite,Foreground,Centre,\"11t-fonts\\E1.png\",320,240");
+            ok.AppendLine(" R,0,62113,,-0.056");
+            ok.AppendLine(" C,0,62113,,255,255,255");
+            ok.AppendLine(" P,0,62113,,A");
+            ok.AppendLine(" F,0,62113,62261,0,0.3");
+            ok.AppendLine(" S,0,62113,62575,0.5,0");
+            ok.AppendLine(" MX,0,62113,62575,500,270");
+            ok.AppendLine(" MY,0,62113,62575,200");
+            ok.AppendLine(" F,0,62427,62575,0.3,0");
 
-            string ok = "Sprite,Background,Centre,\"BG/OCHIBA1.jpg\",320,240\r\n F,0,26053,26099,0,0.06\r\n M,0,26053,38492,320,240,331,252\r\n S,1,26053,38492,0.64,0.67\r\n R,1,26053,38492,0,0.014\r\n F,0,26099,26145,0.122,0";
-            var sb = Element.Parse(ok);
+            ok.AppendLine("Sprite,Foreground,Centre,\"11t-fonts\\y.png\",320,240");
+            ok.AppendLine(" R,0,62113,,-0.05");
+            ok.AppendLine(" C,0,62113,,255,255,255");
+            ok.AppendLine(" P,0,62113,,A");
+            ok.AppendLine(" F,0,62113,62261,0,0.3");
+            ok.AppendLine(" S,0,62113,62575,0.5,0");
+            ok.AppendLine(" MX,0,62113,62575,533,270");
+            ok.AppendLine(" MY,0,62113,62575,198.35,200");
+            ok.AppendLine(" F,0,62466,62614,0.3,0");
+            // var text = System.IO.File.ReadAllText(Environment.CurrentDirectory + "\\test.txt");
 
+            try
+            {
+                var sb = ElementGroup.Parse(ok.ToString(), 1);
+                //Console.WriteLine(sb);
+                sb = ElementManager.Adjust(sb, 1000000, 1000000, 1000000);
+                Console.WriteLine(sb);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                if (ex.InnerException != null)
+                    Console.WriteLine(ex.InnerException.Message);
+            }
             Console.Read();
             return;
         }
