@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using LibOSB.Constants;
+using LibOSB.Model.Constants;
 
 namespace LibOSB
 {

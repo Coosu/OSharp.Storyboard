@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using LibOSB.EventClass;
-using LibOSB.Constants;
+using LibOSB.Model.Constants;
 
 namespace LibOSB.Model.EventType
 {

@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LibOSB.Model.EventType;
-using LibOSB.Constants;
+using LibOSB.Model.Constants;
+using StorybrewCommon.Storyboarding;
+
 namespace LibOSB
 {
     public class ElementGroup : IDisposable
@@ -104,13 +106,22 @@ namespace LibOSB
             }
         }
 
+        public void ExecuteBrew(StoryboardLayer lay_parsed)
+        {
+            foreach (var lib in ElementList)
+            {
+                lib.ExecuteBrew(lay_parsed);
+
+            }
+        }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
 
-            foreach (var a in ElementList)
+            foreach (var obj in ElementList)
             {
-                sb.Append(a.ToString());
+                sb.Append(obj.ToString());
             }
 
             return sb.ToString();

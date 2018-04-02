@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using LibOSB.Constants;
+using LibOSB.Model.Constants;
 using System.Diagnostics;
 using LibOSB.Model.EventType;
-using LibOSB.Model.Constants;
+using StorybrewCommon.Storyboarding;
+using LibOSB.Function;
+using OpenTK;
 
 namespace LibOSB
 {
@@ -119,6 +121,7 @@ namespace LibOSB
             isTriggering = false;
         }
 
+        #region Events function
         public void Move(int startTime, System.Drawing.PointF location)
         {
             _Add_Move(0, startTime, startTime, location.X, location.Y, location.X, location.Y);
@@ -282,7 +285,51 @@ namespace LibOSB
         {
             _Add_Param(easing, startTime, endTime, type);
         }
+        #endregion
 
+        public void ExecuteBrew(StoryboardLayer lay_parsed, OsbSprite brewObj = null)
+        {
+            if (brewObj == null)
+            {
+                if (Type == ElementType.Sprite)
+                    brewObj = lay_parsed.CreateSprite(ImagePath, BrewConvert.CvtOrigin(Origin), new Vector2((float)DefaultX, (float)DefaultY));
+                else
+                    brewObj = lay_parsed.CreateAnimation(ImagePath, (int)FrameCount, (int)FrameRate,
+                        BrewConvert.CvtLoopType(LoopType), BrewConvert.CvtOrigin(Origin), new Vector2((float)DefaultX, (float)DefaultY));
+            }
+
+            foreach (var m in this._Move)
+                BrewConvert.ExeM(m, brewObj);
+            foreach (var s in this._Scale)
+                BrewConvert.ExeS(s, brewObj);
+            foreach (var f in this._Fade)
+                BrewConvert.ExeF(f, brewObj);
+            foreach (var r in this._Rotate)
+                BrewConvert.ExeR(r, brewObj);
+            foreach (var v in this._Vector)
+                BrewConvert.ExeV(v, brewObj);
+            foreach (var c in this._Color)
+                BrewConvert.ExeC(c, brewObj);
+            foreach (var mx in this._MoveX)
+                BrewConvert.ExeMx(mx, brewObj);
+            foreach (var my in this._MoveY)
+                BrewConvert.ExeMy(my, brewObj);
+            foreach (var p in this._Parameter)
+                BrewConvert.ExeP(p, brewObj);
+            foreach (var l in this._Loop)
+            {
+                brewObj.StartLoopGroup(l.StartTime, l.LoopCount);
+                l.ExecuteBrew(lay_parsed, brewObj);
+                brewObj.EndGroup();
+            }
+            foreach (var t in this._Trigger)
+            {
+                brewObj.StartTriggerGroup(t.TriggerType, t.StartTime, t.EndTime);
+                t.ExecuteBrew(lay_parsed, brewObj);
+                brewObj.EndGroup();
+            }
+        }
+        
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -308,6 +355,7 @@ namespace LibOSB
             for (int i = 1; i <= _Trigger.Count; i++) sb.Append(_Trigger[i - 1].ToString());
             return sb.ToString();
         }
+
         internal static Element Parse(string osbString, int baseLine)
         {
             Element obj = null;
@@ -488,7 +536,7 @@ namespace LibOSB
                                 switch (_event)
                                 {
                                     case "C":
-                                        obj.Color((EasingType)_easing, _start_time, _end_time, c1_1, c1_2, c1_2, c2_1, c2_2, c2_3);
+                                        obj.Color((EasingType)_easing, _start_time, _end_time, c1_1, c1_2, c1_3, c2_1, c2_2, c2_3);
                                         break;
                                 }
                                 break;
@@ -553,7 +601,7 @@ namespace LibOSB
         private bool isTriggering = false, isLooping = false;
         protected bool isInnerClass = false;
 
-        List<Move> _Move { get; set; } = new List<Move>();
+        internal List<Move> _Move { get; set; } = new List<Move>();
         internal List<Scale> _Scale { get; set; } = new List<Scale>();
         internal List<Fade> _Fade { get; set; } = new List<Fade>();
         internal List<Rotate> _Rotate { get; set; } = new List<Rotate>();

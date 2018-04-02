@@ -1,4 +1,4 @@
-﻿using LibOSB.Constants;
+﻿using LibOSB.Model.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
