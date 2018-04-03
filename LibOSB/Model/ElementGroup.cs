@@ -14,13 +14,10 @@ namespace LibOSB
         public void Dispose() { }
 
         public int Index { get; set; }
-
-        public ElementGroup(int layerIndex)
-        {
-            Index = layerIndex;
-        }
+        public ElementGroup(int layerIndex) => Index = layerIndex;
 
         internal List<Element> ElementList { get; set; } = new List<Element>();
+
         internal Element this[int index] { get => ElementList[index]; set => ElementList[index] = value; }
 
         /// <summary>
@@ -30,9 +27,9 @@ namespace LibOSB
         /// <returns></returns>
         public Element CreateSprite(string filePath)
         {
-            var sbo = new Element(ElementType.Sprite, LayerType.Foreground, OriginType.Centre, filePath, 320, 240);
-            Add(sbo);
-            return sbo;
+            var obj = new Element(ElementType.Sprite, LayerType.Foreground, OriginType.Centre, filePath, 320, 240);
+            Add(obj);
+            return obj;
         }
 
         /// <summary>
@@ -43,9 +40,9 @@ namespace LibOSB
         /// <returns></returns>
         public Element CreateSprite(OriginType origin, string filePath)
         {
-            var sbo = new Element(ElementType.Sprite, LayerType.Foreground, origin, filePath, 320, 240);
-            Add(sbo);
-            return sbo;
+            var obj = new Element(ElementType.Sprite, LayerType.Foreground, origin, filePath, 320, 240);
+            Add(obj);
+            return obj;
         }
 
         /// <summary>
@@ -57,9 +54,9 @@ namespace LibOSB
         /// <returns></returns>
         public Element CreateSprite(LayerType layer, OriginType origin, string filePath)
         {
-            var sbo = new Element(ElementType.Sprite, layer, origin, filePath, 320, 240);
-            Add(sbo);
-            return sbo;
+            var obj = new Element(ElementType.Sprite, layer, origin, filePath, 320, 240);
+            Add(obj);
+            return obj;
         }
 
         /// <summary>
@@ -72,9 +69,9 @@ namespace LibOSB
         /// <returns></returns>
         public Element CreateSprite(LayerType layer, OriginType origin, string filePath, System.Drawing.Point defaultLocation)
         {
-            var sbo = new Element(ElementType.Sprite, layer, origin, filePath, defaultLocation.X, defaultLocation.Y);
-            Add(sbo);
-            return sbo;
+            var obj = new Element(ElementType.Sprite, layer, origin, filePath, defaultLocation.X, defaultLocation.Y);
+            Add(obj);
+            return obj;
         }
 
         /// <summary>
@@ -88,9 +85,9 @@ namespace LibOSB
         /// <returns></returns>
         public Element CreateSprite(LayerType layer, OriginType origin, string filePath, int defaultX, int defaultY)
         {
-            var sbo = new Element(ElementType.Sprite, layer, origin, filePath, defaultX, defaultY);
-            Add(sbo);
-            return sbo;
+            var obj = new Element(ElementType.Sprite, layer, origin, filePath, defaultX, defaultY);
+            Add(obj);
+            return obj;
         }
 
         public void Add(Element obj)
@@ -156,6 +153,12 @@ namespace LibOSB
                             lineCount = 0;
                         }
                     }
+                    else if (line.IndexOf("//") == 0 || line.IndexOf("[Events]") == 0)
+                    {
+                        lineCount++;
+                        currentLine++;
+                        continue;
+                    }
                     else if (isFirst)
                     {
                         throw new Exception($"Unknown script: \"{pars[0]}\" at line: {currentLine}");
@@ -176,8 +179,6 @@ namespace LibOSB
             catch (Exception ex)
             {
                 throw ex;
-
-                //throw new FormatException("You have an syntax error in your osb code at line: " + currentLine, ex);
             }
 
             return obj;

@@ -27,6 +27,32 @@ namespace LibOSB
         public double? FrameCount { get; protected set; }
         public double? FrameRate { get; protected set; }
 
+        public int InnerMaxTime { get; protected set; } = int.MinValue;
+        public int InnerMinTime { get; protected set; } = int.MaxValue;
+
+        public int MaxTime
+        {
+            get
+            {
+                int max = InnerMaxTime;
+                foreach (var item in _Loop)
+                {
+                    int time = item.InnerMaxTime * item.LoopCount + item.StartTime;
+                    if (time > max) max = time;
+                }
+                foreach (var item in _Trigger)
+                {
+                    int time = item.InnerMaxTime + item.EndTime;
+                    if (time > max) max = time;
+                }
+                return max;
+            }
+        }
+        public int MinTime { get => InnerMinTime; }
+
+        public int MaxTimeCount { get; protected set; } = 1;
+        public int MinTimeCount { get; protected set; } = 1;
+
         /// <summary>
         /// Create a storyboard element by a static image.
         /// </summary>
@@ -45,7 +71,6 @@ namespace LibOSB
             DefaultX = defaultX;
             DefaultY = defaultY;
         }
-
         /// <summary>
         /// Create a storyboard element by a dynamic image.
         /// </summary>
@@ -121,7 +146,7 @@ namespace LibOSB
             isTriggering = false;
         }
 
-        #region Events function
+        #region Event function
         public void Move(int startTime, System.Drawing.PointF location)
         {
             _Add_Move(0, startTime, startTime, location.X, location.Y, location.X, location.Y);
@@ -329,7 +354,7 @@ namespace LibOSB
                 brewObj.EndGroup();
             }
         }
-        
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -354,6 +379,11 @@ namespace LibOSB
             for (int i = 1; i <= _Loop.Count; i++) sb.Append(_Loop[i - 1].ToString());
             for (int i = 1; i <= _Trigger.Count; i++) sb.Append(_Trigger[i - 1].ToString());
             return sb.ToString();
+        }
+
+        public static Element Parse(string osbString)
+        {
+            return Parse(osbString, 1);
         }
 
         internal static Element Parse(string osbString, int baseLine)
@@ -427,6 +457,7 @@ namespace LibOSB
                         if (_event != "T" && _event != "L")
                         {
                             _easing = int.Parse(pars[1]);
+                            if (_easing > 34 || _easing < 0) throw new FormatException("Unknown easing");
                             _start_time = int.Parse(pars[2]);
                             _end_time = pars[3] == "" ? _start_time : int.Parse(pars[3]);
                         }
@@ -613,15 +644,13 @@ namespace LibOSB
         internal List<Loop> _Loop { get; set; } = new List<Loop>();
         internal List<Trigger> _Trigger { get; set; } = new List<Trigger>();
 
-        private double CheckAlpha(double a)
+        private void CheckAlpha(double a)
         {
             if (a < 0 || a > 1)
             {
                 a = (a > 1 ? 1 : 0);
                 Debug.WriteLine("[Warning] Alpha of fade should be between 0 and 1.");
             }
-
-            return a;
         }
         /// <summary>
         /// 调整
@@ -701,101 +730,126 @@ namespace LibOSB
             }
         }
 
+        private void _Add_Event<T>(List<T> _list, T _event, bool isLoop = false, bool isTrigger = false)
+        {
+            var t = typeof(T);
+            if (isTrigger || isLoop)
+            {
+                dynamic E = _event;
+                dynamic member = null;
+
+                if (isTrigger) member = _Trigger[_Trigger.Count - 1];
+                else if (isLoop) member = _Loop[_Loop.Count - 1];
+
+                if (E.StartTime < member.InnerMinTime) member.InnerMinTime = E.StartTime;
+                else if (E.StartTime == member.InnerMinTime) member.MinTimeCount++;
+                if (E.EndTime > member.InnerMaxTime) member.InnerMaxTime = E.EndTime;
+                else if (E.StartTime == member.InnerMaxTime) member.MaxTimeCount++;
+            }
+            else
+            {
+                dynamic E = _event;
+                if (E.StartTime < InnerMinTime) InnerMinTime = E.StartTime;
+                else if (E.StartTime == InnerMinTime) MinTimeCount++;
+                if (E.EndTime > InnerMaxTime) InnerMaxTime = E.EndTime;
+                else if (E.EndTime == InnerMaxTime) MaxTimeCount++;
+            }
+
+            _list.Add(_event);
+        }
+
         private void _Add_Move(EasingType easing, int startTime, int endTime, double x1, double y1, double x2, double y2)
         {
             var obj = new Move(easing, startTime, endTime, x1, y1, x2, y2);
             if (!isLooping && !isTriggering)
-                _Move.Add(obj);
+                _Add_Event(_Move, obj);
             else if (isLooping)
-                _Loop[_Loop.Count - 1]._Move.Add(obj);
+                _Add_Event(_Loop[_Loop.Count - 1]._Move, obj, isLoop: true);
             else
-                _Trigger[_Trigger.Count - 1]._Move.Add(obj);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Move, obj, isTrigger: true);
         }
-
         private void _Add_Fade(EasingType easing, int startTime, int endTime, double f1, double f2)
         {
-            var obj = new Fade(easing, startTime, endTime, f1, f2);
-            f1 = CheckAlpha(f1);
-            f2 = CheckAlpha(f2);
-            if (!isLooping)
-                _Fade.Add(obj);
-            else if (isLooping)
-                _Loop[_Loop.Count - 1]._Fade.Add(obj);
-            else
-                _Trigger[_Trigger.Count - 1]._Fade.Add(obj);
-        }
+            CheckAlpha(f1);
+            CheckAlpha(f2);
 
+            var obj = new Fade(easing, startTime, endTime, f1, f2);
+            if (!isLooping && !isTriggering)
+                _Add_Event(_Fade, obj);
+            else if (isLooping)
+                _Add_Event(_Loop[_Loop.Count - 1]._Fade, obj, isLoop: true);
+            else
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Fade, obj, isTrigger: true);
+        }
         private void _Add_Scale(EasingType easing, int startTime, int endTime, double s1, double s2)
         {
             var obj = new Scale(easing, startTime, endTime, s1, s2);
             if (!isLooping && !isTriggering)
-                _Scale.Add(obj);
+                _Add_Event(_Scale, obj);
             else if (isLooping)
-                _Loop[_Loop.Count - 1]._Scale.Add(obj);
+                _Add_Event(_Loop[_Loop.Count - 1]._Scale, obj, isLoop: true);
             else
-                _Trigger[_Trigger.Count - 1]._Scale.Add(obj);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Scale, obj, isTrigger: true);
         }
-
         private void _Add_Rotate(EasingType easing, int startTime, int endTime, double r1, double r2)
         {
             var obj = new Rotate(easing, startTime, endTime, r1, r2);
             if (!isLooping && !isTriggering)
-                _Rotate.Add(obj);
+                _Add_Event(_Rotate, obj);
             else if (isLooping)
-                _Loop[_Loop.Count - 1]._Rotate.Add(obj);
+                _Add_Event(_Loop[_Loop.Count - 1]._Rotate, obj, isLoop: true);
             else
-                _Trigger[_Trigger.Count - 1]._Rotate.Add(obj);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Rotate, obj, isTrigger: true);
         }
-
         private void _Add_Color(EasingType easing, int startTime, int endTime, int r1, int g1, int b1, int r2, int g2, int b2)
         {
             var obj = new Color(easing, startTime, endTime, r1, g1, b1, r2, g2, b2);
             if (!isLooping && !isTriggering)
-                _Color.Add(obj);
+                _Add_Event(_Color, obj);
             else if (isLooping)
-                _Loop[_Loop.Count - 1]._Color.Add(obj);
+                _Add_Event(_Loop[_Loop.Count - 1]._Color, obj, isLoop: true);
             else
-                _Trigger[_Trigger.Count - 1]._Color.Add(obj);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Color, obj, isTrigger: true);
         }
         private void _Add_MoveX(EasingType easing, int startTime, int endTime, double x1, double x2)
         {
             var obj = new MoveX(easing, startTime, endTime, x1, x2);
             if (!isLooping && !isTriggering)
-                _MoveX.Add(obj);
+                _Add_Event(_MoveX, obj);
             else if (isLooping)
-                _Loop[_Loop.Count - 1]._MoveX.Add(obj);
+                _Add_Event(_Loop[_Loop.Count - 1]._MoveX, obj, isLoop: true);
             else
-                _Trigger[_Trigger.Count - 1]._MoveX.Add(obj);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._MoveX, obj, isTrigger: true);
         }
         private void _Add_MoveY(EasingType easing, int startTime, int endTime, double y1, double y2)
         {
             var obj = new MoveY(easing, startTime, endTime, y1, y2);
             if (!isLooping && !isTriggering)
-                _MoveY.Add(obj);
+                _Add_Event(_MoveY, obj);
             else if (isLooping)
-                _Loop[_Loop.Count - 1]._MoveY.Add(obj);
+                _Add_Event(_Loop[_Loop.Count - 1]._MoveY, obj, isLoop: true);
             else
-                _Trigger[_Trigger.Count - 1]._MoveY.Add(obj);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._MoveY, obj, isTrigger: true);
         }
         private void _Add_Param(EasingType easing, int startTime, int endTime, string p)
         {
             var obj = new Parameter(easing, startTime, endTime, p);
             if (!isLooping && !isTriggering)
-                _Parameter.Add(obj);
+                _Add_Event(_Parameter, obj);
             else if (isLooping)
-                _Loop[_Loop.Count - 1]._Parameter.Add(obj);
+                _Add_Event(_Loop[_Loop.Count - 1]._Parameter, obj, isLoop: true);
             else
-                _Trigger[_Trigger.Count - 1]._Parameter.Add(obj);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Parameter, obj, isTrigger: true);
         }
         private void _Add_Vector(EasingType easing, int startTime, int endTime, double vx1, double vy1, double vx2, double vy2)
         {
             var obj = new Vector(easing, startTime, endTime, vx1, vy1, vx2, vy2);
             if (!isLooping && !isTriggering)
-                _Vector.Add(obj);
+                _Add_Event(_Vector, obj);
             else if (isLooping)
-                _Loop[_Loop.Count - 1]._Vector.Add(obj);
+                _Add_Event(_Loop[_Loop.Count - 1]._Vector, obj, isLoop: true);
             else
-                _Trigger[_Trigger.Count - 1]._Vector.Add(obj);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Vector, obj, isTrigger: true);
         }
         #endregion
     }

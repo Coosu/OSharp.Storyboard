@@ -32,6 +32,11 @@ namespace LibOSB
             ok.AppendLine(" MX,0,62113,62575,500,270");
             ok.AppendLine(" MY,0,62113,62575,200");
             ok.AppendLine(" F,0,62427,62575,0.3,0");
+            ok.AppendLine(" L,62427,2");
+            ok.AppendLine("  V,0,0,100,320,240");
+
+            var obj2 = Element.Parse(ok.ToString());
+            Console.WriteLine(obj2.MinTimeCount);
             Console.Read();
             return;
         }

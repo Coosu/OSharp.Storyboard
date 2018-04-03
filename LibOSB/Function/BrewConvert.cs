@@ -13,39 +13,23 @@ namespace LibOSB.Function
 {
     class BrewConvert
     {
-        public static void ExeM(Move m, OsbSprite brewObj)
-        {
+        public static void ExeM(Move m, OsbSprite brewObj) =>
             brewObj.Move(CvtEasing(m.Easing), m.StartTime, m.EndTime, m.P1_1, m.P1_2, m.P2_1, m.P2_2);
-        }
-        public static void ExeS(Scale s, OsbSprite brewObj)
-        {
+        public static void ExeS(Scale s, OsbSprite brewObj) =>
             brewObj.Scale(CvtEasing(s.Easing), s.StartTime, s.EndTime, s.P1_1, s.P2_1);
-        }
-        public static void ExeF(Fade f, OsbSprite brewObj)
-        {
+        public static void ExeF(Fade f, OsbSprite brewObj) =>
             brewObj.Fade(CvtEasing(f.Easing), f.StartTime, f.EndTime, f.P1_1, f.P2_1);
-        }
-        public static void ExeR(Rotate r, OsbSprite brewObj)
-        {
+        public static void ExeR(Rotate r, OsbSprite brewObj) =>
             brewObj.Rotate(CvtEasing(r.Easing), r.StartTime, r.EndTime, r.P1_1, r.P2_1);
-        }
-        public static void ExeV(Vector v, OsbSprite brewObj)
-        {
+        public static void ExeV(Vector v, OsbSprite brewObj) =>
             brewObj.ScaleVec(CvtEasing(v.Easing), v.StartTime, v.EndTime, v.P1_1, v.P1_2, v.P2_1, v.P2_2);
-        }
-        public static void ExeC(Color c, OsbSprite brewObj)
-        {
+        public static void ExeC(Color c, OsbSprite brewObj) =>
             brewObj.Color(CvtEasing(c.Easing), c.StartTime, c.EndTime, c.P1_1 / 255d, c.P1_2 / 255d, c.P1_3 / 255d,
                 c.P2_1 / 255d, c.P2_2 / 255d, c.P2_3 / 255d);
-        }
-        public static void ExeMx(MoveX mx, OsbSprite brewObj)
-        {
+        public static void ExeMx(MoveX mx, OsbSprite brewObj) =>
             brewObj.MoveX(CvtEasing(mx.Easing), mx.StartTime, mx.EndTime, mx.P1_1, mx.P2_1);
-        }
-        public static void ExeMy(MoveY my, OsbSprite brewObj)
-        {
+        public static void ExeMy(MoveY my, OsbSprite brewObj) =>
             brewObj.MoveY(CvtEasing(my.Easing), my.StartTime, my.EndTime, my.P1_1, my.P2_1);
-        }
         public static void ExeP(Parameter p, OsbSprite brewObj)
         {
             switch (p.PType)

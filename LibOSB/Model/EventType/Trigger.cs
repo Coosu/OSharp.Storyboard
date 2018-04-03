@@ -63,11 +63,11 @@ namespace LibOSB.Model.EventType
 
             isInnerClass = true;
         }
-        internal Trigger(int startTime, int endTime, string triggerType)
+        internal Trigger(int startTime, int endTime, string triggerName)
         {
             StartTime = startTime;
             EndTime = endTime;
-            TriggerType = triggerType;
+            TriggerType = triggerName;
 
             isInnerClass = true;
         }

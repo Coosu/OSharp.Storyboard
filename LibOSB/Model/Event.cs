@@ -16,28 +16,13 @@ namespace LibOSB
         public EasingType Easing { get; protected set; }
         public string Type { get; protected set; }
         public string ScriptParams { get; protected set; }
-
+        
         internal abstract void BuildParams();
 
         public override string ToString()
         {
             string end_time = StartTime == EndTime ? "" : EndTime.ToString();
             return string.Join(",", Type, (int)Enum.Parse(typeof(EasingType), Easing.ToString()), StartTime, end_time, ScriptParams);
-        }
-
-        /// <summary>
-        /// Get max time of one action.
-        /// </summary>
-        public int MaxTime()
-        {
-            return -1;
-        }
-        /// <summary>
-        /// Get min time of one action.
-        /// </summary>
-        public int MinTime()
-        {
-            return -1;
         }
 
         internal void _AdjustTime(int time)
