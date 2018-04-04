@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using LibOSB.Model.Constants;
+using LibOsb.Model.Constants;
 using System.Diagnostics;
-using LibOSB.Model.EventType;
+using LibOsb.Model.EventType;
 using StorybrewCommon.Storyboarding;
-using LibOSB.Function;
+using LibOsb.Function;
 using OpenTK;
 
-namespace LibOSB
+namespace LibOsb
 {
     /// <summary>
     /// Represents a storyboard element. This class cannot be inherited.

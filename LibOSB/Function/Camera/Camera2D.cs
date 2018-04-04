@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LibOSB.Function.Camera
+namespace LibOsb.Function.Camera
 {
     class Camera2D
     {

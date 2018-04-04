@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-namespace LibOSB.Model.Constants
+namespace LibOsb.Model.Constants
 {
     public enum EasingType
     {

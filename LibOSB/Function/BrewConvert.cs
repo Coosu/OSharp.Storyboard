@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LibOSB.Model.Constants;
-using LibOSB.Model.EventType;
+using LibOsb.Model.Constants;
+using LibOsb.Model.EventType;
 
-namespace LibOSB.Function
+namespace LibOsb.Function
 {
     class BrewConvert
     {

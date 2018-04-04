@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LibOSB.Model.EventType
+namespace LibOsb.Model.EventType
 {
     public class Loop : Element
     {

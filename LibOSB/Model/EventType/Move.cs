@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using LibOSB.EventClass;
-using LibOSB.Model.Constants;
+using LibOsb.EventClass;
+using LibOsb.Model.Constants;
 
-namespace LibOSB.Model.EventType
+namespace LibOsb.Model.EventType
 {
     class Move : EventDouble
     {

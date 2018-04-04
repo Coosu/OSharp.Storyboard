@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using LibOSB.Model.Constants;
+using LibOsb.Model.Constants;
 
-namespace LibOSB
+namespace LibOsb
 {
     class DEMO
     {

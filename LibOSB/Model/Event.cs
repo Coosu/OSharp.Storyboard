@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using LibOSB.Model.Constants;
+using LibOsb.Model.Constants;
 
-namespace LibOSB
+namespace LibOsb
 {
     /// <summary>
     /// Parent class of all actions. Should not be instantiated directly.

@@ -1,11 +1,11 @@
-﻿using LibOSB.Model.Constants;
+﻿using LibOsb.Model.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using LibOSB.EventClass;
+using LibOsb.EventClass;
 
-namespace LibOSB.Model.EventType
+namespace LibOsb.Model.EventType
 {
     class Fade : EventSingle
     {

@@ -1,10 +1,10 @@
-﻿using LibOSB.Model.Constants;
+﻿using LibOsb.Model.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LibOSB.EventClass
+namespace LibOsb.EventClass
 {
     class EventDouble : Event
     {

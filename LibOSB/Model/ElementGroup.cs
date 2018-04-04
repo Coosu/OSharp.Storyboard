@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LibOSB.Model.EventType;
-using LibOSB.Model.Constants;
+using LibOsb.Model.EventType;
+using LibOsb.Model.Constants;
 using StorybrewCommon.Storyboarding;
 
-namespace LibOSB
+namespace LibOsb
 {
     public class ElementGroup : IDisposable
     {

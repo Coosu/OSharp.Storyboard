@@ -1,11 +1,11 @@
-﻿using LibOSB.Model.Constants;
+﻿using LibOsb.Model.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LibOSB.Model.EventType
+namespace LibOsb.Model.EventType
 {
     public class Trigger : Element
     {

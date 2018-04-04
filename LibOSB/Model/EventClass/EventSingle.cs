@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using LibOSB.Model.Constants;
+using LibOsb.Model.Constants;
 
-namespace LibOSB.EventClass
+namespace LibOsb.EventClass
 {
     class EventSingle : Event
     {

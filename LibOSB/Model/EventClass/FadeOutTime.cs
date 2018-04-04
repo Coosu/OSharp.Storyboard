@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LibOSB.EventClass
+namespace LibOsb.EventClass
 {
     public class FadeOutTime
     {
