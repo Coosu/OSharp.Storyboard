@@ -6,7 +6,7 @@ using LibOsb.Model.Constants;
 using System.Diagnostics;
 using LibOsb.Model.EventType;
 using StorybrewCommon.Storyboarding;
-using LibOsb.Function;
+using LibOsb.BrewHelper;
 using OpenTK;
 
 namespace LibOsb
@@ -386,6 +386,23 @@ namespace LibOsb
             return Parse(osbString, 1);
         }
 
+        public void Examine()
+        {
+            if (_Move.Count != 0) CheckTiming(ref _move);
+            if (_Scale.Count != 0) CheckTiming(ref _scale);
+            if (_Fade.Count != 0) CheckTiming(ref _fade);
+            if (_Rotate.Count != 0) CheckTiming(ref _rotate);
+            if (_Vector.Count != 0) CheckTiming(ref _vector);
+            if (_Color.Count != 0) CheckTiming(ref _color);
+            if (_MoveX.Count != 0) CheckTiming(ref _moveX);
+            if (_MoveY.Count != 0) CheckTiming(ref _moveY);
+            if (_Parameter.Count != 0) CheckTiming(ref _parameter);
+            foreach (var item in _Loop)
+                item.Examine();
+            foreach (var item in _Trigger)
+                item.Examine();
+        }
+        #region non-public member
         internal static Element Parse(string osbString, int baseLine)
         {
             Element obj = null;
@@ -628,21 +645,32 @@ namespace LibOsb
             return obj;
         }
 
-        #region non-public member
         private bool isTriggering = false, isLooping = false;
         protected bool isInnerClass = false;
 
-        internal List<Move> _Move { get; set; } = new List<Move>();
-        internal List<Scale> _Scale { get; set; } = new List<Scale>();
-        internal List<Fade> _Fade { get; set; } = new List<Fade>();
-        internal List<Rotate> _Rotate { get; set; } = new List<Rotate>();
-        internal List<Vector> _Vector { get; set; } = new List<Vector>();
-        internal List<Color> _Color { get; set; } = new List<Color>();
-        internal List<MoveX> _MoveX { get; set; } = new List<MoveX>();
-        internal List<MoveY> _MoveY { get; set; } = new List<MoveY>();
-        internal List<Parameter> _Parameter { set; get; } = new List<Parameter>();
-        internal List<Loop> _Loop { get; set; } = new List<Loop>();
-        internal List<Trigger> _Trigger { get; set; } = new List<Trigger>();
+        internal List<Move> _Move { get => _move; set => _move = value; }
+        internal List<Scale> _Scale { get => _scale; set => _scale = value; }
+        internal List<Fade> _Fade { get => _fade; set => _fade = value; }
+        internal List<Rotate> _Rotate { get => _rotate; set => _rotate = value; }
+        internal List<Vector> _Vector { get => _vector; set => _vector = value; }
+        internal List<Color> _Color { get => _color; set => _color = value; }
+        internal List<MoveX> _MoveX { get => _moveX; set => _moveX = value; }
+        internal List<MoveY> _MoveY { get => _moveY; set => _moveY = value; }
+        internal List<Parameter> _Parameter { get => _parameter; set => _parameter = value; }
+        internal List<Loop> _Loop { get => _loop; set => _loop = value; }
+        internal List<Trigger> _Trigger { get => _trigger; set => _trigger = value; }
+
+        private List<Move> _move = new List<Move>();
+        private List<Scale> _scale = new List<Scale>();
+        private List<Fade> _fade = new List<Fade>();
+        private List<Rotate> _rotate = new List<Rotate>();
+        private List<Vector> _vector = new List<Vector>();
+        private List<Color> _color = new List<Color>();
+        private List<MoveX> _moveX = new List<MoveX>();
+        private List<MoveY> _moveY = new List<MoveY>();
+        private List<Parameter> _parameter = new List<Parameter>();
+        private List<Loop> _loop = new List<Loop>();
+        private List<Trigger> _trigger = new List<Trigger>();
 
         private void CheckAlpha(double a)
         {
@@ -650,6 +678,17 @@ namespace LibOsb
             {
                 a = (a > 1 ? 1 : 0);
                 Debug.WriteLine("[Warning] Alpha of fade should be between 0 and 1.");
+            }
+        }
+        private void CheckTiming<T>(ref List<T> _list)
+        {
+            _list.Sort(new EventSort<T>(GroupSortKind.Index));
+            for (int i = 1; i < _list.Count; i++)
+            {
+                dynamic obj_next = _list[i];
+                dynamic obj_previous = _list[i - 1];
+                if (obj_next.StartTime < obj_previous.EndTime)
+                    throw new Exception(obj_previous.ToString() + Environment.NewLine + obj_next.ToString());
             }
         }
         /// <summary>
@@ -730,16 +769,16 @@ namespace LibOsb
             }
         }
 
-        private void _Add_Event<T>(List<T> _list, T _event, bool isLoop = false, bool isTrigger = false)
+        private void _Add_Event<T>(List<T> _list, T _event)
         {
             var t = typeof(T);
-            if (isTrigger || isLoop)
+            if (isTriggering || isLooping)
             {
                 dynamic E = _event;
                 dynamic member = null;
 
-                if (isTrigger) member = _Trigger[_Trigger.Count - 1];
-                else if (isLoop) member = _Loop[_Loop.Count - 1];
+                if (isTriggering) member = _Trigger[_Trigger.Count - 1];
+                else if (isLooping) member = _Loop[_Loop.Count - 1];
 
                 if (E.StartTime < member.InnerMinTime) member.InnerMinTime = E.StartTime;
                 else if (E.StartTime == member.InnerMinTime) member.MinTimeCount++;
@@ -764,9 +803,9 @@ namespace LibOsb
             if (!isLooping && !isTriggering)
                 _Add_Event(_Move, obj);
             else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Move, obj, isLoop: true);
+                _Add_Event(_Loop[_Loop.Count - 1]._Move, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Move, obj, isTrigger: true);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Move, obj);
         }
         private void _Add_Fade(EasingType easing, int startTime, int endTime, double f1, double f2)
         {
@@ -777,9 +816,9 @@ namespace LibOsb
             if (!isLooping && !isTriggering)
                 _Add_Event(_Fade, obj);
             else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Fade, obj, isLoop: true);
+                _Add_Event(_Loop[_Loop.Count - 1]._Fade, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Fade, obj, isTrigger: true);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Fade, obj);
         }
         private void _Add_Scale(EasingType easing, int startTime, int endTime, double s1, double s2)
         {
@@ -787,9 +826,9 @@ namespace LibOsb
             if (!isLooping && !isTriggering)
                 _Add_Event(_Scale, obj);
             else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Scale, obj, isLoop: true);
+                _Add_Event(_Loop[_Loop.Count - 1]._Scale, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Scale, obj, isTrigger: true);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Scale, obj);
         }
         private void _Add_Rotate(EasingType easing, int startTime, int endTime, double r1, double r2)
         {
@@ -797,9 +836,9 @@ namespace LibOsb
             if (!isLooping && !isTriggering)
                 _Add_Event(_Rotate, obj);
             else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Rotate, obj, isLoop: true);
+                _Add_Event(_Loop[_Loop.Count - 1]._Rotate, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Rotate, obj, isTrigger: true);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Rotate, obj);
         }
         private void _Add_Color(EasingType easing, int startTime, int endTime, int r1, int g1, int b1, int r2, int g2, int b2)
         {
@@ -807,9 +846,9 @@ namespace LibOsb
             if (!isLooping && !isTriggering)
                 _Add_Event(_Color, obj);
             else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Color, obj, isLoop: true);
+                _Add_Event(_Loop[_Loop.Count - 1]._Color, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Color, obj, isTrigger: true);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Color, obj);
         }
         private void _Add_MoveX(EasingType easing, int startTime, int endTime, double x1, double x2)
         {
@@ -817,9 +856,9 @@ namespace LibOsb
             if (!isLooping && !isTriggering)
                 _Add_Event(_MoveX, obj);
             else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._MoveX, obj, isLoop: true);
+                _Add_Event(_Loop[_Loop.Count - 1]._MoveX, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._MoveX, obj, isTrigger: true);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._MoveX, obj);
         }
         private void _Add_MoveY(EasingType easing, int startTime, int endTime, double y1, double y2)
         {
@@ -827,9 +866,9 @@ namespace LibOsb
             if (!isLooping && !isTriggering)
                 _Add_Event(_MoveY, obj);
             else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._MoveY, obj, isLoop: true);
+                _Add_Event(_Loop[_Loop.Count - 1]._MoveY, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._MoveY, obj, isTrigger: true);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._MoveY, obj);
         }
         private void _Add_Param(EasingType easing, int startTime, int endTime, string p)
         {
@@ -837,9 +876,9 @@ namespace LibOsb
             if (!isLooping && !isTriggering)
                 _Add_Event(_Parameter, obj);
             else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Parameter, obj, isLoop: true);
+                _Add_Event(_Loop[_Loop.Count - 1]._Parameter, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Parameter, obj, isTrigger: true);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Parameter, obj);
         }
         private void _Add_Vector(EasingType easing, int startTime, int endTime, double vx1, double vy1, double vx2, double vy2)
         {
@@ -847,9 +886,53 @@ namespace LibOsb
             if (!isLooping && !isTriggering)
                 _Add_Event(_Vector, obj);
             else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Vector, obj, isLoop: true);
+                _Add_Event(_Loop[_Loop.Count - 1]._Vector, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Vector, obj, isTrigger: true);
+                _Add_Event(_Trigger[_Trigger.Count - 1]._Vector, obj);
+        }
+
+        public enum GroupSortKind { Index }
+        public class EventSort<T> : IComparer<T>
+        {
+            #region 类字段定义
+            private GroupSortKind sortKind;
+            #endregion
+            #region 构造器
+            public EventSort(GroupSortKind sk)
+            {
+                this.sortKind = sk;
+            }
+            #endregion
+            #region IComparer接口比较方法的实现
+            public int Compare(T event1, T event2)
+            {
+                int res = 0;
+                if ((event1 == null) && (event2 == null))
+                    throw new Exception("SB");
+                else if ((event1 != null) && (event2 == null))
+                    throw new Exception("SB");
+                else if ((event1 == null) && (event2 != null))
+                    throw new Exception("SB");
+
+                dynamic d1 = event1, d2 = event2;
+                if (sortKind == GroupSortKind.Index)
+                {
+                    if (d1.StartTime > d2.StartTime)
+                    {
+                        res = 1;
+                    }
+                    else if (d1.StartTime < d2.StartTime)
+                    {
+                        res = -1;
+                    }
+                }
+                //else if (sortKind == GroupSortKind.Name)
+                //{
+                //    res = obj1.Name.CompareTo(obj2.Name);
+                //}
+                return res;
+            }
+            #endregion
         }
         #endregion
     }

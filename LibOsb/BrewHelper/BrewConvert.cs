@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using LibOsb.Model.Constants;
 using LibOsb.Model.EventType;
 
-namespace LibOsb.Function
+namespace LibOsb.BrewHelper
 {
     class BrewConvert
     {

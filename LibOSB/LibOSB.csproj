@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{39F7E783-F770-47D0-BFBB-49BC30443B3E}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>LibOSB</RootNamespace>
-    <AssemblyName>LibOSB</AssemblyName>
+    <RootNamespace>LibOsb</RootNamespace>
+    <AssemblyName>LibOsb</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -58,8 +58,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DEMO.cs" />
-    <Compile Include="Function\Camera\Camera2D.cs" />
-    <Compile Include="Function\BrewConvert.cs" />
+    <Compile Include="Camera\Camera2D.cs" />
+    <Compile Include="BrewHelper\BrewConvert.cs" />
     <Compile Include="Model\EventClass\EventDouble.cs" />
     <Compile Include="Model\EventClass\EventSingle.cs" />
     <Compile Include="Model\EventClass\EventTriple.cs" />
@@ -91,6 +91,9 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Optimizer\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
