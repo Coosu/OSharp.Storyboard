@@ -63,7 +63,7 @@
     <Compile Include="Model\EventClass\EventDouble.cs" />
     <Compile Include="Model\EventClass\EventSingle.cs" />
     <Compile Include="Model\EventClass\EventTriple.cs" />
-    <Compile Include="Model\EventClass\FadeOutTime.cs" />
+    <Compile Include="Model\EventClass\TimeRange.cs" />
     <Compile Include="Model\Event.cs" />
     <Compile Include="Model\EventType\Color.cs" />
     <Compile Include="Model\EventType\Fade.cs" />
@@ -85,6 +85,7 @@
     <Compile Include="Model\ElementManager.cs" />
     <Compile Include="Model\ElementGroup.cs" />
     <Compile Include="Model\Element.cs" />
+    <Compile Include="Optimizer\EventOperator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -92,8 +93,6 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Optimizer\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

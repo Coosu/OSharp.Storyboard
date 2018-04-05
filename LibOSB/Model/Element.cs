@@ -8,13 +8,13 @@ using LibOsb.Model.EventType;
 using StorybrewCommon.Storyboarding;
 using LibOsb.BrewHelper;
 using OpenTK;
+using LibOsb.EventClass;
 
 namespace LibOsb
 {
     /// <summary>
     /// Represents a storyboard element. This class cannot be inherited.
     /// </summary>
-    [Serializable]
     public class Element
     {
         public ElementType Type { get; protected set; }
@@ -83,6 +83,7 @@ namespace LibOsb
         /// <param name="frameCount">Set frame count.</param>
         /// <param name="frameRate">Set frame rate (frame delay).</param>
         /// <param name="loopType">Set loop type.</param>
+        /// 
         public Element(ElementType type, LayerType layer, OriginType origin, string imagePath, double defaultX, double defaultY, double frameCount, double frameRate, LoopType loopType)
         {
             Type = type;
@@ -147,169 +148,54 @@ namespace LibOsb
         }
 
         #region Event function
-        public void Move(int startTime, System.Drawing.PointF location)
-        {
-            _Add_Move(0, startTime, startTime, location.X, location.Y, location.X, location.Y);
-        }
-        public void Move(int startTime, double x, double y)
-        {
-            _Add_Move(0, startTime, startTime, x, y, x, y);
-        }
-        public void Move(int startTime, int endTime, double x, double y)
-        {
-            _Add_Move(0, startTime, endTime, x, y, x, y);
-        }
-        public void Move(EasingType easing, int startTime, int endTime, System.Drawing.PointF startLocation, System.Drawing.PointF endLocation)
-        {
-            _Add_Move(easing, startTime, endTime, startLocation.X, startLocation.Y, endLocation.X, endLocation.Y);
-        }
-        public void Move(EasingType easing, int startTime, int endTime, double x1, double y1, double x2, double y2)
-        {
-            _Add_Move(easing, startTime, endTime, x1, y1, x2, y2);
-        }
+        public void Move(int startTime, System.Drawing.PointF location) => _Add_Move(0, startTime, startTime, location.X, location.Y, location.X, location.Y);
+        public void Move(int startTime, double x, double y) => _Add_Move(0, startTime, startTime, x, y, x, y);
+        public void Move(int startTime, int endTime, double x, double y) => _Add_Move(0, startTime, endTime, x, y, x, y);
+        public void Move(EasingType easing, int startTime, int endTime, System.Drawing.PointF startLocation, System.Drawing.PointF endLocation) => _Add_Move(easing, startTime, endTime, startLocation.X, startLocation.Y, endLocation.X, endLocation.Y);
+        public void Move(EasingType easing, int startTime, int endTime, double x1, double y1, double x2, double y2) => _Add_Move(easing, startTime, endTime, x1, y1, x2, y2);
 
-        public void Fade(int startTime, double alpha)
-        {
-            _Add_Fade(0, startTime, startTime, alpha, alpha);
-        }
-        public void Fade(int startTime, int endTime, double alpha)
-        {
-            _Add_Fade(0, startTime, endTime, alpha, alpha);
-        }
-        public void Fade(EasingType easing, int startTime, int endTime, double startAlpha, double endAlpha)
-        {
-            _Add_Fade(easing, startTime, endTime, startAlpha, endAlpha);
-        }
+        public void Fade(int startTime, double alpha) => _Add_Fade(0, startTime, startTime, alpha, alpha);
+        public void Fade(int startTime, int endTime, double alpha) => _Add_Fade(0, startTime, endTime, alpha, alpha);
+        public void Fade(EasingType easing, int startTime, int endTime, double startAlpha, double endAlpha) => _Add_Fade(easing, startTime, endTime, startAlpha, endAlpha);
 
-        public void Scale(int startTime, double scale)
-        {
-            _Add_Scale(0, startTime, startTime, scale, scale);
-        }
-        public void Scale(int startTime, int endTime, double scale)
-        {
-            _Add_Scale(0, startTime, endTime, scale, scale);
-        }
-        public void Scale(EasingType easing, int startTime, int endTime, double startScale, double endScale)
-        {
-            _Add_Scale(easing, startTime, endTime, startScale, endScale);
-        }
+        public void Scale(int startTime, double scale) => _Add_Scale(0, startTime, startTime, scale, scale);
+        public void Scale(int startTime, int endTime, double scale) => _Add_Scale(0, startTime, endTime, scale, scale);
+        public void Scale(EasingType easing, int startTime, int endTime, double startScale, double endScale) => _Add_Scale(easing, startTime, endTime, startScale, endScale);
 
-        public void Rotate(int startTime, double rotate)
-        {
-            _Add_Rotate(0, startTime, startTime, rotate, rotate);
-        }
-        public void Rotate(int startTime, int endTime, double rotate)
-        {
-            _Add_Rotate(0, startTime, endTime, rotate, rotate);
-        }
-        public void Rotate(EasingType easing, int startTime, int endTime, double startRotate, double endRotate)
-        {
-            _Add_Rotate(easing, startTime, endTime, startRotate, endRotate);
-        }
+        public void Rotate(int startTime, double rotate) => _Add_Rotate(0, startTime, startTime, rotate, rotate);
+        public void Rotate(int startTime, int endTime, double rotate) => _Add_Rotate(0, startTime, endTime, rotate, rotate);
+        public void Rotate(EasingType easing, int startTime, int endTime, double startRotate, double endRotate) => _Add_Rotate(easing, startTime, endTime, startRotate, endRotate);
 
-        public void MoveX(int startTime, double x)
-        {
-            _Add_MoveX(0, startTime, startTime, x, x);
-        }
-        public void MoveX(int startTime, int endTime, double x)
-        {
-            _Add_MoveX(0, startTime, endTime, x, x);
-        }
-        public void MoveX(EasingType easing, int startTime, int endTime, double startX, double endX)
-        {
-            _Add_MoveX(easing, startTime, endTime, startX, endX);
-        }
+        public void MoveX(int startTime, double x) => _Add_MoveX(0, startTime, startTime, x, x);
+        public void MoveX(int startTime, int endTime, double x) => _Add_MoveX(0, startTime, endTime, x, x);
+        public void MoveX(EasingType easing, int startTime, int endTime, double startX, double endX) => _Add_MoveX(easing, startTime, endTime, startX, endX);
 
-        public void MoveY(int startTime, double y)
-        {
-            _Add_MoveY(0, startTime, startTime, y, y);
-        }
-        public void MoveY(int startTime, int endTime, double y)
-        {
-            _Add_MoveY(0, startTime, endTime, y, y);
-        }
-        public void MoveY(EasingType easing, int startTime, int endTime, double startY, double endY)
-        {
-            _Add_MoveY(easing, startTime, endTime, startY, endY);
-        }
+        public void MoveY(int startTime, double y) => _Add_MoveY(0, startTime, startTime, y, y);
+        public void MoveY(int startTime, int endTime, double y) => _Add_MoveY(0, startTime, endTime, y, y);
+        public void MoveY(EasingType easing, int startTime, int endTime, double startY, double endY) => _Add_MoveY(easing, startTime, endTime, startY, endY);
 
-        public void Color(int startTime, System.Drawing.Color color)
-        {
-            _Add_Color(0, startTime, startTime, color.R, color.G, color.B, color.R, color.G, color.B);
-        }
-        public void Color(int startTime, int endTime, System.Drawing.Color color)
-        {
-            _Add_Color(0, startTime, endTime, color.R, color.G, color.B, color.R, color.G, color.B);
-        }
-        public void Color(EasingType easing, int startTime, int endTime, System.Drawing.Color color1, System.Drawing.Color color2)
-        {
-            _Add_Color(easing, startTime, endTime, color1.R, color1.G, color1.B, color2.R, color2.G, color2.B);
-        }
-        public void Color(int startTime, int R, int G, int B)
-        {
-            _Add_Color(0, startTime, startTime, R, G, B, R, G, B);
-        }
-        public void Color(int startTime, int endTime, int R, int G, int B)
-        {
-            _Add_Color(0, startTime, endTime, R, G, B, R, G, B);
-        }
-        public void Color(EasingType easing, int startTime, int endTime, int startR, int startG, int startB, int endR, int endG, int endB)
-        {
-            _Add_Color(easing, startTime, endTime, startR, startG, startB, endR, endG, endB);
-        }
+        public void Color(int startTime, System.Drawing.Color color) => _Add_Color(0, startTime, startTime, color.R, color.G, color.B, color.R, color.G, color.B);
+        public void Color(int startTime, int endTime, System.Drawing.Color color) => _Add_Color(0, startTime, endTime, color.R, color.G, color.B, color.R, color.G, color.B);
+        public void Color(EasingType easing, int startTime, int endTime, System.Drawing.Color color1, System.Drawing.Color color2) => _Add_Color(easing, startTime, endTime, color1.R, color1.G, color1.B, color2.R, color2.G, color2.B);
+        public void Color(int startTime, int R, int G, int B) => _Add_Color(0, startTime, startTime, R, G, B, R, G, B);
+        public void Color(int startTime, int endTime, int R, int G, int B) => _Add_Color(0, startTime, endTime, R, G, B, R, G, B);
+        public void Color(EasingType easing, int startTime, int endTime, int startR, int startG, int startB, int endR, int endG, int endB) => _Add_Color(easing, startTime, endTime, startR, startG, startB, endR, endG, endB);
 
-        public void Vector(int startTime, System.Drawing.SizeF zoom)
-        {
-            _Add_Vector(0, startTime, startTime, zoom.Width, zoom.Height, zoom.Width, zoom.Height);
-        }
-        public void Vector(int startTime, double w, double h)
-        {
-            _Add_Vector(0, startTime, startTime, w, h, w, h);
-        }
-        public void Vector(int startTime, int endTime, double w, double h)
-        {
-            _Add_Vector(0, startTime, endTime, w, h, w, h);
-        }
-        public void Vector(EasingType easing, int startTime, int endTime, System.Drawing.SizeF startZoom, System.Drawing.SizeF endZoom)
-        {
-            _Add_Vector(easing, startTime, endTime, startZoom.Width, startZoom.Height, endZoom.Width, endZoom.Height);
-        }
-        public void Vector(EasingType easing, int startTime, int endTime, double w1, double h1, double w2, double h2)
-        {
-            _Add_Vector(easing, startTime, endTime, w1, h1, w2, h2);
-        }
+        public void Vector(int startTime, System.Drawing.SizeF zoom) => _Add_Vector(0, startTime, startTime, zoom.Width, zoom.Height, zoom.Width, zoom.Height);
+        public void Vector(int startTime, double w, double h) => _Add_Vector(0, startTime, startTime, w, h, w, h);
+        public void Vector(int startTime, int endTime, double w, double h) => _Add_Vector(0, startTime, endTime, w, h, w, h);
+        public void Vector(EasingType easing, int startTime, int endTime, System.Drawing.SizeF startZoom, System.Drawing.SizeF endZoom) => _Add_Vector(easing, startTime, endTime, startZoom.Width, startZoom.Height, endZoom.Width, endZoom.Height);
+        public void Vector(EasingType easing, int startTime, int endTime, double w1, double h1, double w2, double h2) => _Add_Vector(easing, startTime, endTime, w1, h1, w2, h2);
 
-        public void FlipH(int startTime)
-        {
-            _Add_Param(0, startTime, startTime, "H");
-        }
-        public void FlipH(int startTime, int endTime)
-        {
-            _Add_Param(0, startTime, endTime, "H");
-        }
+        public void FlipH(int startTime) => _Add_Param(0, startTime, startTime, "H");
+        public void FlipH(int startTime, int endTime) => _Add_Param(0, startTime, endTime, "H");
+        public void FlipV(int startTime) => _Add_Param(0, startTime, startTime, "V");
+        public void FlipV(int startTime, int endTime) => _Add_Param(0, startTime, endTime, "V");
 
-        public void FlipV(int startTime)
-        {
-            _Add_Param(0, startTime, startTime, "V");
-        }
-        public void FlipV(int startTime, int endTime)
-        {
-            _Add_Param(0, startTime, endTime, "V");
-        }
+        public void Lighting(int startTime) => _Add_Param(0, startTime, startTime, "A");
+        public void Lighting(int startTime, int endTime) => _Add_Param(0, startTime, endTime, "A");
 
-        public void Lighting(int startTime)
-        {
-            _Add_Param(0, startTime, startTime, "A");
-        }
-        public void Lighting(int startTime, int endTime)
-        {
-            _Add_Param(0, startTime, endTime, "A");
-        }
-
-        internal void Parameter(EasingType easing, int startTime, int endTime, string type)
-        {
-            _Add_Param(easing, startTime, endTime, type);
-        }
+        internal void Parameter(EasingType easing, int startTime, int endTime, string type) => _Add_Param(easing, startTime, endTime, type);
         #endregion
 
         public void ExecuteBrew(StoryboardLayer lay_parsed, OsbSprite brewObj = null)
@@ -397,11 +283,58 @@ namespace LibOsb
             if (_MoveX.Count != 0) CheckTiming(ref _moveX);
             if (_MoveY.Count != 0) CheckTiming(ref _moveY);
             if (_Parameter.Count != 0) CheckTiming(ref _parameter);
-            foreach (var item in _Loop)
-                item.Examine();
-            foreach (var item in _Trigger)
-                item.Examine();
+            foreach (var item in _Loop) item.Examine();
+            foreach (var item in _Trigger) item.Examine();
+
+            // 验证物件完全消失的时间段
+            int tmpTime = -1;
+            bool fadeouting = false;
+            for (int j = 0; j < _Fade.Count; j++)
+            {
+                var nowF = _Fade[j];
+                if (j == 0 && nowF.P1_1 == 0 && nowF.StartTime > MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+                {
+                    _FadeoutList.Add(MinTime, nowF.StartTime);
+                }
+                else if (nowF.P2_1 == 0 && !fadeouting)  // f2=0，开始计时
+                {
+                    tmpTime = nowF.EndTime;
+                    fadeouting = true;
+                }
+                else if (fadeouting)
+                {
+                    if (nowF.P1_1 != 0 || nowF.P2_1 != 0)  // 二者任一不为0则取消状态                       
+                    {
+                        _FadeoutList.Add(tmpTime, nowF.StartTime);
+                        fadeouting = false;
+                    }
+                }
+            }
+            if (fadeouting && tmpTime != MaxTime)  // 可能存在Fade后还有别的event
+            {
+                _FadeoutList.Add(tmpTime, MaxTime);
+            }
         }
+
+        public void Optimize()
+        {
+            // 简单来说每个类型优化都有一个共同点：掐头去尾砍中间
+
+            if (_Scale.Count != 0) FixAll(ref _scale);
+            if (_Rotate.Count != 0) FixAll(ref _rotate);
+            if (_MoveX.Count != 0) FixAll(ref _moveX);
+            if (_MoveY.Count != 0) FixAll(ref _moveY);
+            if (_Fade.Count != 0) FixAll(ref _fade);
+            //if (_Move.Count != 0) FixDouble(ref _move);
+            //if (_Vector.Count != 0) FixDouble(ref _vector);
+            //if (_Color.Count != 0) FixTriple(ref _color);
+            //if (_Parameter.Count != 0) CheckTiming(ref _parameter);
+            foreach (var item in _Loop) item.Optimize();
+            foreach (var item in _Trigger) item.Optimize();
+        }
+
+        public Element Clone() => (Element)MemberwiseClone();
+
         #region non-public member
         internal static Element Parse(string osbString, int baseLine)
         {
@@ -648,6 +581,80 @@ namespace LibOsb
         private bool isTriggering = false, isLooping = false;
         protected bool isInnerClass = false;
 
+        private void CheckAlpha(double a)
+        {
+            if (a < 0 || a > 1)
+            {
+                a = (a > 1 ? 1 : 0);
+                Debug.WriteLine("[Warning] Alpha of fade should be between 0 and 1.");
+            }
+        }
+        private void CheckTiming<T>(ref List<T> _list)
+        {
+            _list.Sort(new EventSort<T>());
+            for (int i = 1; i < _list.Count; i++)
+            {
+                dynamic obj_next = _list[i];
+                dynamic obj_previous = _list[i - 1];
+                if (obj_previous.StartTime > obj_previous.EndTime)
+                    throw new ArgumentException("Start time should not be larger than end time.");
+                if (obj_next.StartTime < obj_previous.EndTime)
+                    throw new Exception(obj_previous.ToString() + Environment.NewLine + obj_next.ToString());
+            }
+        }
+        private void FixAll<T>(ref List<T> _list)
+        {
+            var tType = typeof(T);
+
+            #region 深度优化部分，待检验
+            if (tType != typeof(Fade))
+            {
+                int max_i = _list.Count - 1;
+                for (int i = 0; i < _list.Count; i++)
+                {
+                    dynamic e = _list[i];
+                    dynamic e2 = null;
+                    if (i != max_i) e2 = _list[i + 1];
+                    // 判断当前种类动作是否在某一透明范围内，并且下一个动作的startTime也须在此范围内
+                    if (i < max_i && _FadeoutList.InRange(e.StartTime, e.EndTime, e2.StartTime)) 
+                    {
+                        _list.RemoveAt(i);
+                        i--;
+                    }
+                    if (i != max_i) continue;
+                    // 判断当前种类最后一个动作是否正处于物件透明状态，而且此状态最大时间即是obj最大时间
+                    else if (_FadeoutList.InRange(out bool isLast, e.StartTime, e.EndTime) &&
+                             isLast && _FadeoutList.MaxTime == this.MaxTime)
+                    {
+                        _list.RemoveAt(i);
+                        i--;
+                    }
+                }
+            }
+            #endregion
+
+            if (tType == typeof(Scale))
+                FixSingle(ref _list);
+            // todo
+        }
+        private void FixSingle<T>(ref List<T> _list)
+        {
+            double defaultParam = -1;
+            var tType = typeof(T);
+            if (tType == typeof(Scale))
+                defaultParam = 1;
+            else if (tType == typeof(Rotate))
+                defaultParam = 0;
+            else if (tType == typeof(MoveX))
+                defaultParam = (int)this.DefaultX;
+            else if (tType == typeof(MoveY))
+                defaultParam = (int)this.DefaultY;
+            else if (tType == typeof(Fade))
+                defaultParam = 1;
+
+            // todo
+        }
+
         internal List<Move> _Move { get => _move; set => _move = value; }
         internal List<Scale> _Scale { get => _scale; set => _scale = value; }
         internal List<Fade> _Fade { get => _fade; set => _fade = value; }
@@ -659,6 +666,8 @@ namespace LibOsb
         internal List<Parameter> _Parameter { get => _parameter; set => _parameter = value; }
         internal List<Loop> _Loop { get => _loop; set => _loop = value; }
         internal List<Trigger> _Trigger { get => _trigger; set => _trigger = value; }
+
+        internal TimeRange _FadeoutList { get; set; } = new TimeRange();
 
         private List<Move> _move = new List<Move>();
         private List<Scale> _scale = new List<Scale>();
@@ -672,25 +681,6 @@ namespace LibOsb
         private List<Loop> _loop = new List<Loop>();
         private List<Trigger> _trigger = new List<Trigger>();
 
-        private void CheckAlpha(double a)
-        {
-            if (a < 0 || a > 1)
-            {
-                a = (a > 1 ? 1 : 0);
-                Debug.WriteLine("[Warning] Alpha of fade should be between 0 and 1.");
-            }
-        }
-        private void CheckTiming<T>(ref List<T> _list)
-        {
-            _list.Sort(new EventSort<T>(GroupSortKind.Index));
-            for (int i = 1; i < _list.Count; i++)
-            {
-                dynamic obj_next = _list[i];
-                dynamic obj_previous = _list[i - 1];
-                if (obj_next.StartTime < obj_previous.EndTime)
-                    throw new Exception(obj_previous.ToString() + Environment.NewLine + obj_next.ToString());
-            }
-        }
         /// <summary>
         /// 调整
         /// </summary>
@@ -891,48 +881,16 @@ namespace LibOsb
                 _Add_Event(_Trigger[_Trigger.Count - 1]._Vector, obj);
         }
 
-        public enum GroupSortKind { Index }
-        public class EventSort<T> : IComparer<T>
+        class EventSort<T> : IComparer<T>
         {
-            #region 类字段定义
-            private GroupSortKind sortKind;
-            #endregion
-            #region 构造器
-            public EventSort(GroupSortKind sk)
-            {
-                this.sortKind = sk;
-            }
-            #endregion
-            #region IComparer接口比较方法的实现
             public int Compare(T event1, T event2)
             {
-                int res = 0;
-                if ((event1 == null) && (event2 == null))
-                    throw new Exception("SB");
-                else if ((event1 != null) && (event2 == null))
-                    throw new Exception("SB");
-                else if ((event1 == null) && (event2 != null))
-                    throw new Exception("SB");
-
+                if (event1 == null || event2 == null)
+                    throw new NullReferenceException();
                 dynamic d1 = event1, d2 = event2;
-                if (sortKind == GroupSortKind.Index)
-                {
-                    if (d1.StartTime > d2.StartTime)
-                    {
-                        res = 1;
-                    }
-                    else if (d1.StartTime < d2.StartTime)
-                    {
-                        res = -1;
-                    }
-                }
-                //else if (sortKind == GroupSortKind.Name)
-                //{
-                //    res = obj1.Name.CompareTo(obj2.Name);
-                //}
-                return res;
+                if (d1.StartTime >= d2.StartTime) return 1;
+                return -1;
             }
-            #endregion
         }
         #endregion
     }
