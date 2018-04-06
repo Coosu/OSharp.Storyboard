@@ -85,7 +85,6 @@
     <Compile Include="Model\ElementManager.cs" />
     <Compile Include="Model\ElementGroup.cs" />
     <Compile Include="Model\Element.cs" />
-    <Compile Include="Optimizer\EventOperator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -93,6 +92,8 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Optimizer\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

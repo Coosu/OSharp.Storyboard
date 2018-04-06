@@ -25,7 +25,9 @@ namespace LibOsb
             //ok.AppendLine("  V,0,0,100,320,240");
 
             ok.AppendLine(" F,0,300,1000,0,1");
-            ok.AppendLine(" M,0,300,400,320,240");
+            ok.AppendLine(" S,0,300,400,0.5");
+            ok.AppendLine(" S,0,0,200,1");
+            ok.AppendLine(" S,0,200,300,1");
             ok.AppendLine(" F,0,2000,,0");
             ok.AppendLine(" F,0,2300,2400,0,1");
             ok.AppendLine(" F,0,2500,,0");
@@ -34,8 +36,9 @@ namespace LibOsb
             ok.AppendLine(" M,0,4000,4300,320,240");
 
             var obj2 = Element.Parse(ok.ToString());
-            obj2.Examine();
+            obj2.Optimize();
             Console.WriteLine(obj2._FadeoutList);
+            Console.WriteLine(obj2.ToString());
             Console.Read();
             return;
         }

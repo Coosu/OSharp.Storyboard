@@ -272,63 +272,21 @@ namespace LibOsb
             return Parse(osbString, 1);
         }
 
-        public void Examine()
-        {
-            if (_Move.Count != 0) CheckTiming(ref _move);
-            if (_Scale.Count != 0) CheckTiming(ref _scale);
-            if (_Fade.Count != 0) CheckTiming(ref _fade);
-            if (_Rotate.Count != 0) CheckTiming(ref _rotate);
-            if (_Vector.Count != 0) CheckTiming(ref _vector);
-            if (_Color.Count != 0) CheckTiming(ref _color);
-            if (_MoveX.Count != 0) CheckTiming(ref _moveX);
-            if (_MoveY.Count != 0) CheckTiming(ref _moveY);
-            if (_Parameter.Count != 0) CheckTiming(ref _parameter);
-            foreach (var item in _Loop) item.Examine();
-            foreach (var item in _Trigger) item.Examine();
-
-            // 验证物件完全消失的时间段
-            int tmpTime = -1;
-            bool fadeouting = false;
-            for (int j = 0; j < _Fade.Count; j++)
-            {
-                var nowF = _Fade[j];
-                if (j == 0 && nowF.P1_1 == 0 && nowF.StartTime > MinTime)  // 最早的F晚于最小开始时间，默认加这一段
-                {
-                    _FadeoutList.Add(MinTime, nowF.StartTime);
-                }
-                else if (nowF.P2_1 == 0 && !fadeouting)  // f2=0，开始计时
-                {
-                    tmpTime = nowF.EndTime;
-                    fadeouting = true;
-                }
-                else if (fadeouting)
-                {
-                    if (nowF.P1_1 != 0 || nowF.P2_1 != 0)  // 二者任一不为0则取消状态                       
-                    {
-                        _FadeoutList.Add(tmpTime, nowF.StartTime);
-                        fadeouting = false;
-                    }
-                }
-            }
-            if (fadeouting && tmpTime != MaxTime)  // 可能存在Fade后还有别的event
-            {
-                _FadeoutList.Add(tmpTime, MaxTime);
-            }
-        }
 
         public void Optimize()
         {
-            // 简单来说每个类型优化都有一个共同点：掐头去尾砍中间
+            Examine();
+            // 简单来说每个类型优化都有一个共同点：从后往前，1.删除没用的 2.整合能整合的 3.考虑单event情况 4.排除第一行误加的情况（defaultParams）
 
             if (_Scale.Count != 0) FixAll(ref _scale);
             if (_Rotate.Count != 0) FixAll(ref _rotate);
             if (_MoveX.Count != 0) FixAll(ref _moveX);
             if (_MoveY.Count != 0) FixAll(ref _moveY);
             if (_Fade.Count != 0) FixAll(ref _fade);
-            //if (_Move.Count != 0) FixDouble(ref _move);
-            //if (_Vector.Count != 0) FixDouble(ref _vector);
-            //if (_Color.Count != 0) FixTriple(ref _color);
-            //if (_Parameter.Count != 0) CheckTiming(ref _parameter);
+            if (_Move.Count != 0) FixAll(ref _move);
+            if (_Vector.Count != 0) FixAll(ref _vector);
+            if (_Color.Count != 0) FixAll(ref _color);
+            if (_Parameter.Count != 0) FixAll(ref _parameter);
             foreach (var item in _Loop) item.Optimize();
             foreach (var item in _Trigger) item.Optimize();
         }
@@ -581,6 +539,49 @@ namespace LibOsb
         private bool isTriggering = false, isLooping = false;
         protected bool isInnerClass = false;
 
+        private void Examine()
+        {
+            if (_Move.Count != 0) CheckTiming(ref _move);
+            if (_Scale.Count != 0) CheckTiming(ref _scale);
+            if (_Fade.Count != 0) CheckTiming(ref _fade);
+            if (_Rotate.Count != 0) CheckTiming(ref _rotate);
+            if (_Vector.Count != 0) CheckTiming(ref _vector);
+            if (_Color.Count != 0) CheckTiming(ref _color);
+            if (_MoveX.Count != 0) CheckTiming(ref _moveX);
+            if (_MoveY.Count != 0) CheckTiming(ref _moveY);
+            if (_Parameter.Count != 0) CheckTiming(ref _parameter);
+            foreach (var item in _Loop) item.Examine();
+            foreach (var item in _Trigger) item.Examine();
+
+            // 验证物件完全消失的时间段
+            int tmpTime = -1;
+            bool fadeouting = false;
+            for (int j = 0; j < _Fade.Count; j++)
+            {
+                var nowF = _Fade[j];
+                if (j == 0 && nowF.P1_1 == 0 && nowF.StartTime > MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+                {
+                    _FadeoutList.Add(MinTime, nowF.StartTime);
+                }
+                else if (nowF.P2_1 == 0 && !fadeouting)  // f2=0，开始计时
+                {
+                    tmpTime = nowF.EndTime;
+                    fadeouting = true;
+                }
+                else if (fadeouting)
+                {
+                    if (nowF.P1_1 != 0 || nowF.P2_1 != 0)  // 二者任一不为0则取消状态                       
+                    {
+                        _FadeoutList.Add(tmpTime, nowF.StartTime);
+                        fadeouting = false;
+                    }
+                }
+            }
+            if (fadeouting && tmpTime != MaxTime)  // 可能存在Fade后还有别的event
+            {
+                _FadeoutList.Add(tmpTime, MaxTime);
+            }
+        }
         private void CheckAlpha(double a)
         {
             if (a < 0 || a > 1)
@@ -609,24 +610,24 @@ namespace LibOsb
             #region 深度优化部分，待检验
             if (tType != typeof(Fade))
             {
-                int max_i = _list.Count - 1;
+                //int max_i = _list.Count - 1;
                 for (int i = 0; i < _list.Count; i++)
                 {
                     dynamic e = _list[i];
                     dynamic e2 = null;
-                    if (i != max_i) e2 = _list[i + 1];
+                    if (i != _list.Count - 1) e2 = _list[i + 1];
                     // 判断当前种类动作是否在某一透明范围内，并且下一个动作的startTime也须在此范围内
-                    if (i < max_i && _FadeoutList.InRange(e.StartTime, e.EndTime, e2.StartTime)) 
+                    if (i < _list.Count - 1 && _FadeoutList.InRange(out bool cnm, e.StartTime, e.EndTime, e2.StartTime))
                     {
-                        _list.RemoveAt(i);
+                        _list.RemoveAt(i);  // 待修改，封装一个方法控制min max的增减
                         i--;
                     }
-                    if (i != max_i) continue;
+                    if (i != _list.Count - 1) continue;
                     // 判断当前种类最后一个动作是否正处于物件透明状态，而且此状态最大时间即是obj最大时间
                     else if (_FadeoutList.InRange(out bool isLast, e.StartTime, e.EndTime) &&
                              isLast && _FadeoutList.MaxTime == this.MaxTime)
                     {
-                        _list.RemoveAt(i);
+                        _list.RemoveAt(i);  // 待修改，封装一个方法控制min max的增减
                         i--;
                     }
                 }
@@ -652,7 +653,68 @@ namespace LibOsb
             else if (tType == typeof(Fade))
                 defaultParam = 1;
 
-            // todo
+            int i = _list.Count - 1;
+            while (i >= 1)
+            {
+                dynamic objNow = _list[i];
+                dynamic objPre = _list[i - 1];
+                /* 当 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
+                 * 且 此event的param固定
+                 * 且 此event当前动作 = 此event上个动作
+                 */
+                if ((objNow.EndTime < this.MaxTime || objNow.EndTime == this.MaxTime && MaxTimeCount > 1) &&
+                   objNow.P1_1 == objNow.P2_1 &&
+                   objNow.P1_1 == objPre.P2_1)
+                {
+                    // Remove i
+                    i = _list.Count - 1;
+                }
+                /* 当 此event与前event一致，且前后param皆固定 （有待考证）
+                 */
+                else if (objNow.P1_1 == objNow.P2_1 &&
+                  objPre.P1_1 == objPre.P2_1 &&
+                  objPre.P1_1 == objNow.P1_1)
+                {
+
+                    objPre.EndTime = objNow.EndTime;  // 整合至前面
+                    if (objPre.StartTime == this.MinTime && MinTimeCount > 1)  // ??
+                    {
+                        objPre.StartTime = objPre.EndTime;
+                    }
+                    // Remove i
+                    i = _list.Count - 1;
+                }
+                else i--;
+            }
+
+            /* 当 此event唯一
+             * 且 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
+             * 且 此event开始时间 > obj最小时间 (或包括此event有两个以上的最小时间)
+             * 且 此event的param固定
+             * 且 此event.param=default
+             */
+            dynamic obj0 = _list[0];
+            dynamic obj1 = null;
+            if (_list.Count > 1) obj1 = _list[1];
+
+            if (_list.Count == 1 &&
+                (obj0.EndTime < this.MaxTime || obj0.EndTime == this.MaxTime && MaxTimeCount > 1) &&
+                (obj0.StartTime > this.MinTime || obj0.StartTime == this.MinTime && MinTimeCount > 1) &&
+                obj0.P1_1 == obj0.P2_1 &&
+                obj0.P1_1 == defaultParam)
+            {
+                // Remove 0
+            }
+            // 加个条件 对第一行再判断，因为经常可能会出现误加了一个默认值的event
+            else if (_list.Count > 1 &&
+                (obj0.EndTime < this.MaxTime || obj0.EndTime == this.MaxTime && MaxTimeCount > 1) &&
+                (obj0.StartTime > this.MinTime || obj0.StartTime == this.MinTime && MinTimeCount > 1) &&
+                obj0.P1_1 == obj0.P2_1 &&
+                obj0.P2_1 == obj1.P1_1 &&
+                obj0.P1_1 == defaultParam)
+            {
+                // Remove 0
+            }
         }
 
         internal List<Move> _Move { get => _move; set => _move = value; }
