@@ -277,18 +277,9 @@ namespace LibOsb
         {
             Examine();
             // 简单来说每个类型优化都有一个共同点：从后往前，1.删除没用的 2.整合能整合的 3.考虑单event情况 4.排除第一行误加的情况（defaultParams）
+            _PreOpt();
+            _NmOpt();
 
-            if (_Scale.Count != 0) FixAll(ref _scale);
-            if (_Rotate.Count != 0) FixAll(ref _rotate);
-            if (_MoveX.Count != 0) FixAll(ref _moveX);
-            if (_MoveY.Count != 0) FixAll(ref _moveY);
-            if (_Fade.Count != 0) FixAll(ref _fade);
-            if (_Move.Count != 0) FixAll(ref _move);
-            if (_Vector.Count != 0) FixAll(ref _vector);
-            if (_Color.Count != 0) FixAll(ref _color);
-            if (_Parameter.Count != 0) FixAll(ref _parameter);
-            foreach (var item in _Loop) item.Optimize();
-            foreach (var item in _Trigger) item.Optimize();
         }
 
         public Element Clone() => (Element)MemberwiseClone();
@@ -603,6 +594,38 @@ namespace LibOsb
                     throw new Exception(obj_previous.ToString() + Environment.NewLine + obj_next.ToString());
             }
         }
+        private void _PreOpt()
+        {
+            if (_Scale.Count != 0) FixAll(ref _scale);
+            if (_Rotate.Count != 0) FixAll(ref _rotate);
+            if (_MoveX.Count != 0) FixAll(ref _moveX);
+            if (_MoveY.Count != 0) FixAll(ref _moveY);
+            if (_Fade.Count != 0) FixAll(ref _fade);
+            if (_Move.Count != 0) FixAll(ref _move);
+            if (_Vector.Count != 0) FixAll(ref _vector);
+            if (_Color.Count != 0) FixAll(ref _color);
+            if (_Parameter.Count != 0) FixAll(ref _parameter);
+            if (_FadeoutList.Count > 0 && _FadeoutList.LastEndTime == MaxTime) InnerMaxTime = _FadeoutList.LastStartTime;
+
+            foreach (var item in _Loop) item._PreOpt();
+            foreach (var item in _Trigger) item._PreOpt();
+        }
+        private void _NmOpt()
+        {
+            if (_Scale.Count != 0) FixSingle(ref _scale);
+            if (_Rotate.Count != 0) FixSingle(ref _rotate);
+            if (_MoveX.Count != 0) FixSingle(ref _moveX);
+            if (_MoveY.Count != 0) FixSingle(ref _moveY);
+            if (_Fade.Count != 0) FixSingle(ref _fade);
+            //if (_Move.Count != 0) FixAll(ref _move);
+            //if (_Vector.Count != 0) FixAll(ref _vector);
+            //if (_Color.Count != 0) FixAll(ref _color);
+            //if (_Parameter.Count != 0) FixAll(ref _parameter);
+            //if (_FadeoutList.LastEndTime == MaxTime) InnerMaxTime = _FadeoutList.LastStartTime;
+
+            foreach (var item in _Loop) item._NmOpt();
+            foreach (var item in _Trigger) item._NmOpt();
+        }
         private void FixAll<T>(ref List<T> _list)
         {
             var tType = typeof(T);
@@ -625,7 +648,7 @@ namespace LibOsb
                     if (i != _list.Count - 1) continue;
                     // 判断当前种类最后一个动作是否正处于物件透明状态，而且此状态最大时间即是obj最大时间
                     else if (_FadeoutList.InRange(out bool isLast, e.StartTime, e.EndTime) &&
-                             isLast && _FadeoutList.MaxTime == this.MaxTime)
+                             isLast && _FadeoutList.LastEndTime == this.MaxTime)
                     {
                         _list.RemoveAt(i);  // 待修改，封装一个方法控制min max的增减
                         i--;
@@ -634,8 +657,8 @@ namespace LibOsb
             }
             #endregion
 
-            if (tType == typeof(Scale))
-                FixSingle(ref _list);
+            //if (tType == typeof(Scale))
+            //  FixSingle(ref _list);
             // todo
         }
         private void FixSingle<T>(ref List<T> _list)
@@ -654,67 +677,94 @@ namespace LibOsb
                 defaultParam = 1;
 
             int i = _list.Count - 1;
-            while (i >= 1)
+            while (i >= 0)
             {
                 dynamic objNow = _list[i];
-                dynamic objPre = _list[i - 1];
+                dynamic objPre = null;
+                if (i >= 1) objPre = _list[i - 1];
+                int now_start = objNow.StartTime, now_end = objNow.EndTime;
+                int pre_start = -1, pre_end = -1;
+                if (objPre != null)
+                {
+                    pre_start = objPre.StartTime;
+                    pre_end = objPre.EndTime;
+                }
+                double nowP1 = objNow.P1_1, nowP2 = objNow.P2_1;
+                double preP1 = -1, preP2 = -1;
+                if (objPre != null)
+                {
+                    preP1 = objPre.P1_1;
+                    preP2 = objPre.P2_1;
+                }
+                if (i == 0)
+                {
+                    /* 当 此event唯一
+                     * 且 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
+                     * 且 此event开始时间 > obj最小时间 (或包括此event有两个以上的最小时间)
+                     * 且 此event的param固定
+                     * 且 此event.param=default
+                     */
+                    if (_list.Count == 1 &&
+                    (now_end < this.MaxTime || now_end == this.MaxTime && MaxTimeCount > 1) &&
+                    (now_start > this.MinTime || now_start == this.MinTime && MinTimeCount > 1) &&
+                    nowP1 == nowP2 &&
+                    nowP1 == defaultParam)
+                    {
+                        // Remove 0
+                        _Remove_Event(_list, 0);
+                    }
+                    break;
+                }
+
                 /* 当 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
-                 * 且 此event的param固定
-                 * 且 此event当前动作 = 此event上个动作
-                 */
-                if ((objNow.EndTime < this.MaxTime || objNow.EndTime == this.MaxTime && MaxTimeCount > 1) &&
-                   objNow.P1_1 == objNow.P2_1 &&
-                   objNow.P1_1 == objPre.P2_1)
+                * 且 此event的param固定
+                * 且 此event当前动作 = 此event上个动作
+                */
+                if ((now_end < this.MaxTime || now_end == this.MaxTime && MaxTimeCount > 1) &&
+                   nowP1 == nowP2 &&
+                   nowP1 == preP2)
                 {
                     // Remove i
+                    _Remove_Event(_list, i);
                     i = _list.Count - 1;
                 }
                 /* 当 此event与前event一致，且前后param皆固定 （有待考证）
                  */
-                else if (objNow.P1_1 == objNow.P2_1 &&
-                  objPre.P1_1 == objPre.P2_1 &&
-                  objPre.P1_1 == objNow.P1_1)
+                else if (nowP1 == nowP2 &&
+                  preP1 == preP2 &&
+                  preP1 == nowP1)
                 {
 
                     objPre.EndTime = objNow.EndTime;  // 整合至前面
-                    if (objPre.StartTime == this.MinTime && MinTimeCount > 1)  // ??
+                    if (pre_start == this.MinTime && MinTimeCount > 1)  // ??
                     {
                         objPre.StartTime = objPre.EndTime;
                     }
                     // Remove i
+                    _Remove_Event(_list, i);
                     i = _list.Count - 1;
                 }
                 else i--;
+
             }
 
-            /* 当 此event唯一
-             * 且 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
-             * 且 此event开始时间 > obj最小时间 (或包括此event有两个以上的最小时间)
-             * 且 此event的param固定
-             * 且 此event.param=default
-             */
-            dynamic obj0 = _list[0];
-            dynamic obj1 = null;
-            if (_list.Count > 1) obj1 = _list[1];
 
-            if (_list.Count == 1 &&
-                (obj0.EndTime < this.MaxTime || obj0.EndTime == this.MaxTime && MaxTimeCount > 1) &&
-                (obj0.StartTime > this.MinTime || obj0.StartTime == this.MinTime && MinTimeCount > 1) &&
-                obj0.P1_1 == obj0.P2_1 &&
-                obj0.P1_1 == defaultParam)
-            {
-                // Remove 0
-            }
-            // 加个条件 对第一行再判断，因为经常可能会出现误加了一个默认值的event
-            else if (_list.Count > 1 &&
-                (obj0.EndTime < this.MaxTime || obj0.EndTime == this.MaxTime && MaxTimeCount > 1) &&
-                (obj0.StartTime > this.MinTime || obj0.StartTime == this.MinTime && MinTimeCount > 1) &&
-                obj0.P1_1 == obj0.P2_1 &&
-                obj0.P2_1 == obj1.P1_1 &&
-                obj0.P1_1 == defaultParam)
-            {
-                // Remove 0
-            }
+            //dynamic obj0 = _list[0];
+            //dynamic obj1 = null;
+            //if (_list.Count > 1) obj1 = _list[1];
+
+
+            //// 加个条件 对第一行再判断，因为经常可能会出现误加了一个默认值的event
+            //else if (_list.Count > 1 &&
+            //    (obj0.EndTime < this.MaxTime || obj0.EndTime == this.MaxTime && MaxTimeCount > 1) &&
+            //    (obj0.StartTime > this.MinTime || obj0.StartTime == this.MinTime && MinTimeCount > 1) &&
+            //    obj0.P1_1 == obj0.P2_1 &&
+            //    obj0.P2_1 == obj1.P1_1 &&
+            //    obj0.P1_1 == defaultParam)
+            //{
+            //    // Remove 0
+            //    _Remove_Event(obj0, 0);
+            //}
         }
 
         internal List<Move> _Move { get => _move; set => _move = value; }
@@ -819,6 +869,33 @@ namespace LibOsb
                 _Trigger[i].EndTime += offsetTiming;
                 _Trigger[i]._Adjust(offsetX, offsetY, offsetTiming);
             }
+        }
+
+        private void _Remove_Event<T>(List<T> _list, int index)
+        {
+            if (((Scale)(object)_list[index]).StartTime == MinTime)
+            {
+                if (MinTimeCount > 1)
+                    MinTimeCount--;
+                else throw new NotImplementedException();
+            }
+            if (((Scale)(object)_list[index]).EndTime == MaxTime)
+            {
+                if (MaxTime > 1)
+                    MaxTimeCount--;  //
+                else throw new NotImplementedException();
+            }
+            _list.RemoveAt(index);
+            //var tType = typeof(T);
+            //if (tType == typeof(Scale))
+            //else if (tType == typeof(Rotate))
+            //    defaultParam = 0;
+            //else if (tType == typeof(MoveX))
+            //    defaultParam = (int)this.DefaultX;
+            //else if (tType == typeof(MoveY))
+            //    defaultParam = (int)this.DefaultY;
+            //else if (tType == typeof(Fade))
+            //    defaultParam = 1;
         }
 
         private void _Add_Event<T>(List<T> _list, T _event)

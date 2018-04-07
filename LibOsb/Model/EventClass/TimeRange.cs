@@ -5,11 +5,16 @@ using System.Text;
 
 namespace LibOsb.EventClass
 {
+    // 差个排序
     public class TimeRange
     {
         public List<TimeList> TimingList { get; set; } = new List<TimeList>();
 
-        public int MaxTime { get => TimingList[TimingList.Count - 1].EndTime; }
+        public int FirstStartTime { get => TimingList[0].StartTime; }
+        public int FirstEndTime { get => TimingList[0].EndTime; }
+        public int LastStartTime { get => TimingList[TimingList.Count - 1].StartTime; }
+        public int LastEndTime { get => TimingList[TimingList.Count - 1].EndTime; }
+        public int Count { get => TimingList.Count; }
 
         public void Add(int startTime, int endTime)
         {
