@@ -13,6 +13,8 @@ namespace LibOsb.EventClass
         public double P2_1 { get; internal set; }
         public double P2_2 { get; internal set; }
 
+        public override bool IsStatic { get => P1_1 == P2_1 && P1_2 == P2_2; }
+
         protected void Init(string type, EasingType easing, int startTime, int endTime, double preParam1, double preParam2, double postParam1, double postParam2)
         {
             Type = type;

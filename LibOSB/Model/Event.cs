@@ -16,7 +16,9 @@ namespace LibOsb
         public EasingType Easing { get; protected set; }
         public string Type { get; protected set; }
         public string ScriptParams { get; protected set; }
-        
+        // 扩展属性
+        public abstract bool IsStatic { get; }
+
         internal abstract void BuildParams();
 
         public override string ToString()

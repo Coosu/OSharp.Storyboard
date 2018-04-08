@@ -10,6 +10,8 @@ namespace LibOsb.Model.EventType
     {
         public string PType { get; private set; }
 
+        public override bool IsStatic { get => true; }
+
         public Parameter(EasingType easing, int starttime, int endtime, string ptype)
         {
             Type = "P";

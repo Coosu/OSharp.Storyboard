@@ -112,6 +112,13 @@ namespace LibOsb
             }
         }
 
+        public void Optimize()
+        {
+            foreach (var obj in ElementList)
+            {
+                obj.Optimize();
+            }
+        }
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
