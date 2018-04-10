@@ -10,10 +10,8 @@ namespace LibOsb.Model.EventType
     class Move : EventDouble
     {
         public Move(EasingType easing, int startTime, int endTime, double preParam1, double preParam2, double postParam1, double postParam2)
-        {
-            Init("M", easing, startTime, endTime, preParam1, preParam2, postParam1, postParam2);
-        }
-
+        => Init("M", easing, startTime, endTime, preParam1, preParam2, postParam1, postParam2);
+        
         internal void _Adjust(double x, double y)
         {
             P1_1 += x;

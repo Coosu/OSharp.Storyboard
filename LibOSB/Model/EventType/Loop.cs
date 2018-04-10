@@ -18,8 +18,7 @@ namespace LibOsb.Model.EventType
             isInnerClass = true;
         }
         public override string ToString()
-        {
-            return string.Join(",", " L", StartTime, LoopCount) + "\r\n" + base.ToString();
-        }
+        => string.Join(",", " L", StartTime, LoopCount) + "\r\n" + base.ToString();
+
     }
 }

@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using LibOsb.Model.Constants;
 using System.Diagnostics;
-using LibOsb.Model.EventType;
 using StorybrewCommon.Storyboarding;
-using LibOsb.BrewHelper;
 using OpenTK;
+using LibOsb.BrewHelper;
 using LibOsb.EventClass;
+using LibOsb.Model.EventType;
+using LibOsb.Model.Constants;
 
 namespace LibOsb
 {
@@ -50,7 +50,7 @@ namespace LibOsb
                 return max;
             }
         }
-        public int MinTime { get => InnerMinTime; }
+        public int MinTime => InnerMinTime;
 
         public int MaxTimeCount { get; protected set; } = 1;
         public int MinTimeCount { get; protected set; } = 1;
@@ -276,10 +276,10 @@ namespace LibOsb
             return Parse(osbString, 1);
         }
 
-        public void Optimize()
+        public void Compress()
         {
             Examine();
-            // 简单来说每个类型优化都有一个共同点：从后往前，1.删除没用的 2.整合能整合的 3.考虑单event情况 4.排除第一行误加的情况（defaultParams）
+            // 简单来说每个类型压缩都有一个共同点：从后往前，1.删除没用的 2.整合能整合的 3.考虑单event情况 4.排除第一行误加的情况（defaultParams）
             PreOptimize();
             NormalOptimize();
         }
@@ -579,10 +579,23 @@ namespace LibOsb
             }
         }
         /// <summary>
-        /// 预优化
+        /// 预压缩
         /// </summary>
         private void PreOptimize()
         {
+            bool flag = true;
+            foreach (var item in _Loop)
+            {
+                if (item.HasFade) flag = false;
+                item.PreOptimize();
+            }
+            foreach (var item in _Trigger)
+            {
+                if (item.HasFade) flag = false;
+                item.PreOptimize();
+            }
+            if (!flag) return;
+
             if (_Scale.Count != 0) FixAll(ref _scale);
             if (_Rotate.Count != 0) FixAll(ref _rotate);
             if (_MoveX.Count != 0) FixAll(ref _moveX);
@@ -594,11 +607,11 @@ namespace LibOsb
             if (_Parameter.Count != 0) FixAll(ref _parameter);
             //if (_FadeoutList.Count > 0 && _FadeoutList.LastEndTime == MaxTime) InnerMaxTime = _FadeoutList.LastStartTime;
 
-            foreach (var item in _Loop) item.PreOptimize();
-            foreach (var item in _Trigger) item.PreOptimize();
+            //foreach (var item in _Loop) item.PreOptimize();
+            //foreach (var item in _Trigger) item.PreOptimize();
         }
         /// <summary>
-        /// 正常优化
+        /// 正常压缩
         /// </summary>
         private void NormalOptimize()
         {
@@ -645,13 +658,13 @@ namespace LibOsb
             }
         }
         /// <summary>
-        /// 预优化的泛型方法
+        /// 预压缩的泛型方法
         /// </summary>
         private void FixAll<T>(ref List<T> _list)
         {
             var tType = typeof(T);
 
-            #region 预优化部分，待检验
+            #region 预压缩部分，待检验
             if (tType != typeof(Fade))
             {
                 //int max_i = _list.Count - 1;
@@ -683,7 +696,7 @@ namespace LibOsb
             // todo
         }
         /// <summary>
-        /// 正常优化的泛型方法（EventSingle）
+        /// 正常压缩的泛型方法（EventSingle）
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="_list"></param>
@@ -793,27 +806,9 @@ namespace LibOsb
                 else i--;
 
             }
-
-
-            //dynamic obj0 = _list[0];
-            //dynamic obj1 = null;
-            //if (_list.Count > 1) obj1 = _list[1];
-
-
-            //// 加个条件 对第一行再判断，因为经常可能会出现误加了一个默认值的event
-            //else if (_list.Count > 1 &&
-            //    (obj0.EndTime < this.MaxTime || obj0.EndTime == this.MaxTime && MaxTimeCount > 1) &&
-            //    (obj0.StartTime > this.MinTime || obj0.StartTime == this.MinTime && MinTimeCount > 1) &&
-            //    obj0.P1_1 == obj0.P2_1 &&
-            //    obj0.P2_1 == obj1.P1_1 &&
-            //    obj0.P1_1 == defaultParam)
-            //{
-            //    // Remove 0
-            //    _Remove_Event(obj0, 0);
-            //}
         }
         /// <summary>
-        /// 正常优化的泛型方法（EventDouble）
+        /// 正常压缩的泛型方法（EventDouble）
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="_list"></param>
@@ -926,7 +921,7 @@ namespace LibOsb
             }
         }
         /// <summary>
-        /// 正常优化的泛型方法（EventTriple）
+        /// 正常压缩的泛型方法（EventTriple）
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="_list"></param>
@@ -1028,10 +1023,11 @@ namespace LibOsb
         internal List<Parameter> _Parameter { get => _parameter; set => _parameter = value; }
         internal List<Loop> _Loop { get => _loop; set => _loop = value; }
         internal List<Trigger> _Trigger { get => _trigger; set => _trigger = value; }
-        /// <summary>
-        /// 透明时间段
-        /// </summary>
+        #endregion
+
+        #region 折叠：扩展属性
         internal TimeRange _FadeoutList { get; set; } = new TimeRange();
+        internal bool HasFade => _fade.Count != 0;
         #endregion
 
         #region 折叠：此字段定义是为了ref传递
@@ -1138,17 +1134,33 @@ namespace LibOsb
                 if (isTriggering) member = _Trigger[_Trigger.Count - 1];
                 else if (isLooping) member = _Loop[_Loop.Count - 1];
 
-                if (E.StartTime < member.InnerMinTime) member.InnerMinTime = E.StartTime;
+                if (E.StartTime < member.InnerMinTime)
+                {
+                    member.InnerMinTime = E.StartTime;
+                    member.MinTimeCount = 1;
+                }
                 else if (E.StartTime == member.InnerMinTime) member.MinTimeCount++;
-                if (E.EndTime > member.InnerMaxTime) member.InnerMaxTime = E.EndTime;
+                if (E.EndTime > member.InnerMaxTime)
+                {
+                    member.InnerMaxTime = E.EndTime;
+                    member.MaxTimeCount = 1;
+                }
                 else if (E.StartTime == member.InnerMaxTime) member.MaxTimeCount++;
             }
             else
             {
                 dynamic E = _event;
-                if (E.StartTime < InnerMinTime) InnerMinTime = E.StartTime;
+                if (E.StartTime < InnerMinTime)
+                {
+                    InnerMinTime = E.StartTime;
+                    MinTimeCount = 1;
+                }
                 else if (E.StartTime == InnerMinTime) MinTimeCount++;
-                if (E.EndTime > InnerMaxTime) InnerMaxTime = E.EndTime;
+                if (E.EndTime > InnerMaxTime)
+                {
+                    InnerMaxTime = E.EndTime;
+                    MaxTimeCount = 1;
+                }
                 else if (E.EndTime == InnerMaxTime) MaxTimeCount++;
             }
 

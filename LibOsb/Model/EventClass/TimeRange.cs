@@ -10,16 +10,14 @@ namespace LibOsb.EventClass
     {
         public List<TimeList> TimingList { get; set; } = new List<TimeList>();
 
-        public int FirstStartTime { get => TimingList[0].StartTime; }
-        public int FirstEndTime { get => TimingList[0].EndTime; }
-        public int LastStartTime { get => TimingList[TimingList.Count - 1].StartTime; }
-        public int LastEndTime { get => TimingList[TimingList.Count - 1].EndTime; }
-        public int Count { get => TimingList.Count; }
+        public int FirstStartTime => TimingList[0].StartTime;
+        public int FirstEndTime => TimingList[0].EndTime;
+        public int LastStartTime => TimingList[TimingList.Count - 1].StartTime;
+        public int LastEndTime => TimingList[TimingList.Count - 1].EndTime;
+        public int Count => TimingList.Count;
 
-        public void Add(int startTime, int endTime)
-        {
+        public void Add(int startTime, int endTime) =>
             TimingList.Add(new TimeList { StartTime = startTime, EndTime = endTime });
-        }
 
         public bool InRange(int time)
         {

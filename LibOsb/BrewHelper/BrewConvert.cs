@@ -69,7 +69,7 @@ namespace LibOsb.BrewHelper
                 case OriginType.TopRight:
                     return OsbOrigin.TopRight;
                 default:
-                    throw new Exception(libOrigin.ToString() + "未提供转换");
+                    throw new NotImplementedException(libOrigin.ToString() + "未提供转换");
             }
 
         }
@@ -82,7 +82,7 @@ namespace LibOsb.BrewHelper
                 case LoopType.LoopOnce:
                     return OsbLoopType.LoopOnce;
                 default:
-                    throw new Exception(libLoop.ToString() + "未提供转换");
+                    throw new NotImplementedException(libLoop.ToString() + "未提供转换");
             }
 
         }
@@ -172,7 +172,7 @@ namespace LibOsb.BrewHelper
                     return OsbEasing.InOutBounce;
 
                 default:
-                    throw new Exception(libEasing.ToString() + "未提供转换");
+                    throw new NotImplementedException(libEasing.ToString() + "未提供转换");
             }
 
         }

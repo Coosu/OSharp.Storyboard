@@ -57,7 +57,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DEMO.cs" />
     <Compile Include="Camera\Camera2D.cs" />
     <Compile Include="BrewHelper\BrewConvert.cs" />
     <Compile Include="Model\EventClass\EventDouble.cs" />
@@ -85,7 +84,7 @@
     <Compile Include="Model\ElementManager.cs" />
     <Compile Include="Model\ElementGroup.cs" />
     <Compile Include="Model\Element.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Demo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

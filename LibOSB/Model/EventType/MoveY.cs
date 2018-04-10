@@ -10,9 +10,8 @@ namespace LibOsb.Model.EventType
     class MoveY : EventSingle
     {
         public MoveY(EasingType easing, int startTime, int endTime, double preParam, double postParam)
-        {
-            Init("MY", easing, startTime, endTime, preParam, postParam);
-        }
+        => Init("MY", easing, startTime, endTime, preParam, postParam);
+
         internal void _Adjust(double y)
         {
             P1_1 += y;

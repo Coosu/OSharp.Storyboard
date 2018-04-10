@@ -21,9 +21,6 @@ namespace LibOsb.Model.EventType
             PType = ptype;
             BuildParams();
         }
-        internal override void BuildParams()
-        {
-            ScriptParams = PType;
-        }
+        internal override void BuildParams() => ScriptParams = PType;
     }
 }

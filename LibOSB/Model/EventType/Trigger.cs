@@ -20,7 +20,7 @@ namespace LibOsb.Model.EventType
             foreach (var item in triggerType)
             {
                 var s = item.ToString();
-                
+
                 if (sampleSet == "" &&
                     (s.IndexOf("Drum") != -1 || s.IndexOf("Soft") != -1 || s.IndexOf("Normal") != -1))
                 {
@@ -60,7 +60,6 @@ namespace LibOsb.Model.EventType
             StartTime = startTime;
             EndTime = endTime;
             TriggerType = triggerName;
-
             isInnerClass = true;
         }
         internal Trigger(int startTime, int endTime, string triggerName)
@@ -68,13 +67,9 @@ namespace LibOsb.Model.EventType
             StartTime = startTime;
             EndTime = endTime;
             TriggerType = triggerName;
-
             isInnerClass = true;
         }
 
-        public override string ToString()
-        {
-            return string.Join(",", " T", TriggerType, StartTime, EndTime) + "\r\n" + base.ToString();
-        }
+        public override string ToString() => string.Join(",", " T", TriggerType, StartTime, EndTime) + "\r\n" + base.ToString();
     }
 }

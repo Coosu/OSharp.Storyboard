@@ -8,7 +8,7 @@ namespace LibOsb
 {
     public class ElementManager
     {
-        internal List<ElementGroup> GroupList { get; set; }
+        internal List<ElementGroup> GroupList { get; set; } = new List<ElementGroup>();
 
         public void SortByIndex()
         {
@@ -42,6 +42,10 @@ namespace LibOsb
 
             return sb.ToString();
         }
+        public void Save(string path) =>
+            System.IO.File.WriteAllText(path, "[Events]" + Environment.NewLine + "//Background and Video events" + Environment.NewLine +
+                   "//Storyboard Layer 0 (Background)" + Environment.NewLine + ToString() + "//Storyboard Sound Samples" + Environment.NewLine);
+
     }
     public enum GroupSortKind { Index }
     /// <summary>

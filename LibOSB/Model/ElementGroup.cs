@@ -112,11 +112,11 @@ namespace LibOsb
             }
         }
 
-        public void Optimize()
+        public void Compress()
         {
             foreach (var obj in ElementList)
             {
-                obj.Optimize();
+                obj.Compress();
             }
         }
         public override string ToString()
