@@ -42,8 +42,16 @@
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
+            this.tb_Spath = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.tb_Tpath = new System.Windows.Forms.TextBox();
+            this.btn_ExeComp = new System.Windows.Forms.Button();
+            this.btnSOfg = new System.Windows.Forms.Button();
+            this.btnTOfg = new System.Windows.Forms.Button();
             this.tabC1.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tbSource
@@ -155,12 +163,19 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.btnTOfg);
+            this.tabPage2.Controls.Add(this.btnSOfg);
+            this.tabPage2.Controls.Add(this.btn_ExeComp);
+            this.tabPage2.Controls.Add(this.label7);
+            this.tabPage2.Controls.Add(this.label6);
+            this.tabPage2.Controls.Add(this.tb_Tpath);
+            this.tabPage2.Controls.Add(this.tb_Spath);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage2.Size = new System.Drawing.Size(518, 97);
             this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Optimizer";
+            this.tabPage2.Text = "Compresser";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // label4
@@ -181,6 +196,70 @@
             this.label5.TabIndex = 7;
             this.label5.Text = "Adjusted code:";
             // 
+            // tb_Spath
+            // 
+            this.tb_Spath.Location = new System.Drawing.Point(95, 14);
+            this.tb_Spath.Name = "tb_Spath";
+            this.tb_Spath.Size = new System.Drawing.Size(380, 21);
+            this.tb_Spath.TabIndex = 0;
+            this.tb_Spath.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(6, 17);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(83, 12);
+            this.label6.TabIndex = 1;
+            this.label6.Text = "Source path: ";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(6, 44);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(83, 12);
+            this.label7.TabIndex = 1;
+            this.label7.Text = "Target path: ";
+            // 
+            // tb_Tpath
+            // 
+            this.tb_Tpath.Location = new System.Drawing.Point(95, 41);
+            this.tb_Tpath.Name = "tb_Tpath";
+            this.tb_Tpath.Size = new System.Drawing.Size(380, 21);
+            this.tb_Tpath.TabIndex = 0;
+            this.tb_Tpath.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            // 
+            // btn_ExeComp
+            // 
+            this.btn_ExeComp.Location = new System.Drawing.Point(95, 68);
+            this.btn_ExeComp.Name = "btn_ExeComp";
+            this.btn_ExeComp.Size = new System.Drawing.Size(75, 23);
+            this.btn_ExeComp.TabIndex = 2;
+            this.btn_ExeComp.Text = "Execute";
+            this.btn_ExeComp.UseVisualStyleBackColor = true;
+            this.btn_ExeComp.Click += new System.EventHandler(this.btn_ExeComp_Click);
+            // 
+            // btnSOfg
+            // 
+            this.btnSOfg.Location = new System.Drawing.Point(481, 12);
+            this.btnSOfg.Name = "btnSOfg";
+            this.btnSOfg.Size = new System.Drawing.Size(31, 23);
+            this.btnSOfg.TabIndex = 3;
+            this.btnSOfg.Text = "...";
+            this.btnSOfg.UseVisualStyleBackColor = true;
+            this.btnSOfg.Click += new System.EventHandler(this.btnSOfg_Click);
+            // 
+            // btnTOfg
+            // 
+            this.btnTOfg.Location = new System.Drawing.Point(481, 39);
+            this.btnTOfg.Name = "btnTOfg";
+            this.btnTOfg.Size = new System.Drawing.Size(31, 23);
+            this.btnTOfg.TabIndex = 3;
+            this.btnTOfg.Text = "...";
+            this.btnTOfg.UseVisualStyleBackColor = true;
+            this.btnTOfg.Click += new System.EventHandler(this.btnTOfg_Click);
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -196,6 +275,8 @@
             this.tabC1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -217,6 +298,13 @@
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TextBox tb_Spath;
+        private System.Windows.Forms.Button btnSOfg;
+        private System.Windows.Forms.Button btn_ExeComp;
+        private System.Windows.Forms.TextBox tb_Tpath;
+        private System.Windows.Forms.Button btnTOfg;
     }
 }
 

@@ -32,7 +32,7 @@ namespace LibOsb
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            var text = System.IO.File.ReadAllText(@"D:\Program Files (x86)\osu!\Songs\470977 Mili - worldexecute(me);\Mili - world.execute(me); (Exile-).bak");
+            var text = System.IO.File.ReadAllText(@"D:\Program Files (x86)\osu!\Songs\591442 S3RL feat Harri Rush - Nostalgic (Nightcore Mix) (1)\S3RL feat Harri Rush - Nostalgic (Nightcore Mix) (nold_1702).bak");
             Console.WriteLine("Read: " + sw.ElapsedMilliseconds);
             sw.Reset();
             sw.Start();
@@ -49,7 +49,7 @@ namespace LibOsb
             parsed.CreateSprite(LayerType.Background, OriginType.Centre, "BG.jpg");
             ElementManager em = new ElementManager();
             em.Add(parsed);
-            em.Save(@"D:\Program Files (x86)\osu!\Songs\470977 Mili - worldexecute(me);\parsed.osb");
+            em.Save(@"D:\Program Files (x86)\osu!\Songs\591442 S3RL feat Harri Rush - Nostalgic (Nightcore Mix) (1)\parsed.osb");
 
             Console.Read();
             return;
