@@ -114,9 +114,17 @@ namespace LibOsb
 
         public void Compress()
         {
-            foreach (var obj in ElementList)
+            for (int i = 0; i < ElementList.Count; i++)
             {
-                obj.Compress();
+                try
+                {
+                    ElementList[i].Compress(true);
+                }
+                catch (Exception ex)
+                {
+                    ElementList[i] = ElementList[i].Backup;
+                    Console.WriteLine(ex.Message);
+                }
             }
         }
         public override string ToString()
