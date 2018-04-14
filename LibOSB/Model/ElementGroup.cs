@@ -103,12 +103,19 @@ namespace LibOsb
             }
         }
 
+        public void SetPrivateDiff(string filePath)
+        {
+            foreach (var lib in ElementList)
+            {
+                lib.SetPrivateDiff(filePath);
+            }
+        }
+
         public void ExecuteBrew(StoryboardLayer lay_parsed)
         {
             foreach (var lib in ElementList)
             {
                 lib.ExecuteBrew(lay_parsed);
-
             }
         }
 
@@ -133,6 +140,18 @@ namespace LibOsb
 
             foreach (var obj in ElementList)
             {
+                sb.Append(obj.ToString());
+            }
+
+            return sb.ToString();
+        }
+        public string ToPublicString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var obj in ElementList)
+            {
+                if (obj.PrivateDiff == null) continue;
                 sb.Append(obj.ToString());
             }
 

@@ -27,6 +27,9 @@ namespace LibOsb
         public double? FrameCount { get; protected set; }
         public double? FrameRate { get; protected set; }
 
+        public string PrivateDiff { get; private set; }
+
+
         public int InnerMaxTime { get; protected set; } = int.MinValue;
         public int InnerMinTime { get; protected set; } = int.MaxValue;
 
@@ -149,6 +152,11 @@ namespace LibOsb
             if (!isLooping && !isTriggering) throw new Exception("You can not stop a loop when a loop isn't started.");
             isLooping = false;
             isTriggering = false;
+        }
+
+        public void SetPrivateDiff(string filePath)
+        {
+            PrivateDiff = filePath;
         }
 
         #region 折叠：Event function
@@ -289,7 +297,7 @@ namespace LibOsb
 
         public Element Clone() => (Element)MemberwiseClone();
 
-        #region non-public member
+        #region 折叠：非公共成员
         internal static Element Parse(string osbString, int baseLine)
         {
             Element obj = null;
