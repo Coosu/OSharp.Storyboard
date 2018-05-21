@@ -8,18 +8,21 @@ namespace LibOsb.Model
     {
         internal List<ElementGroup> GroupList { get; set; } = new List<ElementGroup>();
 
-        public void SortByIndex()
-        {
-            GroupList.Sort(new GroupSort(GroupSortKind.Index));
-        }
         public void CreateGroup(int layerIndex)
         {
             GroupList.Add(new ElementGroup(layerIndex));
         }
+
         public void Add(ElementGroup elementGroup)
         {
             GroupList.Add(elementGroup);
         }
+
+        public void SortByIndex()
+        {
+            GroupList.Sort(new GroupSort(GroupSortKind.Index));
+        }
+
         public static ElementGroup Adjust(ElementGroup elementGroup, double offsetX, double offsetY, int offsetTiming)
         {
             foreach (var obj in elementGroup.ElementList)
@@ -40,10 +43,22 @@ namespace LibOsb.Model
 
             return sb.ToString();
         }
-        public void Save(string path) =>
-            System.IO.File.WriteAllText(path, "[Events]" + Environment.NewLine + "//Background and Video events" + Environment.NewLine +
-                   "//Storyboard Layer 0 (Background)" + Environment.NewLine + ToString() + "//Storyboard Sound Samples" + Environment.NewLine);
+        public string ToPublicString()
+        {
+            SortByIndex();
+            StringBuilder sb = new StringBuilder();
 
+            foreach (var a in GroupList)
+                sb.Append(a.ToPublicString());
+
+            return sb.ToString();
+        }
+        public void Save(string path)
+        {
+            System.IO.File.WriteAllText(path, "[Events]" + Environment.NewLine + "//Background and Video events" + Environment.NewLine +
+                   "//Storyboard Layer 0 (Background)" + Environment.NewLine + ToPublicString() + "//Storyboard Sound Samples" + Environment.NewLine);
+            // todo 还有.osu内单独部分
+        }
     }
     public enum GroupSortKind { Index }
     /// <inheritdoc />

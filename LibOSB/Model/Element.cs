@@ -27,10 +27,15 @@ namespace LibOsb.Model
         public double? FrameCount { get; protected set; }
         public double? FrameRate { get; protected set; }
 
+        public string PrivateDiff { get; private set; }
+
+
         public int InnerMaxTime { get; protected set; } = int.MinValue;
         public int InnerMinTime { get; protected set; } = int.MaxValue;
 
         public bool IsSignificative => MinTime != MaxTime;
+
+        public Element Backup { get; private set; }
 
         public int MaxTime
         {
@@ -154,6 +159,11 @@ namespace LibOsb.Model
             if (!_isLooping && !_isTriggering) throw new Exception("You can not stop a loop when a loop isn't started.");
             _isLooping = false;
             _isTriggering = false;
+        }
+
+        public void SetPrivateDiff(string filePath)
+        {
+            PrivateDiff = filePath;
         }
 
         #region 折叠：Event function
@@ -283,20 +293,25 @@ namespace LibOsb.Model
             return Parse(osbString, 1);
         }
 
-        public void Compress()
+        public void Compress(bool backup = false)
         {
+            if (backup) Backup = Clone();
             Examine();
             // 简单来说每个类型压缩都有一个共同点：从后往前，1.删除没用的 2.整合能整合的 3.考虑单event情况 4.排除第一行误加的情况（defaultParams）
-            PreOptimize();
+            PreCompress();
             NormalOptimize();
         }
 
         public Element Clone() => (Element)MemberwiseClone();
 
+<<<<<<< HEAD
         #region non-public member
         private bool _isTriggering, _isLooping;
         protected bool IsInnerClass = false;
 
+=======
+        #region 折叠：非公共成员
+>>>>>>> 54f644f1489c737e9e0254084878e3da8e13ef97
         internal static Element Parse(string osbString, int baseLine)
         {
             Element obj = null;
@@ -544,6 +559,7 @@ namespace LibOsb.Model
         /// </summary>
         private void Examine()
         {
+<<<<<<< HEAD
             if (MoveList.Count != 0) CheckTiming(ref _moveList);
             if (ScaleList.Count != 0) CheckTiming(ref _scaleList);
             if (FadeList.Count != 0) CheckTiming(ref _fadeList);
@@ -555,6 +571,29 @@ namespace LibOsb.Model
             if (ParameterList.Count != 0) CheckTiming(ref _parameterList);
             foreach (var item in LoopList) item.Examine();
             foreach (var item in TriggerList) item.Examine();
+=======
+            if (_Move.Count != 0)
+            {
+                if (_MoveX.Count != 0 || _MoveY.Count != 0)
+                    throw new InvalidOperationException("MX(MY) and M can't exist at the same time.");
+                CheckTiming(ref _move);
+            }
+            if (_Scale.Count != 0)
+            {
+                if (_Vector.Count != 0)
+                    throw new InvalidOperationException("S and V can't exist at the same time.");
+                CheckTiming(ref _scale);
+            }
+            if (_Fade.Count != 0) CheckTiming(ref _fade);
+            if (_Rotate.Count != 0) CheckTiming(ref _rotate);
+            if (_Vector.Count != 0) CheckTiming(ref _vector);
+            if (_Color.Count != 0) CheckTiming(ref _color);
+            if (_MoveX.Count != 0) CheckTiming(ref _moveX);
+            if (_MoveY.Count != 0) CheckTiming(ref _moveY);
+            if (_Parameter.Count != 0) CheckTiming(ref _parameter);
+            foreach (var item in _Loop) item.Examine();
+            foreach (var item in _Trigger) item.Examine();
+>>>>>>> 54f644f1489c737e9e0254084878e3da8e13ef97
 
             // 验证物件完全消失的时间段
             int tmpTime = -1;
@@ -588,18 +627,18 @@ namespace LibOsb.Model
         /// <summary>
         /// 预压缩
         /// </summary>
-        private void PreOptimize()
+        private void PreCompress()
         {
             bool flag = true;
             foreach (var item in LoopList)
             {
                 if (item.HasFade) flag = false;
-                item.PreOptimize();
+                item.PreCompress();
             }
             foreach (var item in TriggerList)
             {
                 if (item.HasFade) flag = false;
-                item.PreOptimize();
+                item.PreCompress();
             }
             if (!flag) return;
 
@@ -642,7 +681,14 @@ namespace LibOsb.Model
         private static void CheckAlpha(double a)
         {
             if (a < 0 || a > 1)
+<<<<<<< HEAD
                 Debug.WriteLine("[Warning] Alpha of fade should be between 0 and 1.");
+=======
+            {
+                a = (a > 1 ? 1 : 0);
+                throw new InvalidOperationException("Alpha should be between 0 and 1.");
+            }
+>>>>>>> 54f644f1489c737e9e0254084878e3da8e13ef97
         }
 
         /// <summary>
@@ -654,13 +700,21 @@ namespace LibOsb.Model
             list.Sort(new EventSort<T>());
             for (int i = 1; i < list.Count; i++)
             {
+<<<<<<< HEAD
                 dynamic objNext = list[i];
                 dynamic objPrevious = list[i - 1];
                 if (objPrevious.StartTime > objPrevious.EndTime)
                     throw new ArgumentException("Start time should not be larger than end time.");
                 if (objNext.StartTime < objPrevious.EndTime)
+=======
+                dynamic obj_next = _list[i];
+                dynamic obj_previous = _list[i - 1];
+                if (obj_previous.StartTime > obj_previous.EndTime)
+                    throw new InvalidOperationException("Start time should not be larger than end time.");
+                if (obj_next.StartTime < obj_previous.EndTime)
+>>>>>>> 54f644f1489c737e9e0254084878e3da8e13ef97
                 {
-                    //throw new Exception(obj_previous.ToString() + Environment.NewLine + obj_next.ToString());
+                    throw new InvalidOperationException("Conflict timing exsits.");
                 }
             }
         }

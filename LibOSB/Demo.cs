@@ -1,5 +1,9 @@
 ﻿using LibOsb.Model.Constants;
+<<<<<<< HEAD
 using LibOsb.Util;
+=======
+using LibOsb.Tool;
+>>>>>>> 54f644f1489c737e9e0254084878e3da8e13ef97
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,7 +18,12 @@ namespace LibOsb
     {
         static void Main(string[] args)
         {
+<<<<<<< HEAD
             var ok = new StringBuilder();
+=======
+            FolderManager fm = new FolderManager(@"C:\Users\acer\Downloads\Compressed\OsuStoryBroadPlayer_2\591442 S3RL feat Harri Rush - Nostalgic (Nightcore Mix)");
+            StringBuilder ok = new StringBuilder();
+>>>>>>> 54f644f1489c737e9e0254084878e3da8e13ef97
             ok.AppendLine("Sprite,Foreground,Centre,\"11t-fonts\\E1.png\",320,240");
 
             ok.AppendLine(" F,0,300,1000,0,1");
@@ -29,7 +38,8 @@ namespace LibOsb
             ok.AppendLine(" F,0,4000,4200,1,0");
             ok.AppendLine(" M,0,4000,4300,320,240");
             ok.AppendLine(" R,0,4000,,0");
-            //var obj2 = Element.Parse(ok.ToString());
+            var obj2 = Element.Parse(ok.ToString());
+            obj2.SetPrivateDiff(fm.Difficulty["yf's Insane"]);
 
             int g = 3;
             int startT = 0, endT = 1000, splitT = 10;
