@@ -15,8 +15,8 @@ namespace LibOsb.Model.EventType
 
         internal Trigger(int startTime, int endTime, TriggerType[] triggerType, int customSampleSet = -1)
         {
-            int length = triggerType.Length;
-            string hitSound = "HitSound", sampleSet = "", additionsSampleSet = "", addition = "", custom = "";
+            const string hitSound = "HitSound";
+            string sampleSet = "", additionsSampleSet = "", addition = "", custom = "";
             foreach (var item in triggerType)
             {
                 var s = item.ToString();
@@ -60,14 +60,14 @@ namespace LibOsb.Model.EventType
             StartTime = startTime;
             EndTime = endTime;
             TriggerType = triggerName;
-            isInnerClass = true;
+            IsInnerClass = true;
         }
         internal Trigger(int startTime, int endTime, string triggerName)
         {
             StartTime = startTime;
             EndTime = endTime;
             TriggerType = triggerName;
-            isInnerClass = true;
+            IsInnerClass = true;
         }
 
         public override string ToString() => string.Join(",", " T", TriggerType, StartTime, EndTime) + "\r\n" + base.ToString();

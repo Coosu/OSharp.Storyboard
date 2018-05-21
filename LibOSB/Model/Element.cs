@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
-using StorybrewCommon.Storyboarding;
-using OpenTK;
+using System.Text;
 using LibOsb.BrewHelper;
 using LibOsb.EventClass;
-using LibOsb.Model.EventType;
 using LibOsb.Model.Constants;
+using LibOsb.Model.EventClass;
+using LibOsb.Model.EventType;
+using OpenTK;
+using StorybrewCommon.Storyboarding;
 
-namespace LibOsb
+namespace LibOsb.Model
 {
     /// <summary>
     /// Represents a storyboard element. This class cannot be inherited.
@@ -37,12 +37,12 @@ namespace LibOsb
             get
             {
                 int max = InnerMaxTime;
-                foreach (var item in _Loop)
+                foreach (var item in LoopList)
                 {
                     int time = item.InnerMaxTime * item.LoopCount + item.StartTime;
                     if (time > max) max = time;
                 }
-                foreach (var item in _Trigger)
+                foreach (var item in TriggerList)
                 {
                     int time = item.InnerMaxTime + item.EndTime;
                     if (time > max) max = time;
@@ -72,6 +72,7 @@ namespace LibOsb
             ImagePath = imagePath;
             DefaultX = defaultX;
             DefaultY = defaultY;
+            _isLooping = false;
         }
         /// <summary>
         /// Create a storyboard element by a dynamic image.
@@ -97,6 +98,7 @@ namespace LibOsb
             FrameCount = frameCount;
             FrameRate = frameRate;
             LoopType = loopType;
+            _isLooping = false;
         }
         public Element(string type, string layer, string origin, string imagePath, double defaultX, double defaultY)
         {
@@ -106,6 +108,7 @@ namespace LibOsb
             ImagePath = imagePath;
             DefaultX = defaultX;
             DefaultY = defaultY;
+            _isLooping = false;
         }
         public Element(string type, string layer, string origin, string imagePath, double defaultX, double defaultY, double frameCount, double frameRate, string loopType)
         {
@@ -118,35 +121,39 @@ namespace LibOsb
             FrameCount = frameCount;
             FrameRate = frameRate;
             LoopType = (LoopType)Enum.Parse(typeof(LoopType), loopType);
+            _isLooping = false;
         }
-        internal Element() { }
+        internal Element()
+        {
+            _isLooping = false;
+        }
 
         public void StartLoop(int startTime, int time)
         {
-            if (isLooping || isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
-            isLooping = true;
-            _Loop.Add(new Loop(startTime, time));
+            if (_isLooping || _isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
+            _isLooping = true;
+            LoopList.Add(new Loop(startTime, time));
         }
 
         public void StartTrigger(int startTime, int time, TriggerType[] triggerType, int customSampleSet = -1)
         {
-            if (isLooping || isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
-            isTriggering = true;
-            _Trigger.Add(new Trigger(startTime, time, triggerType, customSampleSet));
+            if (_isLooping || _isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
+            _isTriggering = true;
+            TriggerList.Add(new Trigger(startTime, time, triggerType, customSampleSet));
         }
 
         public void StartTrigger(int startTime, int time, string triggerType)
         {
-            if (isLooping || isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
-            isTriggering = true;
-            _Trigger.Add(new Trigger(startTime, time, triggerType));
+            if (_isLooping || _isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
+            _isTriggering = true;
+            TriggerList.Add(new Trigger(startTime, time, triggerType));
         }
 
         public void EndLoop()
         {
-            if (!isLooping && !isTriggering) throw new Exception("You can not stop a loop when a loop isn't started.");
-            isLooping = false;
-            isTriggering = false;
+            if (!_isLooping && !_isTriggering) throw new Exception("You can not stop a loop when a loop isn't started.");
+            _isLooping = false;
+            _isTriggering = false;
         }
 
         #region 折叠：Event function
@@ -179,8 +186,8 @@ namespace LibOsb
         public void Color(int startTime, System.Drawing.Color color) => _Add_Color(0, startTime, startTime, color.R, color.G, color.B, color.R, color.G, color.B);
         public void Color(int startTime, int endTime, System.Drawing.Color color) => _Add_Color(0, startTime, endTime, color.R, color.G, color.B, color.R, color.G, color.B);
         public void Color(EasingType easing, int startTime, int endTime, System.Drawing.Color color1, System.Drawing.Color color2) => _Add_Color(easing, startTime, endTime, color1.R, color1.G, color1.B, color2.R, color2.G, color2.B);
-        public void Color(int startTime, int R, int G, int B) => _Add_Color(0, startTime, startTime, R, G, B, R, G, B);
-        public void Color(int startTime, int endTime, int R, int G, int B) => _Add_Color(0, startTime, endTime, R, G, B, R, G, B);
+        public void Color(int startTime, int r, int g, int b) => _Add_Color(0, startTime, startTime, r, g, b, r, g, b);
+        public void Color(int startTime, int endTime, int r, int g, int b) => _Add_Color(0, startTime, endTime, r, g, b, r, g, b);
         public void Color(EasingType easing, int startTime, int endTime, int startR, int startG, int startB, int endR, int endG, int endB) => _Add_Color(easing, startTime, endTime, startR, startG, startB, endR, endG, endB);
 
         public void Vector(int startTime, System.Drawing.SizeF zoom) => _Add_Vector(0, startTime, startTime, zoom.Width, zoom.Height, zoom.Width, zoom.Height);
@@ -200,45 +207,45 @@ namespace LibOsb
         internal void Parameter(EasingType easing, int startTime, int endTime, string type) => _Add_Param(easing, startTime, endTime, type);
         #endregion
 
-        public void ExecuteBrew(StoryboardLayer lay_parsed, OsbSprite brewObj = null)
+        public void ExecuteBrew(StoryboardLayer layParsed, OsbSprite brewObj = null)
         {
             if (brewObj == null)
             {
                 if (Type == ElementType.Sprite)
-                    brewObj = lay_parsed.CreateSprite(ImagePath, BrewConvert.CvtOrigin(Origin), new Vector2((float)DefaultX, (float)DefaultY));
+                    brewObj = layParsed.CreateSprite(ImagePath, BrewConvert.CvtOrigin(Origin), new Vector2((float)DefaultX, (float)DefaultY));
                 else
-                    brewObj = lay_parsed.CreateAnimation(ImagePath, (int)FrameCount, (int)FrameRate,
+                    brewObj = layParsed.CreateAnimation(ImagePath, (int)FrameCount, (int)FrameRate,
                         BrewConvert.CvtLoopType(LoopType), BrewConvert.CvtOrigin(Origin), new Vector2((float)DefaultX, (float)DefaultY));
             }
 
-            foreach (var m in this._Move)
+            foreach (var m in MoveList)
                 BrewConvert.ExeM(m, brewObj);
-            foreach (var s in this._Scale)
+            foreach (var s in ScaleList)
                 BrewConvert.ExeS(s, brewObj);
-            foreach (var f in this._Fade)
+            foreach (var f in FadeList)
                 BrewConvert.ExeF(f, brewObj);
-            foreach (var r in this._Rotate)
+            foreach (var r in RotateList)
                 BrewConvert.ExeR(r, brewObj);
-            foreach (var v in this._Vector)
+            foreach (var v in VectorList)
                 BrewConvert.ExeV(v, brewObj);
-            foreach (var c in this._Color)
+            foreach (var c in ColorList)
                 BrewConvert.ExeC(c, brewObj);
-            foreach (var mx in this._MoveX)
+            foreach (var mx in MoveXList)
                 BrewConvert.ExeMx(mx, brewObj);
-            foreach (var my in this._MoveY)
+            foreach (var my in MoveYList)
                 BrewConvert.ExeMy(my, brewObj);
-            foreach (var p in this._Parameter)
+            foreach (var p in ParameterList)
                 BrewConvert.ExeP(p, brewObj);
-            foreach (var l in this._Loop)
+            foreach (var l in LoopList)
             {
                 brewObj.StartLoopGroup(l.StartTime, l.LoopCount);
-                l.ExecuteBrew(lay_parsed, brewObj);
+                l.ExecuteBrew(layParsed, brewObj);
                 brewObj.EndGroup();
             }
-            foreach (var t in this._Trigger)
+            foreach (var t in TriggerList)
             {
                 brewObj.StartTriggerGroup(t.TriggerType, t.StartTime, t.EndTime);
-                t.ExecuteBrew(lay_parsed, brewObj);
+                t.ExecuteBrew(layParsed, brewObj);
                 brewObj.EndGroup();
             }
         }
@@ -247,8 +254,8 @@ namespace LibOsb
         {
             if (!IsSignificative) return null;
 
-            StringBuilder sb = new StringBuilder();
-            if (!isInnerClass)
+            var sb = new StringBuilder();
+            if (!IsInnerClass)
             {
                 sb.Append(string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY));
                 if (FrameCount != null)
@@ -256,18 +263,18 @@ namespace LibOsb
                 else
                     sb.AppendLine();
             }
-            string index = (isInnerClass) ? "  " : " ";
-            for (int i = 1; i <= _Move.Count; i++) sb.AppendLine(index + _Move[i - 1].ToString());
-            for (int i = 1; i <= _Scale.Count; i++) sb.AppendLine(index + _Scale[i - 1].ToString());
-            for (int i = 1; i <= _Fade.Count; i++) sb.AppendLine(index + _Fade[i - 1].ToString());
-            for (int i = 1; i <= _Rotate.Count; i++) sb.AppendLine(index + _Rotate[i - 1].ToString());
-            for (int i = 1; i <= _Vector.Count; i++) sb.AppendLine(index + _Vector[i - 1].ToString());
-            for (int i = 1; i <= _Color.Count; i++) sb.AppendLine(index + _Color[i - 1].ToString());
-            for (int i = 1; i <= _MoveX.Count; i++) sb.AppendLine(index + _MoveX[i - 1].ToString());
-            for (int i = 1; i <= _MoveY.Count; i++) sb.AppendLine(index + _MoveY[i - 1].ToString());
-            for (int i = 1; i <= _Parameter.Count; i++) sb.AppendLine(index + _Parameter[i - 1].ToString());
-            for (int i = 1; i <= _Loop.Count; i++) sb.Append(_Loop[i - 1].ToString());
-            for (int i = 1; i <= _Trigger.Count; i++) sb.Append(_Trigger[i - 1].ToString());
+            string index = (IsInnerClass) ? "  " : " ";
+            for (int i = 1; i <= MoveList.Count; i++) sb.AppendLine(index + MoveList[i - 1]);
+            for (int i = 1; i <= ScaleList.Count; i++) sb.AppendLine(index + ScaleList[i - 1]);
+            for (int i = 1; i <= FadeList.Count; i++) sb.AppendLine(index + FadeList[i - 1]);
+            for (int i = 1; i <= RotateList.Count; i++) sb.AppendLine(index + RotateList[i - 1]);
+            for (int i = 1; i <= VectorList.Count; i++) sb.AppendLine(index + VectorList[i - 1]);
+            for (int i = 1; i <= ColorList.Count; i++) sb.AppendLine(index + ColorList[i - 1]);
+            for (int i = 1; i <= MoveXList.Count; i++) sb.AppendLine(index + MoveXList[i - 1]);
+            for (int i = 1; i <= MoveYList.Count; i++) sb.AppendLine(index + MoveYList[i - 1]);
+            for (int i = 1; i <= ParameterList.Count; i++) sb.AppendLine(index + ParameterList[i - 1]);
+            for (int i = 1; i <= LoopList.Count; i++) sb.Append(LoopList[i - 1]);
+            for (int i = 1; i <= TriggerList.Count; i++) sb.Append(TriggerList[i - 1]);
             return sb.ToString();
         }
 
@@ -287,6 +294,9 @@ namespace LibOsb
         public Element Clone() => (Element)MemberwiseClone();
 
         #region non-public member
+        private bool _isTriggering, _isLooping;
+        protected bool IsInnerClass = false;
+
         internal static Element Parse(string osbString, int baseLine)
         {
             Element obj = null;
@@ -294,7 +304,7 @@ namespace LibOsb
             try
             {
                 var lines = osbString.Replace("\r", "").Split('\n');
-                bool is_looping = false, is_triggring = false, is_blank = false;
+                bool isLooping = false, isTriggring = false, isBlank = false;
                 foreach (var line in lines)
                 {
                     var pars = line.Split(',');
@@ -314,13 +324,13 @@ namespace LibOsb
                     }
                     else if (line.Trim() == "")
                     {
-                        is_blank = true;
+                        isBlank = true;
                     }
                     else
                     {
                         if (obj == null)
                             throw new Exception("Sprite need to be declared before using");
-                        if (is_blank)
+                        if (isBlank)
                             throw new Exception("Events shouldn't be declared after blank line");
 
                         // 验证层次是否合法
@@ -328,18 +338,18 @@ namespace LibOsb
                         {
                             throw new Exception("Unknown relation of the event");
                         }
-                        else if (pars[0].IndexOf("  ") == 0)
+                        else if (pars[0].IndexOf("  ", StringComparison.Ordinal) == 0)
                         {
-                            if (!is_looping && !is_triggring)
+                            if (!isLooping && !isTriggring)
                                 throw new Exception("The event should be looping or triggering");
                         }
-                        else if (pars[0].IndexOf(" ") == 0)
+                        else if (pars[0].IndexOf(" ", StringComparison.Ordinal) == 0)
                         {
-                            if (is_looping || is_triggring)
+                            if (isLooping || isTriggring)
                             {
                                 obj.EndLoop();
-                                is_looping = false;
-                                is_triggring = false;
+                                isLooping = false;
+                                isTriggring = false;
                             }
                         }
                         else
@@ -354,20 +364,20 @@ namespace LibOsb
                         //    throw new Exception("Line :" + currentLine + " (Wrong parameter for all events)");
 
                         string _event = pars[0];
-                        int _easing = -1, _start_time = -1, _end_time = -1;
+                        int easing = -1, startTime = -1, endTime = -1;
                         if (_event != "T" && _event != "L")
                         {
-                            _easing = int.Parse(pars[1]);
-                            if (_easing > 34 || _easing < 0) throw new FormatException("Unknown easing");
-                            _start_time = int.Parse(pars[2]);
-                            _end_time = pars[3] == "" ? _start_time : int.Parse(pars[3]);
+                            easing = int.Parse(pars[1]);
+                            if (easing > 34 || easing < 0) throw new FormatException("Unknown easing");
+                            startTime = int.Parse(pars[2]);
+                            endTime = pars[3] == "" ? startTime : int.Parse(pars[3]);
                         }
                         switch (pars[0])
                         {
                             // EventSingle
                             case "F":
                             case "S":
-                            case "R":
+                            case "r":
                             case "MX":
                             case "MY":
                                 double p1, p2;
@@ -389,19 +399,19 @@ namespace LibOsb
                                 switch (_event)
                                 {
                                     case "F":
-                                        obj.Fade((EasingType)_easing, _start_time, _end_time, p1, p2);
+                                        obj.Fade((EasingType)easing, startTime, endTime, p1, p2);
                                         break;
                                     case "S":
-                                        obj.Scale((EasingType)_easing, _start_time, _end_time, p1, p2);
+                                        obj.Scale((EasingType)easing, startTime, endTime, p1, p2);
                                         break;
-                                    case "R":
-                                        obj.Rotate((EasingType)_easing, _start_time, _end_time, p1, p2);
+                                    case "r":
+                                        obj.Rotate((EasingType)easing, startTime, endTime, p1, p2);
                                         break;
                                     case "MX":
-                                        obj.MoveX((EasingType)_easing, _start_time, _end_time, p1, p2);
+                                        obj.MoveX((EasingType)easing, startTime, endTime, p1, p2);
                                         break;
                                     case "MY":
-                                        obj.MoveY((EasingType)_easing, _start_time, _end_time, p1, p2);
+                                        obj.MoveY((EasingType)easing, startTime, endTime, p1, p2);
                                         break;
                                 }
                                 break;
@@ -409,20 +419,20 @@ namespace LibOsb
                             // EventDouble
                             case "M":
                             case "V":
-                                double p1_1, p1_2, p2_1, p2_2;
+                                double p11, p12, p21, p22;
 
                                 // 验证是否存在缺省
                                 if (pars.Length == 6)
                                 {
-                                    p1_1 = p2_1 = double.Parse(pars[4]);
-                                    p1_2 = p2_2 = double.Parse(pars[5]);
+                                    p11 = p21 = double.Parse(pars[4]);
+                                    p12 = p22 = double.Parse(pars[5]);
                                 }
                                 else if (pars.Length == 8)
                                 {
-                                    p1_1 = double.Parse(pars[4]);
-                                    p1_2 = double.Parse(pars[5]);
-                                    p2_1 = double.Parse(pars[6]);
-                                    p2_2 = double.Parse(pars[7]);
+                                    p11 = double.Parse(pars[4]);
+                                    p12 = double.Parse(pars[5]);
+                                    p21 = double.Parse(pars[6]);
+                                    p22 = double.Parse(pars[7]);
                                 }
                                 else
                                 {
@@ -432,33 +442,33 @@ namespace LibOsb
                                 switch (_event)
                                 {
                                     case "M":
-                                        obj.Move((EasingType)_easing, _start_time, _end_time, p1_1, p1_2, p2_1, p2_2);
+                                        obj.Move((EasingType)easing, startTime, endTime, p11, p12, p21, p22);
                                         break;
                                     case "V":
-                                        obj.Vector((EasingType)_easing, _start_time, _end_time, p1_1, p1_2, p2_1, p2_2);
+                                        obj.Vector((EasingType)easing, startTime, endTime, p11, p12, p21, p22);
                                         break;
                                 }
                                 break;
 
                             // EventTriple
                             case "C":
-                                int c1_1, c1_2, c1_3, c2_1, c2_2, c2_3;
+                                int c11, c12, c13, c21, c22, c23;
 
                                 // 验证是否存在缺省
                                 if (pars.Length == 7)
                                 {
-                                    c1_1 = c2_1 = int.Parse(pars[4]);
-                                    c1_2 = c2_2 = int.Parse(pars[5]);
-                                    c1_3 = c2_3 = int.Parse(pars[6]);
+                                    c11 = c21 = int.Parse(pars[4]);
+                                    c12 = c22 = int.Parse(pars[5]);
+                                    c13 = c23 = int.Parse(pars[6]);
                                 }
                                 else if (pars.Length == 10)
                                 {
-                                    c1_1 = int.Parse(pars[4]);
-                                    c1_2 = int.Parse(pars[5]);
-                                    c1_3 = int.Parse(pars[6]);
-                                    c2_1 = int.Parse(pars[7]);
-                                    c2_2 = int.Parse(pars[8]);
-                                    c2_3 = int.Parse(pars[9]);
+                                    c11 = int.Parse(pars[4]);
+                                    c12 = int.Parse(pars[5]);
+                                    c13 = int.Parse(pars[6]);
+                                    c21 = int.Parse(pars[7]);
+                                    c22 = int.Parse(pars[8]);
+                                    c23 = int.Parse(pars[9]);
                                 }
                                 else
                                 {
@@ -468,7 +478,7 @@ namespace LibOsb
                                 switch (_event)
                                 {
                                     case "C":
-                                        obj.Color((EasingType)_easing, _start_time, _end_time, c1_1, c1_2, c1_3, c2_1, c2_2, c2_3);
+                                        obj.Color((EasingType)easing, startTime, endTime, c11, c12, c13, c21, c22, c23);
                                         break;
                                 }
                                 break;
@@ -478,7 +488,7 @@ namespace LibOsb
                                 if (pars.Length == 5)
                                 {
                                     type = pars[4];
-                                    obj.Parameter((EasingType)_easing, _start_time, _end_time, type);
+                                    obj.Parameter((EasingType)easing, startTime, endTime, type);
                                 }
                                 else
                                 {
@@ -489,10 +499,10 @@ namespace LibOsb
                             case "L":
                                 if (pars.Length == 3)
                                 {
-                                    _start_time = int.Parse(pars[1]);
-                                    int loop_count = int.Parse(pars[2]);
-                                    obj.StartLoop(_start_time, loop_count);
-                                    is_looping = true;
+                                    startTime = int.Parse(pars[1]);
+                                    int loopCount = int.Parse(pars[2]);
+                                    obj.StartLoop(startTime, loopCount);
+                                    isLooping = true;
                                 }
                                 else
                                 {
@@ -503,11 +513,11 @@ namespace LibOsb
                             case "T":
                                 if (pars.Length == 4)
                                 {
-                                    string trigger_type = pars[1];
-                                    _start_time = int.Parse(pars[2]);
-                                    _end_time = int.Parse(pars[3]);
-                                    obj.StartTrigger(_start_time, _end_time, trigger_type);
-                                    is_triggring = true;
+                                    string triggerType = pars[1];
+                                    startTime = int.Parse(pars[2]);
+                                    endTime = int.Parse(pars[3]);
+                                    obj.StartTrigger(startTime, endTime, triggerType);
+                                    isTriggring = true;
                                 }
                                 else
                                 {
@@ -529,138 +539,136 @@ namespace LibOsb
             return obj;
         }
 
-        private bool isTriggering = false, isLooping = false;
-        protected bool isInnerClass = false;
-
         /// <summary>
         /// 检查timing是否合法，以及计算透明时间段
         /// </summary>
         private void Examine()
         {
-            if (_Move.Count != 0) CheckTiming(ref _move);
-            if (_Scale.Count != 0) CheckTiming(ref _scale);
-            if (_Fade.Count != 0) CheckTiming(ref _fade);
-            if (_Rotate.Count != 0) CheckTiming(ref _rotate);
-            if (_Vector.Count != 0) CheckTiming(ref _vector);
-            if (_Color.Count != 0) CheckTiming(ref _color);
-            if (_MoveX.Count != 0) CheckTiming(ref _moveX);
-            if (_MoveY.Count != 0) CheckTiming(ref _moveY);
-            if (_Parameter.Count != 0) CheckTiming(ref _parameter);
-            foreach (var item in _Loop) item.Examine();
-            foreach (var item in _Trigger) item.Examine();
+            if (MoveList.Count != 0) CheckTiming(ref _moveList);
+            if (ScaleList.Count != 0) CheckTiming(ref _scaleList);
+            if (FadeList.Count != 0) CheckTiming(ref _fadeList);
+            if (RotateList.Count != 0) CheckTiming(ref _rotateList);
+            if (VectorList.Count != 0) CheckTiming(ref _vectorList);
+            if (ColorList.Count != 0) CheckTiming(ref _colorList);
+            if (MoveXList.Count != 0) CheckTiming(ref _moveXList);
+            if (MoveYList.Count != 0) CheckTiming(ref _moveYList);
+            if (ParameterList.Count != 0) CheckTiming(ref _parameterList);
+            foreach (var item in LoopList) item.Examine();
+            foreach (var item in TriggerList) item.Examine();
 
             // 验证物件完全消失的时间段
             int tmpTime = -1;
             bool fadeouting = false;
-            for (int j = 0; j < _Fade.Count; j++)
+            for (int j = 0; j < FadeList.Count; j++)
             {
-                var nowF = _Fade[j];
-                if (j == 0 && nowF.P1_1 == 0 && nowF.StartTime > MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+                var nowF = FadeList[j];
+                if (j == 0 && nowF.P11 == 0 && nowF.StartTime > MinTime)  // 最早的F晚于最小开始时间，默认加这一段
                 {
-                    _FadeoutList.Add(MinTime, nowF.StartTime);
+                    FadeoutList.Add(MinTime, nowF.StartTime);
                 }
-                else if (nowF.P2_1 == 0 && !fadeouting)  // f2=0，开始计时
+                else if (nowF.P21 == 0 && !fadeouting)  // f2=0，开始计时
                 {
                     tmpTime = nowF.EndTime;
                     fadeouting = true;
                 }
                 else if (fadeouting)
                 {
-                    if (nowF.P1_1 != 0 || nowF.P2_1 != 0)  // 二者任一不为0则取消状态                       
-                    {
-                        _FadeoutList.Add(tmpTime, nowF.StartTime);
-                        fadeouting = false;
-                    }
+                    if (nowF.P11 == 0 && nowF.P21 == 0)
+                        continue;
+                    FadeoutList.Add(tmpTime, nowF.StartTime);
+                    fadeouting = false;
                 }
             }
             if (fadeouting && tmpTime != MaxTime)  // 可能存在Fade后还有别的event
             {
-                _FadeoutList.Add(tmpTime, MaxTime);
+                FadeoutList.Add(tmpTime, MaxTime);
             }
         }
+
         /// <summary>
         /// 预压缩
         /// </summary>
         private void PreOptimize()
         {
             bool flag = true;
-            foreach (var item in _Loop)
+            foreach (var item in LoopList)
             {
                 if (item.HasFade) flag = false;
                 item.PreOptimize();
             }
-            foreach (var item in _Trigger)
+            foreach (var item in TriggerList)
             {
                 if (item.HasFade) flag = false;
                 item.PreOptimize();
             }
             if (!flag) return;
 
-            if (_Scale.Count != 0) FixAll(ref _scale);
-            if (_Rotate.Count != 0) FixAll(ref _rotate);
-            if (_MoveX.Count != 0) FixAll(ref _moveX);
-            if (_MoveY.Count != 0) FixAll(ref _moveY);
-            if (_Fade.Count != 0) FixAll(ref _fade);
-            if (_Move.Count != 0) FixAll(ref _move);
-            if (_Vector.Count != 0) FixAll(ref _vector);
-            if (_Color.Count != 0) FixAll(ref _color);
-            if (_Parameter.Count != 0) FixAll(ref _parameter);
+            if (ScaleList.Count != 0) FixAll(ref _scaleList);
+            if (RotateList.Count != 0) FixAll(ref _rotateList);
+            if (MoveXList.Count != 0) FixAll(ref _moveXList);
+            if (MoveYList.Count != 0) FixAll(ref _moveYList);
+            if (FadeList.Count != 0) FixAll(ref _fadeList);
+            if (MoveList.Count != 0) FixAll(ref _moveList);
+            if (VectorList.Count != 0) FixAll(ref _vectorList);
+            if (ColorList.Count != 0) FixAll(ref _colorList);
+            if (ParameterList.Count != 0) FixAll(ref _parameterList);
             //if (_FadeoutList.Count > 0 && _FadeoutList.LastEndTime == MaxTime) InnerMaxTime = _FadeoutList.LastStartTime;
 
-            //foreach (var item in _Loop) item.PreOptimize();
-            //foreach (var item in _Trigger) item.PreOptimize();
+            //foreach (var item in LoopList) item.PreOptimize();
+            //foreach (var item in TriggerList) item.PreOptimize();
         }
+
         /// <summary>
         /// 正常压缩
         /// </summary>
         private void NormalOptimize()
         {
-            if (_Scale.Count != 0) FixSingle(ref _scale);
-            if (_Rotate.Count != 0) FixSingle(ref _rotate);
-            if (_MoveX.Count != 0) FixSingle(ref _moveX);
-            if (_MoveY.Count != 0) FixSingle(ref _moveY);
-            if (_Fade.Count != 0) FixSingle(ref _fade);
-            if (_Move.Count != 0) FixDouble(ref _move);
-            if (_Vector.Count != 0) FixDouble(ref _vector);
-            if (_Color.Count != 0) FixTriple(ref _color);
+            if (ScaleList.Count != 0) FixSingle(ref _scaleList);
+            if (RotateList.Count != 0) FixSingle(ref _rotateList);
+            if (MoveXList.Count != 0) FixSingle(ref _moveXList);
+            if (MoveYList.Count != 0) FixSingle(ref _moveYList);
+            if (FadeList.Count != 0) FixSingle(ref _fadeList);
+            if (MoveList.Count != 0) FixDouble(ref _moveList);
+            if (VectorList.Count != 0) FixDouble(ref _vectorList);
+            if (ColorList.Count != 0) FixTriple(ref _colorList);
 
-            foreach (var item in _Loop) item.NormalOptimize();
-            foreach (var item in _Trigger) item.NormalOptimize();
+            foreach (var item in LoopList) item.NormalOptimize();
+            foreach (var item in TriggerList) item.NormalOptimize();
         }
+
         /// <summary>
         /// 检查Alpha(意义何在?)
         /// </summary>
-        private void CheckAlpha(double a)
+        private static void CheckAlpha(double a)
         {
             if (a < 0 || a > 1)
-            {
-                a = (a > 1 ? 1 : 0);
                 Debug.WriteLine("[Warning] Alpha of fade should be between 0 and 1.");
-            }
         }
+
         /// <summary>
         /// 检查Timing的泛型方法
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        private void CheckTiming<T>(ref List<T> _list)
+        private static void CheckTiming<T>(ref List<T> list)
         {
-            _list.Sort(new EventSort<T>());
-            for (int i = 1; i < _list.Count; i++)
+            list.Sort(new EventSort<T>());
+            for (int i = 1; i < list.Count; i++)
             {
-                dynamic obj_next = _list[i];
-                dynamic obj_previous = _list[i - 1];
-                if (obj_previous.StartTime > obj_previous.EndTime)
+                dynamic objNext = list[i];
+                dynamic objPrevious = list[i - 1];
+                if (objPrevious.StartTime > objPrevious.EndTime)
                     throw new ArgumentException("Start time should not be larger than end time.");
-                if (obj_next.StartTime < obj_previous.EndTime)
+                if (objNext.StartTime < objPrevious.EndTime)
                 {
                     //throw new Exception(obj_previous.ToString() + Environment.NewLine + obj_next.ToString());
                 }
             }
         }
+
         /// <summary>
         /// 预压缩的泛型方法
         /// </summary>
-        private void FixAll<T>(ref List<T> _list)
+        private void FixAll<T>(ref List<T> list)
         {
             var tType = typeof(T);
 
@@ -668,23 +676,24 @@ namespace LibOsb
             if (tType != typeof(Fade))
             {
                 //int max_i = _list.Count - 1;
-                for (int i = 0; i < _list.Count; i++)
+                for (int i = 0; i < list.Count; i++)
                 {
-                    dynamic e = _list[i];
+                    dynamic e = list[i];
                     dynamic e2 = null;
-                    if (i != _list.Count - 1) e2 = _list[i + 1];
+                    if (i != list.Count - 1) e2 = list[i + 1];
                     // 判断当前种类动作是否在某一透明范围内，并且下一个动作的startTime也须在此范围内
-                    if (i < _list.Count - 1 && _FadeoutList.InRange(out bool cnm, e.StartTime, e.EndTime, e2.StartTime))
+                    if (i < list.Count - 1 && FadeoutList.InRange(out bool _, e.StartTime, e.EndTime, e2.StartTime))
                     {
-                        _list.RemoveAt(i);  // 待修改，封装一个方法控制min max的增减
+                        list.RemoveAt(i);  // 待修改，封装一个方法控制min max的增减
                         i--;
                     }
-                    if (i != _list.Count - 1) continue;
+
+                    if (i != list.Count - 1) continue;
                     // 判断当前种类最后一个动作是否正处于物件透明状态，而且此状态最大时间即是obj最大时间
-                    else if (_FadeoutList.InRange(out bool isLast, e.StartTime, e.EndTime) &&
-                             isLast && _FadeoutList.LastEndTime == this.MaxTime)
+                    if (FadeoutList.InRange(out bool isLast, e.StartTime, e.EndTime) &&
+                       isLast && FadeoutList.LastEndTime == MaxTime)
                     {
-                        _Remove_Event(_list, i);
+                        _Remove_Event(list, i);
                         i--;
                     }
                 }
@@ -699,8 +708,8 @@ namespace LibOsb
         /// 正常压缩的泛型方法（EventSingle）
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="_list"></param>
-        private void FixSingle<T>(ref List<T> _list)
+        /// <param name="list"></param>
+        private void FixSingle<T>(ref List<T> list)
         {
             double defaultParam = -1;
             var tType = typeof(T);
@@ -708,25 +717,25 @@ namespace LibOsb
                 defaultParam = 1;
             else if (tType == typeof(Rotate))
                 defaultParam = 0;
-            else if (!isInnerClass && tType == typeof(MoveX))
-                defaultParam = (int)this.DefaultX;
-            else if (!isInnerClass && tType == typeof(MoveY))
-                defaultParam = (int)this.DefaultY;
+            else if (!IsInnerClass && tType == typeof(MoveX))
+                defaultParam = (int)DefaultX;
+            else if (!IsInnerClass && tType == typeof(MoveY))
+                defaultParam = (int)DefaultY;
             else if (tType == typeof(Fade))
                 defaultParam = 1;
 
-            int i = _list.Count - 1;
+            int i = list.Count - 1;
             while (i >= 0)
             {
-                dynamic objNow = _list[i];
+                dynamic objNow = list[i];
                 dynamic objPre = null;
-                if (i >= 1) objPre = _list[i - 1];
-                int now_start = objNow.StartTime, now_end = objNow.EndTime;
-                int pre_start = -1, pre_end = -1;
+                if (i >= 1) objPre = list[i - 1];
+                int nowStart = objNow.StartTime, nowEnd = objNow.EndTime;
+                int preStart = -1, preEnd = -1;
                 if (objPre != null)
                 {
-                    pre_start = objPre.StartTime;
-                    pre_end = objPre.EndTime;
+                    preStart = objPre.StartTime;
+                    preEnd = objPre.EndTime;
                 }
                 double nowP1 = objNow.P1_1, nowP2 = objNow.P2_1;
                 double preP1 = -1, preP2 = -1;
@@ -737,21 +746,21 @@ namespace LibOsb
                 }
                 if (i == 0)
                 {
-                    if (isInnerClass) break;
+                    if (IsInnerClass) break;
                     /* 当 此event唯一
                      * 且 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
                      * 且 此event开始时间 > obj最小时间 (或包括此event有两个以上的最小时间)
                      * 且 此event的param固定
                      * 且 此event.param=default
                      */
-                    if (_list.Count == 1 &&
-                    (now_end < this.MaxTime || now_end == this.MaxTime && MaxTimeCount > 1) &&
-                    (now_start > this.MinTime || now_start == this.MinTime && MinTimeCount > 1) &&
+                    if (list.Count == 1 &&
+                    (nowEnd < MaxTime || nowEnd == MaxTime && MaxTimeCount > 1) &&
+                    (nowStart > MinTime || nowStart == MinTime && MinTimeCount > 1) &&
                     nowP1 == nowP2 &&
                     nowP1 == defaultParam)
                     {
                         // Remove 0
-                        _Remove_Event(_list, 0);
+                        _Remove_Event(list, 0);
                     }
 
                     //// 加个条件 对第一行再判断，因为经常可能会出现误加了一个默认值的event
@@ -779,13 +788,13 @@ namespace LibOsb
                 * 且 此event当前动作 = 此event上个动作
                 * (包含一个F的特例)
                 */
-                if ((now_end < this.MaxTime || now_end == this.MaxTime && MaxTimeCount > 1 || (tType == typeof(Fade) && nowP1 == 0)) &&
+                if ((nowEnd < MaxTime || nowEnd == MaxTime && MaxTimeCount > 1 || (tType == typeof(Fade) && nowP1 == 0)) &&
                    nowP1 == nowP2 &&
                    nowP1 == preP2)
                 {
                     // Remove i
-                    _Remove_Event(_list, i);
-                    i = _list.Count - 1;
+                    _Remove_Event(list, i);
+                    i = list.Count - 1;
                 }
                 /* 当 此event与前event一致，且前后param皆固定 （有待考证）
                  */
@@ -795,13 +804,13 @@ namespace LibOsb
                 {
 
                     objPre.EndTime = objNow.EndTime;  // 整合至前面
-                    if (pre_start == this.MinTime && MinTimeCount > 1)  // ??
+                    if (preStart == MinTime && MinTimeCount > 1)  // ??
                     {
                         objPre.StartTime = objPre.EndTime;
                     }
                     // Remove i
-                    _Remove_Event(_list, i);
-                    i = _list.Count - 1;
+                    _Remove_Event(list, i);
+                    i = list.Count - 1;
                 }
                 else i--;
 
@@ -811,8 +820,8 @@ namespace LibOsb
         /// 正常压缩的泛型方法（EventDouble）
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="_list"></param>
-        private void FixDouble<T>(ref List<T> _list)
+        /// <param name="list"></param>
+        private void FixDouble<T>(ref List<T> list)
         {
             double defParam1 = -1, defParam2 = -1;
             var tType = typeof(T);
@@ -829,31 +838,31 @@ namespace LibOsb
                 defParam2 = 1;
             }
 
-            int i = _list.Count - 1;
+            int i = list.Count - 1;
             while (i >= 0)
             {
-                dynamic objNow = _list[i];
+                dynamic objNow = list[i];
                 dynamic objPre = null;
-                if (i >= 1) objPre = _list[i - 1];
-                int now_start = objNow.StartTime, now_end = objNow.EndTime;
-                int pre_start = -1, pre_end = -1;
+                if (i >= 1) objPre = list[i - 1];
+                int nowStart = objNow.StartTime, nowEnd = objNow.EndTime;
+                int preStart = -1, preEnd = -1;
                 if (objPre != null)
                 {
-                    pre_start = objPre.StartTime;
-                    pre_end = objPre.EndTime;
+                    preStart = objPre.StartTime;
+                    preEnd = objPre.EndTime;
                 }
-                double nowP1_1 = objNow.P1_1, nowP1_2 = objNow.P1_2, nowP2_1 = objNow.P2_1, nowP2_2 = objNow.P2_2;
-                double preP1_1 = -1, preP1_2 = -1, preP2_1 = -1, preP2_2 = -1;
+                double nowP11 = objNow.P1_1, nowP12 = objNow.P1_2, nowP21 = objNow.P2_1, nowP22 = objNow.P2_2;
+                double preP11 = -1, preP12 = -1, preP21 = -1, preP22 = -1;
                 if (objPre != null)
                 {
-                    preP1_1 = objPre.P1_1;
-                    preP1_2 = objPre.P1_2;
-                    preP2_1 = objPre.P2_1;
-                    preP2_2 = objPre.P2_2;
+                    preP11 = objPre.P1_1;
+                    preP12 = objPre.P1_2;
+                    preP21 = objPre.P2_1;
+                    preP22 = objPre.P2_2;
                 }
                 if (i == 0)
                 {
-                    if (isInnerClass) break;
+                    if (IsInnerClass) break;
 
                     /* 当 此event唯一
                      * 且 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
@@ -861,31 +870,31 @@ namespace LibOsb
                      * 且 此event的param固定
                      * 且 此event.param=default
                      */
-                    if (_list.Count == 1 &&
-                    (now_end < this.MaxTime || now_end == this.MaxTime && MaxTimeCount > 1) &&
-                    (now_start > this.MinTime || now_start == this.MinTime && MinTimeCount > 1) &&
+                    if (list.Count == 1 &&
+                    (nowEnd < MaxTime || nowEnd == MaxTime && MaxTimeCount > 1) &&
+                    (nowStart > MinTime || nowStart == MinTime && MinTimeCount > 1) &&
                     objNow.IsStatic)
                     {
 
                         // Move特有
                         if (tType == typeof(Move))
                         {
-                            if (nowP1_1 == (int)nowP1_1 && nowP1_2 == (int)nowP1_2)
+                            if (nowP11 == (int)nowP11 && nowP12 == (int)nowP12)
                             {
-                                DefaultX = nowP1_1;
-                                DefaultY = nowP1_2;
-                                _Remove_Event(_list, 0);
+                                DefaultX = nowP11;
+                                DefaultY = nowP12;
+                                _Remove_Event(list, 0);
                             }
-                            else if (nowP1_1 == DefaultX && nowP1_2 == DefaultY)
+                            else if (nowP11 == DefaultX && nowP12 == DefaultY)
                             {
-                                _Remove_Event(_list, 0);
+                                _Remove_Event(list, 0);
                             }
                         }
                         else
                         {
-                            if (nowP1_1 == defParam1 && nowP1_2 == defParam2)
+                            if (nowP11 == defParam1 && nowP12 == defParam2)
                             {
-                                _Remove_Event(_list, 0);
+                                _Remove_Event(list, 0);
                             }
                         }
                     }
@@ -896,26 +905,26 @@ namespace LibOsb
                 * 且 此event的param固定
                 * 且 此event当前动作 = 此event上个动作
                 */
-                if ((now_end < this.MaxTime || now_end == this.MaxTime && MaxTimeCount > 1) &&
+                if ((nowEnd < MaxTime || nowEnd == MaxTime && MaxTimeCount > 1) &&
                      objNow.IsStatic &&
-                     nowP1_1 == preP2_1 && nowP1_2 == preP2_2)
+                     nowP11 == preP21 && nowP12 == preP22)
                 {
-                    _Remove_Event(_list, i);
-                    i = _list.Count - 1;
+                    _Remove_Event(list, i);
+                    i = list.Count - 1;
                 }
                 /* 当 此event与前event一致，且前后param皆固定 （有待考证）
                  */
                 else if (objNow.IsStatic && objPre.IsStatic &&
-                         nowP1_1 == preP2_1 && nowP1_2 == preP2_2)
+                         nowP11 == preP21 && nowP12 == preP22)
                 {
                     objPre.EndTime = objNow.EndTime;  // 整合至前面
-                    if (pre_start == this.MinTime && MinTimeCount > 1)  // ??
+                    if (preStart == MinTime && MinTimeCount > 1)  // ??
                     {
                         objPre.StartTime = objPre.EndTime;
                     }
                     // Remove i
-                    _Remove_Event(_list, i);
-                    i = _list.Count - 1;
+                    _Remove_Event(list, i);
+                    i = list.Count - 1;
                 }
                 else i--;
             }
@@ -924,8 +933,8 @@ namespace LibOsb
         /// 正常压缩的泛型方法（EventTriple）
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="_list"></param>
-        private void FixTriple<T>(ref List<T> _list)
+        /// <param name="list"></param>
+        private void FixTriple<T>(ref List<T> list)
         {
             double defParam1 = -1, defParam2 = -1, defParam3 = -1;
             var tType = typeof(T);
@@ -936,48 +945,48 @@ namespace LibOsb
                 defParam3 = 255;
             }
 
-            int i = _list.Count - 1;
+            int i = list.Count - 1;
             while (i >= 0)
             {
-                Color objNow = (Color)(object)_list[i];
+                Color objNow = (Color)(object)list[i];
                 Color objPre = null;
-                if (i >= 1) objPre = (Color)(object)_list[i - 1];
-                int now_start = objNow.StartTime, now_end = objNow.EndTime;
-                int pre_start = -1, pre_end = -1;
+                if (i >= 1) objPre = (Color)(object)list[i - 1];
+                int nowStart = objNow.StartTime, nowEnd = objNow.EndTime;
+                int preStart = -1, preEnd = -1;
                 if (objPre != null)
                 {
-                    pre_start = objPre.StartTime;
-                    pre_end = objPre.EndTime;
+                    preStart = objPre.StartTime;
+                    preEnd = objPre.EndTime;
                 }
-                double nowP1_1 = objNow.P1_1, nowP1_2 = objNow.P1_2, nowP1_3 = objNow.P1_3,
-                    nowP2_1 = objNow.P2_1, nowP2_2 = objNow.P2_2, nowP2_3 = objNow.P2_3;
-                double preP1_1 = -1, preP1_2 = -1, preP1_3 = -1,
-                    preP2_1 = -1, preP2_2 = -1, preP2_3 = -1;
+                double nowP11 = objNow.P11, nowP12 = objNow.P12, nowP13 = objNow.P13,
+                    nowP21 = objNow.P21, nowP22 = objNow.P22, nowP23 = objNow.P23;
+                double preP11 = -1, preP12 = -1, preP13 = -1,
+                    preP21 = -1, preP22 = -1, preP23 = -1;
                 if (objPre != null)
                 {
-                    preP1_1 = objPre.P1_1;
-                    preP1_2 = objPre.P1_2;
-                    preP1_3 = objPre.P1_3;
-                    preP2_1 = objPre.P2_1;
-                    preP2_2 = objPre.P2_2;
-                    preP2_3 = objPre.P2_3;
+                    preP11 = objPre.P11;
+                    preP12 = objPre.P12;
+                    preP13 = objPre.P13;
+                    preP21 = objPre.P21;
+                    preP22 = objPre.P22;
+                    preP23 = objPre.P23;
                 }
                 if (i == 0)
                 {
-                    if (isInnerClass) break;
+                    if (IsInnerClass) break;
                     /* 当 此event唯一
                      * 且 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
                      * 且 此event开始时间 > obj最小时间 (或包括此event有两个以上的最小时间)
                      * 且 此event的param固定
                      * 且 此event.param=default
                      */
-                    if (_list.Count == 1 &&
-                    (now_end < this.MaxTime || now_end == this.MaxTime && MaxTimeCount > 1) &&
-                    (now_start > this.MinTime || now_start == this.MinTime && MinTimeCount > 1) &&
+                    if (list.Count == 1 &&
+                    (nowEnd < MaxTime || nowEnd == MaxTime && MaxTimeCount > 1) &&
+                    (nowStart > MinTime || nowStart == MinTime && MinTimeCount > 1) &&
                     objNow.IsStatic &&
-                    nowP1_1 == defParam1 && nowP1_2 == defParam2 && nowP1_3 == defParam3)
+                    nowP11 == defParam1 && nowP12 == defParam2 && nowP13 == defParam3)
                     {
-                        _Remove_Event(_list, 0);
+                        _Remove_Event(list, 0);
                     }
                     break;
                 }
@@ -986,62 +995,61 @@ namespace LibOsb
                 * 且 此event的param固定
                 * 且 此event当前动作 = 此event上个动作
                 */
-                if ((now_end < this.MaxTime || now_end == this.MaxTime && MaxTimeCount > 1) &&
+                if ((nowEnd < MaxTime || nowEnd == MaxTime && MaxTimeCount > 1) &&
                      objNow.IsStatic &&
-                     nowP1_1 == preP2_1 && nowP1_2 == preP2_2 && nowP1_3 == preP2_3)
+                     nowP11 == preP21 && nowP12 == preP22 && nowP13 == preP23)
                 {
-                    _Remove_Event(_list, i);
-                    i = _list.Count - 1;
+                    _Remove_Event(list, i);
+                    i = list.Count - 1;
                 }
                 /* 当 此event与前event一致，且前后param皆固定 （有待考证）
                  */
                 else if (objNow.IsStatic && objPre.IsStatic &&
-                         nowP1_1 == preP2_1 && nowP1_2 == preP2_2 && nowP1_3 == preP2_3)
+                         nowP11 == preP21 && nowP12 == preP22 && nowP13 == preP23)
                 {
                     objPre.EndTime = objNow.EndTime;  // 整合至前面
-                    if (pre_start == this.MinTime && MinTimeCount > 1)  // ??
+                    if (preStart == MinTime && MinTimeCount > 1)  // ??
                     {
                         objPre.StartTime = objPre.EndTime;
                     }
                     // Remove i
-                    _Remove_Event(_list, i);
-                    i = _list.Count - 1;
+                    _Remove_Event(list, i);
+                    i = list.Count - 1;
                 }
                 else i--;
             }
         }
 
         #region 折叠：所有event的属性
-        internal List<Move> _Move { get => _move; set => _move = value; }
-        internal List<Scale> _Scale { get => _scale; set => _scale = value; }
-        internal List<Fade> _Fade { get => _fade; set => _fade = value; }
-        internal List<Rotate> _Rotate { get => _rotate; set => _rotate = value; }
-        internal List<Vector> _Vector { get => _vector; set => _vector = value; }
-        internal List<Color> _Color { get => _color; set => _color = value; }
-        internal List<MoveX> _MoveX { get => _moveX; set => _moveX = value; }
-        internal List<MoveY> _MoveY { get => _moveY; set => _moveY = value; }
-        internal List<Parameter> _Parameter { get => _parameter; set => _parameter = value; }
-        internal List<Loop> _Loop { get => _loop; set => _loop = value; }
-        internal List<Trigger> _Trigger { get => _trigger; set => _trigger = value; }
+        internal List<Move> MoveList { get => _moveList; set => _moveList = value; }
+        internal List<Scale> ScaleList { get => _scaleList; set => _scaleList = value; }
+        internal List<Fade> FadeList { get => _fadeList; set => _fadeList = value; }
+        internal List<Rotate> RotateList { get => _rotateList; set => _rotateList = value; }
+        internal List<Vector> VectorList { get => _vectorList; set => _vectorList = value; }
+        internal List<Color> ColorList { get => _colorList; set => _colorList = value; }
+        internal List<MoveX> MoveXList { get => _moveXList; set => _moveXList = value; }
+        internal List<MoveY> MoveYList { get => _moveYList; set => _moveYList = value; }
+        internal List<Parameter> ParameterList { get => _parameterList; set => _parameterList = value; }
+        internal List<Loop> LoopList { get; set; } = new List<Loop>();
+        internal List<Trigger> TriggerList { get; set; } = new List<Trigger>();
         #endregion
 
         #region 折叠：扩展属性
-        internal TimeRange _FadeoutList { get; set; } = new TimeRange();
-        internal bool HasFade => _fade.Count != 0;
+        internal TimeRange FadeoutList { get; set; } = new TimeRange();
+        internal bool HasFade => _fadeList.Count != 0;
         #endregion
 
         #region 折叠：此字段定义是为了ref传递
-        private List<Move> _move = new List<Move>();
-        private List<Scale> _scale = new List<Scale>();
-        private List<Fade> _fade = new List<Fade>();
-        private List<Rotate> _rotate = new List<Rotate>();
-        private List<Vector> _vector = new List<Vector>();
-        private List<Color> _color = new List<Color>();
-        private List<MoveX> _moveX = new List<MoveX>();
-        private List<MoveY> _moveY = new List<MoveY>();
-        private List<Parameter> _parameter = new List<Parameter>();
-        private List<Loop> _loop = new List<Loop>();
-        private List<Trigger> _trigger = new List<Trigger>();
+        private List<Move> _moveList = new List<Move>();
+        private List<Scale> _scaleList = new List<Scale>();
+        private List<Fade> _fadeList = new List<Fade>();
+        private List<Rotate> _rotateList = new List<Rotate>();
+        private List<Vector> _vectorList = new List<Vector>();
+        private List<Color> _colorList = new List<Color>();
+        private List<MoveX> _moveXList = new List<MoveX>();
+        private List<MoveY> _moveYList = new List<MoveY>();
+        private List<Parameter> _parameterList = new List<Parameter>();
+
         #endregion
 
         /// <summary>
@@ -1052,129 +1060,129 @@ namespace LibOsb
             if (DefaultX != null) DefaultX += offsetX;
             if (DefaultY != null) DefaultY += offsetY;
 
-            for (int i = 0; i < _Move.Count; i++)
+            foreach (var t in MoveList)
             {
-                _Move[i]._Adjust(offsetX, offsetY);
-                if (isInnerClass)
+                t._Adjust(offsetX, offsetY);
+                if (IsInnerClass)
                     continue;
-                _Move[i]._AdjustTime(offsetTiming);
+                t._AdjustTime(offsetTiming);
             }
-            for (int i = 0; i < _MoveX.Count; i++)
+            foreach (var t in MoveXList)
             {
-                _MoveX[i]._Adjust(offsetX);
-                if (isInnerClass)
+                t._Adjust(offsetX);
+                if (IsInnerClass)
                     continue;
-                _MoveX[i]._AdjustTime(offsetTiming);
+                t._AdjustTime(offsetTiming);
             }
-            for (int i = 0; i < _MoveY.Count; i++)
+            foreach (var t in MoveYList)
             {
-                _MoveY[i]._Adjust(offsetY);
-                if (isInnerClass)
+                t._Adjust(offsetY);
+                if (IsInnerClass)
                     continue;
-                _MoveY[i]._AdjustTime(offsetTiming);
+                t._AdjustTime(offsetTiming);
             }
-            for (int i = 0; i < _Color.Count; i++)
+            foreach (var t in ColorList)
             {
-                if (isInnerClass)
+                if (IsInnerClass)
                     break;
-                _Color[i]._AdjustTime(offsetTiming);
+                t._AdjustTime(offsetTiming);
             }
-            for (int i = 0; i < _Fade.Count; i++)
+            foreach (var t in FadeList)
             {
-                if (isInnerClass)
+                if (IsInnerClass)
                     break;
-                _Fade[i]._AdjustTime(offsetTiming);
+                t._AdjustTime(offsetTiming);
             }
-            for (int i = 0; i < _Parameter.Count; i++)
+            foreach (var t in ParameterList)
             {
-                if (isInnerClass)
+                if (IsInnerClass)
                     break;
-                _Parameter[i]._AdjustTime(offsetTiming);
+                t._AdjustTime(offsetTiming);
             }
-            for (int i = 0; i < _Rotate.Count; i++)
+            foreach (var t in RotateList)
             {
-                if (isInnerClass)
+                if (IsInnerClass)
                     break;
-                _Rotate[i]._AdjustTime(offsetTiming);
+                t._AdjustTime(offsetTiming);
             }
-            for (int i = 0; i < _Scale.Count; i++)
+            foreach (var t in ScaleList)
             {
-                if (isInnerClass)
+                if (IsInnerClass)
                     break;
-                _Scale[i]._AdjustTime(offsetTiming);
+                t._AdjustTime(offsetTiming);
             }
-            for (int i = 0; i < _Vector.Count; i++)
+            foreach (var t in VectorList)
             {
-                if (isInnerClass)
+                if (IsInnerClass)
                     break;
-                _Vector[i]._AdjustTime(offsetTiming);
+                t._AdjustTime(offsetTiming);
             }
-            for (int i = 0; i < _Loop.Count; i++)
+            foreach (var t in LoopList)
             {
-                _Loop[i].StartTime += offsetTiming;
-                _Loop[i]._Adjust(offsetX, offsetY, offsetTiming);
+                t.StartTime += offsetTiming;
+                t._Adjust(offsetX, offsetY, offsetTiming);
             }
-            for (int i = 0; i < _Trigger.Count; i++)
+            foreach (var t in TriggerList)
             {
-                _Trigger[i].StartTime += offsetTiming;
-                _Trigger[i].EndTime += offsetTiming;
-                _Trigger[i]._Adjust(offsetX, offsetY, offsetTiming);
+                t.StartTime += offsetTiming;
+                t.EndTime += offsetTiming;
+                t._Adjust(offsetX, offsetY, offsetTiming);
             }
         }
 
         #region 折叠：直接控制Event修改方法
-        private void _Add_Event<T>(List<T> _list, T _event)
+        private void _Add_Event<T>(ICollection<T> list, T _event)
         {
             var t = typeof(T);
-            if (isTriggering || isLooping)
+            if (_isTriggering || _isLooping)
             {
-                dynamic E = _event;
+                dynamic e = _event;
                 dynamic member = null;
 
-                if (isTriggering) member = _Trigger[_Trigger.Count - 1];
-                else if (isLooping) member = _Loop[_Loop.Count - 1];
+                if (_isTriggering) member = TriggerList[TriggerList.Count - 1];
+                else if (_isLooping) member = LoopList[LoopList.Count - 1];
 
-                if (E.StartTime < member.InnerMinTime)
+                if (e.StartTime < member.InnerMinTime)
                 {
-                    member.InnerMinTime = E.StartTime;
+                    member.InnerMinTime = e.StartTime;
                     member.MinTimeCount = 1;
                 }
-                else if (E.StartTime == member.InnerMinTime) member.MinTimeCount++;
-                if (E.EndTime > member.InnerMaxTime)
+                else if (e.StartTime == member.InnerMinTime) member.MinTimeCount++;
+                if (e.EndTime > member.InnerMaxTime)
                 {
-                    member.InnerMaxTime = E.EndTime;
+                    member.InnerMaxTime = e.EndTime;
                     member.MaxTimeCount = 1;
                 }
-                else if (E.StartTime == member.InnerMaxTime) member.MaxTimeCount++;
+                else if (e.StartTime == member.InnerMaxTime) member.MaxTimeCount++;
             }
             else
             {
-                dynamic E = _event;
-                if (E.StartTime < InnerMinTime)
+                dynamic e = _event;
+                if (e.StartTime < InnerMinTime)
                 {
-                    InnerMinTime = E.StartTime;
+                    InnerMinTime = e.StartTime;
                     MinTimeCount = 1;
                 }
-                else if (E.StartTime == InnerMinTime) MinTimeCount++;
-                if (E.EndTime > InnerMaxTime)
+                else if (e.StartTime == InnerMinTime) MinTimeCount++;
+                if (e.EndTime > InnerMaxTime)
                 {
-                    InnerMaxTime = E.EndTime;
+                    InnerMaxTime = e.EndTime;
                     MaxTimeCount = 1;
                 }
-                else if (E.EndTime == InnerMaxTime) MaxTimeCount++;
+                else if (e.EndTime == InnerMaxTime) MaxTimeCount++;
             }
 
-            _list.Add(_event);
+            list.Add(_event);
         }
         private void _Add_Move(EasingType easing, int startTime, int endTime, double x1, double y1, double x2, double y2)
         {
             var obj = new Move(easing, startTime, endTime, x1, y1, x2, y2);
-            if (!isLooping && !isTriggering)
-                _Add_Event(_Move, obj);
-            else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Move, obj);
+            if (!_isLooping && !_isTriggering)
+                _Add_Event(MoveList, obj);
+            else if (_isLooping)
+                _Add_Event(LoopList[LoopList.Count - 1].MoveList, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Move, obj);
+                _Add_Event(TriggerList[TriggerList.Count - 1].MoveList, obj);
         }
         private void _Add_Fade(EasingType easing, int startTime, int endTime, double f1, double f2)
         {
@@ -1182,86 +1190,86 @@ namespace LibOsb
             CheckAlpha(f2);
 
             var obj = new Fade(easing, startTime, endTime, f1, f2);
-            if (!isLooping && !isTriggering)
-                _Add_Event(_Fade, obj);
-            else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Fade, obj);
+            if (!_isLooping && !_isTriggering)
+                _Add_Event(FadeList, obj);
+            else if (_isLooping)
+                _Add_Event(LoopList[LoopList.Count - 1].FadeList, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Fade, obj);
+                _Add_Event(TriggerList[TriggerList.Count - 1].FadeList, obj);
         }
         private void _Add_Scale(EasingType easing, int startTime, int endTime, double s1, double s2)
         {
             var obj = new Scale(easing, startTime, endTime, s1, s2);
-            if (!isLooping && !isTriggering)
-                _Add_Event(_Scale, obj);
-            else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Scale, obj);
+            if (!_isLooping && !_isTriggering)
+                _Add_Event(ScaleList, obj);
+            else if (_isLooping)
+                _Add_Event(LoopList[LoopList.Count - 1].ScaleList, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Scale, obj);
+                _Add_Event(TriggerList[TriggerList.Count - 1].ScaleList, obj);
         }
         private void _Add_Rotate(EasingType easing, int startTime, int endTime, double r1, double r2)
         {
             var obj = new Rotate(easing, startTime, endTime, r1, r2);
-            if (!isLooping && !isTriggering)
-                _Add_Event(_Rotate, obj);
-            else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Rotate, obj);
+            if (!_isLooping && !_isTriggering)
+                _Add_Event(RotateList, obj);
+            else if (_isLooping)
+                _Add_Event(LoopList[LoopList.Count - 1].RotateList, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Rotate, obj);
+                _Add_Event(TriggerList[TriggerList.Count - 1].RotateList, obj);
         }
         private void _Add_Color(EasingType easing, int startTime, int endTime, int r1, int g1, int b1, int r2, int g2, int b2)
         {
             var obj = new Color(easing, startTime, endTime, r1, g1, b1, r2, g2, b2);
-            if (!isLooping && !isTriggering)
-                _Add_Event(_Color, obj);
-            else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Color, obj);
+            if (!_isLooping && !_isTriggering)
+                _Add_Event(ColorList, obj);
+            else if (_isLooping)
+                _Add_Event(LoopList[LoopList.Count - 1].ColorList, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Color, obj);
+                _Add_Event(TriggerList[TriggerList.Count - 1].ColorList, obj);
         }
         private void _Add_MoveX(EasingType easing, int startTime, int endTime, double x1, double x2)
         {
             var obj = new MoveX(easing, startTime, endTime, x1, x2);
-            if (!isLooping && !isTriggering)
-                _Add_Event(_MoveX, obj);
-            else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._MoveX, obj);
+            if (!_isLooping && !_isTriggering)
+                _Add_Event(MoveXList, obj);
+            else if (_isLooping)
+                _Add_Event(LoopList[LoopList.Count - 1].MoveXList, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._MoveX, obj);
+                _Add_Event(TriggerList[TriggerList.Count - 1].MoveXList, obj);
         }
         private void _Add_MoveY(EasingType easing, int startTime, int endTime, double y1, double y2)
         {
             var obj = new MoveY(easing, startTime, endTime, y1, y2);
-            if (!isLooping && !isTriggering)
-                _Add_Event(_MoveY, obj);
-            else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._MoveY, obj);
+            if (!_isLooping && !_isTriggering)
+                _Add_Event(MoveYList, obj);
+            else if (_isLooping)
+                _Add_Event(LoopList[LoopList.Count - 1].MoveYList, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._MoveY, obj);
+                _Add_Event(TriggerList[TriggerList.Count - 1].MoveYList, obj);
         }
         private void _Add_Param(EasingType easing, int startTime, int endTime, string p)
         {
             var obj = new Parameter(easing, startTime, endTime, p);
-            if (!isLooping && !isTriggering)
-                _Add_Event(_Parameter, obj);
-            else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Parameter, obj);
+            if (!_isLooping && !_isTriggering)
+                _Add_Event(ParameterList, obj);
+            else if (_isLooping)
+                _Add_Event(LoopList[LoopList.Count - 1].ParameterList, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Parameter, obj);
+                _Add_Event(TriggerList[TriggerList.Count - 1].ParameterList, obj);
         }
         private void _Add_Vector(EasingType easing, int startTime, int endTime, double vx1, double vy1, double vx2, double vy2)
         {
             var obj = new Vector(easing, startTime, endTime, vx1, vy1, vx2, vy2);
-            if (!isLooping && !isTriggering)
-                _Add_Event(_Vector, obj);
-            else if (isLooping)
-                _Add_Event(_Loop[_Loop.Count - 1]._Vector, obj);
+            if (!_isLooping && !_isTriggering)
+                _Add_Event(VectorList, obj);
+            else if (_isLooping)
+                _Add_Event(LoopList[LoopList.Count - 1].VectorList, obj);
             else
-                _Add_Event(_Trigger[_Trigger.Count - 1]._Vector, obj);
+                _Add_Event(TriggerList[TriggerList.Count - 1].VectorList, obj);
         }
-        private void _Remove_Event<T>(List<T> _list, int index)
+        private void _Remove_Event<T>(IList<T> list, int index)
         {
-            dynamic evt = _list[index];
+            dynamic evt = list[index];
             if (evt.StartTime == MinTime)
             {
                 if (MinTimeCount > 1)
@@ -1274,14 +1282,15 @@ namespace LibOsb
                     MaxTimeCount--;
                 //else  // 待验证
             }
-            _list.RemoveAt(index);
+            list.RemoveAt(index);
         }
         #endregion
 
+        /// <inheritdoc />
         /// <summary>
         /// 以timing排序event
         /// </summary>
-        class EventSort<T> : IComparer<T>
+        private class EventSort<T> : IComparer<T>
         {
             public int Compare(T event1, T event2)
             {

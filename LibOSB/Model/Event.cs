@@ -23,8 +23,8 @@ namespace LibOsb
 
         public override string ToString()
         {
-            string end_time = StartTime == EndTime ? "" : EndTime.ToString();
-            return string.Join(",", Type, (int)Enum.Parse(typeof(EasingType), Easing.ToString()), StartTime, end_time, ScriptParams);
+            var endTime = StartTime == EndTime ? "" : EndTime.ToString();
+            return string.Join(",", Type, (int)Enum.Parse(typeof(EasingType), Easing.ToString()), StartTime, endTime, ScriptParams);
         }
 
         internal void _AdjustTime(int time)

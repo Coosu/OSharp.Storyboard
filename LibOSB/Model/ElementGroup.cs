@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using LibOsb.Model.EventType;
 using LibOsb.Model.Constants;
 using StorybrewCommon.Storyboarding;
 
-namespace LibOsb
+namespace LibOsb.Model
 {
     public class ElementGroup : IDisposable
     {
@@ -103,11 +100,11 @@ namespace LibOsb
             }
         }
 
-        public void ExecuteBrew(StoryboardLayer lay_parsed)
+        public void ExecuteBrew(StoryboardLayer layParsed)
         {
             foreach (var lib in ElementList)
             {
-                lib.ExecuteBrew(lay_parsed);
+                lib.ExecuteBrew(layParsed);
 
             }
         }
@@ -125,7 +122,7 @@ namespace LibOsb
 
             foreach (var obj in ElementList)
             {
-                sb.Append(obj.ToString());
+                sb.Append(obj);
             }
 
             return sb.ToString();
@@ -160,7 +157,7 @@ namespace LibOsb
                             lineCount = 0;
                         }
                     }
-                    else if (line.IndexOf("//") == 0 || line.IndexOf("[Events]") == 0)
+                    else if (line.IndexOf("//", StringComparison.Ordinal) == 0 || line.IndexOf("[Events]", StringComparison.Ordinal) == 0)
                     {
                         lineCount++;
                         currentLine++;
@@ -183,9 +180,9 @@ namespace LibOsb
                     isOpen = false;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                // ignored
             }
 
             return obj;

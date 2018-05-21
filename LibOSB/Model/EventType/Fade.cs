@@ -7,7 +7,7 @@ using LibOsb.EventClass;
 
 namespace LibOsb.Model.EventType
 {
-    class Fade : EventSingle
+    internal class Fade : EventSingle
     {
         public Fade(EasingType easing, int startTime, int endTime, double preParam, double postParam)
         => Init("F", easing, startTime, endTime, preParam, postParam);

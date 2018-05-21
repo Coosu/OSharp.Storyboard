@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LibOsb.Model;
 
 namespace LibOsb.Camera
 {
@@ -24,8 +25,8 @@ namespace LibOsb.Camera
             int totalframes = lasttime / 1000 * fps;
             foreach (var obj in Objects)
             {
-                //List<ActionClass.ActionDouble> mv = obj._Move;
-                //obj._Move.listDouble.Clear();
+                //List<ActionClass.ActionDouble> mv = obj.MoveList;
+                //obj.MoveList.listDouble.Clear();
                 //for (int j = 0; j < mv.Count; j++)
                 //{
                 //    for (int i = 0; i < totalframes; i++)

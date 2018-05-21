@@ -8,12 +8,12 @@ namespace LibOsb.EventClass
 {
     class EventDouble : Event
     {
-        public double P1_1 { get; internal set; }
-        public double P1_2 { get; internal set; }
-        public double P2_1 { get; internal set; }
-        public double P2_2 { get; internal set; }
+        public double P11 { get; internal set; }
+        public double P12 { get; internal set; }
+        public double P21 { get; internal set; }
+        public double P22 { get; internal set; }
 
-        public override bool IsStatic => P1_1 == P2_1 && P1_2 == P2_2;
+        public override bool IsStatic => P11 == P21 && P12 == P22;
 
         protected void Init(string type, EasingType easing, int startTime, int endTime, double preParam1, double preParam2, double postParam1, double postParam2)
         {
@@ -21,20 +21,20 @@ namespace LibOsb.EventClass
             Easing = easing;
             StartTime = startTime;
             EndTime = endTime;
-            P1_1 = preParam1;
-            P1_2 = preParam2;
-            P2_1 = postParam1;
-            P2_2 = postParam2;
+            P11 = preParam1;
+            P12 = preParam2;
+            P21 = postParam1;
+            P22 = postParam2;
 
             BuildParams();
         }
 
         internal override void BuildParams()
         {
-            if (P1_1 == P2_1 && P1_2 == P2_2)
-                ScriptParams = P1_1 + "," + P1_2;
+            if (P11 == P21 && P12 == P22)
+                ScriptParams = P11 + "," + P12;
             else
-                ScriptParams = P1_1 + "," + P1_2 + "," + P2_1 + "," + P2_2;
+                ScriptParams = P11 + "," + P12 + "," + P21 + "," + P22;
         }
     }
 }

@@ -8,9 +8,9 @@ namespace LibOsb.Model.EventType
 {
     public class Parameter : Event
     {
-        public string PType { get; private set; }
+        public string PType { get; }
 
-        public override bool IsStatic { get => true; }
+        public override bool IsStatic => true;
 
         public Parameter(EasingType easing, int starttime, int endtime, string ptype)
         {
@@ -21,6 +21,6 @@ namespace LibOsb.Model.EventType
             PType = ptype;
             BuildParams();
         }
-        internal override void BuildParams() => ScriptParams = PType;
+        internal sealed override void BuildParams() => ScriptParams = PType;
     }
 }

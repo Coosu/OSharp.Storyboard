@@ -1,4 +1,5 @@
 ﻿using LibOsb.Model.Constants;
+using LibOsb.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,7 +14,7 @@ namespace LibOsb
     {
         static void Main(string[] args)
         {
-            StringBuilder ok = new StringBuilder();
+            var ok = new StringBuilder();
             ok.AppendLine("Sprite,Foreground,Centre,\"11t-fonts\\E1.png\",320,240");
 
             ok.AppendLine(" F,0,300,1000,0,1");
@@ -30,29 +31,15 @@ namespace LibOsb
             ok.AppendLine(" R,0,4000,,0");
             //var obj2 = Element.Parse(ok.ToString());
 
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            var text = System.IO.File.ReadAllText(@"D:\Program Files (x86)\osu!\Songs\591442 S3RL feat Harri Rush - Nostalgic (Nightcore Mix) (1)\S3RL feat Harri Rush - Nostalgic (Nightcore Mix) (nold_1702).bak");
-            Console.WriteLine("Read: " + sw.ElapsedMilliseconds);
-            sw.Reset();
-            sw.Start();
-            var parsed = ElementGroup.Parse(text, 0);
-            Console.WriteLine("Parse: " + sw.ElapsedMilliseconds);
-            sw.Reset();
-            System.IO.File.WriteAllText("before.txt", parsed.ToString());
-            sw.Start();
-            parsed.Compress();
-            Console.WriteLine("Compress: " + sw.ElapsedMilliseconds);
-            sw.Reset();
-            System.IO.File.WriteAllText("after.txt", parsed.ToString());
-            Console.WriteLine(sw.ElapsedMilliseconds);
-            parsed.CreateSprite(LayerType.Background, OriginType.Centre, "BG.jpg");
-            ElementManager em = new ElementManager();
-            em.Add(parsed);
-            em.Save(@"D:\Program Files (x86)\osu!\Songs\591442 S3RL feat Harri Rush - Nostalgic (Nightcore Mix) (1)\parsed.osb");
+            int g = 3;
+            int startT = 0, endT = 1000, splitT = 10;
+            double startX = 0, endX = 5000;
 
+            double x = endX - startX;
+
+            double sb = EasingType.EasingIn.Ease(g);
+            Console.WriteLine(sb);
             Console.Read();
-            return;
         }
     }
 }

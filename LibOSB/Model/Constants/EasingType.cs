@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-
-namespace LibOsb.Model.Constants
+﻿namespace LibOsb.Model.Constants
 {
     public enum EasingType
     {

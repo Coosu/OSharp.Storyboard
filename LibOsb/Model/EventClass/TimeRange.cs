@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LibOsb.EventClass
+namespace LibOsb.Model.EventClass
 {
     // 差个排序
     public class TimeRange
@@ -31,16 +30,7 @@ namespace LibOsb.EventClass
         {
             for (int i = 0; i < TimingList.Count; i++)
             {
-                bool flag = true;
-                foreach (var t in time)
-                {
-                    if (t < TimingList[i].StartTime || t > TimingList[i].EndTime)
-                    {
-                        flag = false;
-                        break;
-                    }
-                }
-                if (flag)
+                if (time.All(t => t >= TimingList[i].StartTime && t <= TimingList[i].EndTime))
                 {
                     isLast = i == TimingList.Count - 1;
                     return true;
@@ -51,7 +41,7 @@ namespace LibOsb.EventClass
         }
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             foreach (var item in TimingList)
                 sb.AppendLine(item.StartTime + "," + item.EndTime);
             return sb.ToString();

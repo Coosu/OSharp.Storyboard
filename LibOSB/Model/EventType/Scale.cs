@@ -7,7 +7,7 @@ using System.Text;
 
 namespace LibOsb.Model.EventType
 {
-    class Scale : EventSingle
+    internal class Scale : EventSingle
     {
         public Scale(EasingType easing, int startTime, int endTime, double preParam, double postParam)
         => Init("S", easing, startTime, endTime, preParam, postParam);

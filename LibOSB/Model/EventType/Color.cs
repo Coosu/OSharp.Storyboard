@@ -7,7 +7,7 @@ using System.Text;
 
 namespace LibOsb.Model.EventType
 {
-    class Color : EventTriple
+    internal class Color : EventTriple
     {
         public Color(EasingType easing, int startTime, int endTime,
             double preParam1, double preParam2, double preParam3, double postParam1, double postParam2, double postParam3)

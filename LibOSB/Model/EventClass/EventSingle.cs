@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using LibOsb.Model.Constants;
@@ -8,10 +9,10 @@ namespace LibOsb.EventClass
 {
     class EventSingle : Event
     {
-        public double P1_1 { get; internal set; }
-        public double P2_1 { get; internal set; }
+        public double P11 { get; internal set; }
+        public double P21 { get; internal set; }
 
-        public override bool IsStatic => P1_1 == P2_1;
+        public override bool IsStatic => P11 == P21;
 
         protected void Init(string type, EasingType easing, int startTime, int endTime, double preParam, double postParam)
         {
@@ -19,18 +20,18 @@ namespace LibOsb.EventClass
             Easing = easing;
             StartTime = startTime;
             EndTime = endTime;
-            P1_1 = preParam;
-            P2_1 = postParam;
+            P11 = preParam;
+            P21 = postParam;
 
             BuildParams();
         }
 
         internal override void BuildParams()
         {
-            if (P1_1 == P2_1)
-                ScriptParams = P1_1.ToString();
+            if (P11 == P21)
+                ScriptParams = P11.ToString(CultureInfo.InvariantCulture);
             else
-                ScriptParams = P1_1 + "," + P2_1;
+                ScriptParams = P11 + "," + P21;
         }
     }
 }

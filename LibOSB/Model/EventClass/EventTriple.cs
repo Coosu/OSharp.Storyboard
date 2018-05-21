@@ -8,14 +8,14 @@ namespace LibOsb.EventClass
 {
     class EventTriple : Event
     {
-        public double P1_1 { get; private set; }
-        public double P1_2 { get; private set; }
-        public double P1_3 { get; private set; }
-        public double P2_1 { get; private set; }
-        public double P2_2 { get; private set; }
-        public double P2_3 { get; private set; }
+        public double P11 { get; private set; }
+        public double P12 { get; private set; }
+        public double P13 { get; private set; }
+        public double P21 { get; private set; }
+        public double P22 { get; private set; }
+        public double P23 { get; private set; }
 
-        public override bool IsStatic => P1_1 == P2_1 && P1_2 == P2_2 && P1_3 == P2_3;
+        public override bool IsStatic => P11 == P21 && P12 == P22 && P13 == P23;
 
         public void Init(string type, EasingType easing, int startTime, int endTime,
             double preParam1, double preParam2, double preParam3, double postParam1, double postParam2, double postParam3)
@@ -24,22 +24,22 @@ namespace LibOsb.EventClass
             Easing = easing;
             StartTime = startTime;
             EndTime = endTime;
-            P1_1 = preParam1;
-            P1_2 = preParam2;
-            P1_3 = preParam3;
-            P2_1 = postParam1;
-            P2_2 = postParam2;
-            P2_3 = postParam3;
+            P11 = preParam1;
+            P12 = preParam2;
+            P13 = preParam3;
+            P21 = postParam1;
+            P22 = postParam2;
+            P23 = postParam3;
 
             BuildParams();
         }
 
         internal override void BuildParams()
         {
-            if (P1_1 == P2_1 && P1_2 == P2_2 && P1_3 == P2_3)
-                ScriptParams = string.Join(",", P1_1, P1_2, P1_3);
+            if (P11 == P21 && P12 == P22 && P13 == P23)
+                ScriptParams = string.Join(",", P11, P12, P13);
             else
-                ScriptParams = string.Join(",", P1_1, P1_2, P1_3, P2_1, P2_2, P2_3);
+                ScriptParams = string.Join(",", P11, P12, P13, P21, P22, P23);
         }
     }
 }
