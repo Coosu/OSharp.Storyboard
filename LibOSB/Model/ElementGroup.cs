@@ -100,44 +100,20 @@ namespace LibOsb.Model
             }
         }
 
-<<<<<<< HEAD
         public void ExecuteBrew(StoryboardLayer layParsed)
         {
             foreach (var lib in ElementList)
             {
                 lib.ExecuteBrew(layParsed);
 
-=======
-        public void SetPrivateDiff(string filePath)
-        {
-            foreach (var lib in ElementList)
-            {
-                lib.SetPrivateDiff(filePath);
-            }
-        }
-
-        public void ExecuteBrew(StoryboardLayer lay_parsed)
-        {
-            foreach (var lib in ElementList)
-            {
-                lib.ExecuteBrew(lay_parsed);
->>>>>>> 54f644f1489c737e9e0254084878e3da8e13ef97
             }
         }
 
         public void Compress()
         {
-            for (int i = 0; i < ElementList.Count; i++)
+            foreach (var obj in ElementList)
             {
-                try
-                {
-                    ElementList[i].Compress(true);
-                }
-                catch (Exception ex)
-                {
-                    ElementList[i] = ElementList[i].Backup;
-                    Console.WriteLine(ex.Message);
-                }
+                obj.Compress();
             }
         }
         public override string ToString()
@@ -147,18 +123,6 @@ namespace LibOsb.Model
             foreach (var obj in ElementList)
             {
                 sb.Append(obj);
-            }
-
-            return sb.ToString();
-        }
-        public string ToPublicString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            foreach (var obj in ElementList)
-            {
-                if (obj.PrivateDiff == null) continue;
-                sb.Append(obj.ToString());
             }
 
             return sb.ToString();
