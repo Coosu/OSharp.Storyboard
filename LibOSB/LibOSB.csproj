@@ -23,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -34,6 +35,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -61,42 +63,43 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Camera\Camera2D.cs" />
-    <Compile Include="BrewHelper\BrewConvert.cs" />
+    <Compile Include="Utils\BrewExtension\BrewConvert.cs" />
     <Compile Include="Compress\ElementCompress.cs" />
-    <Compile Include="Model\EventClass\EventDouble.cs" />
-    <Compile Include="Model\EventClass\EventSingle.cs" />
-    <Compile Include="Model\EventClass\EventTriple.cs" />
-    <Compile Include="Model\EventClass\TimeRange.cs" />
-    <Compile Include="Model\Event.cs" />
-    <Compile Include="Model\EventType\Color.cs" />
-    <Compile Include="Model\EventType\Fade.cs" />
-    <Compile Include="Model\EventType\Loop.cs" />
-    <Compile Include="Model\EventType\Move.cs" />
-    <Compile Include="Model\EventType\MoveX.cs" />
-    <Compile Include="Model\EventType\MoveY.cs" />
-    <Compile Include="Model\EventType\Parameter.cs" />
-    <Compile Include="Model\EventType\Rotate.cs" />
-    <Compile Include="Model\EventType\Scale.cs" />
-    <Compile Include="Model\EventType\Trigger.cs" />
-    <Compile Include="Model\EventType\Vector.cs" />
-    <Compile Include="Model\Constants\EasingType.cs" />
-    <Compile Include="Model\Constants\TriggerType.cs" />
-    <Compile Include="Model\Constants\LayerType.cs" />
-    <Compile Include="Model\Constants\LoopType.cs" />
-    <Compile Include="Model\Constants\OriginType.cs" />
-    <Compile Include="Model\Constants\ElementType.cs" />
+    <Compile Include="Models\EventClass\EventDouble.cs" />
+    <Compile Include="Models\EventClass\EventSingle.cs" />
+    <Compile Include="Models\EventClass\EventTriple.cs" />
+    <Compile Include="Models\EventClass\TimeRange.cs" />
+    <Compile Include="Models\EventClass\Event.cs" />
+    <Compile Include="Models\EventType\Color.cs" />
+    <Compile Include="Models\EventType\Fade.cs" />
+    <Compile Include="Models\EventType\Loop.cs" />
+    <Compile Include="Models\EventType\Move.cs" />
+    <Compile Include="Models\EventType\MoveX.cs" />
+    <Compile Include="Models\EventType\MoveY.cs" />
+    <Compile Include="Models\EventType\Parameter.cs" />
+    <Compile Include="Models\EventType\Rotate.cs" />
+    <Compile Include="Models\EventType\Scale.cs" />
+    <Compile Include="Models\EventType\Trigger.cs" />
+    <Compile Include="Models\EventType\Vector.cs" />
+    <Compile Include="Enums\EasingType.cs" />
+    <Compile Include="Enums\TriggerType.cs" />
+    <Compile Include="Enums\LayerType.cs" />
+    <Compile Include="Enums\LoopType.cs" />
+    <Compile Include="Enums\OriginType.cs" />
+    <Compile Include="Enums\ElementType.cs" />
     <Compile Include="ElementManager.cs" />
     <Compile Include="ElementGroup.cs" />
     <Compile Include="Element.cs" />
     <Compile Include="Demo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Util\EasingFunctions.cs" />
-    <Compile Include="Util\ElementExtension.cs" />
+    <Compile Include="Utils\EasingFunctions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="BrewHelper\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

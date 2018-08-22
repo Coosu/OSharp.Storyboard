@@ -1,36 +1,98 @@
-﻿using StorybrewCommon.Scripting;
-using StorybrewCommon.Storyboarding;
+﻿using System;
+using LibOsb.Enums;
+using LibOsb.Models.EventClass;
+using LibOsb.Models.EventType;
 using OpenTK;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LibOsb.Model.Constants;
-using LibOsb.Model.EventType;
+using StorybrewCommon.Storyboarding;
 
-namespace LibOsb.BrewHelper
+namespace LibOsb.Utils.BrewExtension
 {
-    internal class BrewConvert
+    public static class BrewConvert
     {
-        public static void ExeM(Move m, OsbSprite brewObj) =>
-            brewObj.Move(CvtEasing(m.Easing), m.StartTime, m.EndTime, m.P11, m.P12, m.P21, m.P22);
-        public static void ExeS(Scale s, OsbSprite brewObj) =>
-            brewObj.Scale(CvtEasing(s.Easing), s.StartTime, s.EndTime, s.P11, s.P21);
-        public static void ExeF(Fade f, OsbSprite brewObj) =>
-            brewObj.Fade(CvtEasing(f.Easing), f.StartTime, f.EndTime, f.P11, f.P21);
-        public static void ExeR(Rotate r, OsbSprite brewObj) =>
-            brewObj.Rotate(CvtEasing(r.Easing), r.StartTime, r.EndTime, r.P11, r.P21);
-        public static void ExeV(Vector v, OsbSprite brewObj) =>
-            brewObj.ScaleVec(CvtEasing(v.Easing), v.StartTime, v.EndTime, v.P11, v.P12, v.P21, v.P22);
-        public static void ExeC(Color c, OsbSprite brewObj) =>
-            brewObj.Color(CvtEasing(c.Easing), c.StartTime, c.EndTime, c.P11 / 255d, c.P12 / 255d, c.P13 / 255d,
-                c.P21 / 255d, c.P22 / 255d, c.P23 / 255d);
-        public static void ExeMx(MoveX mx, OsbSprite brewObj) =>
-            brewObj.MoveX(CvtEasing(mx.Easing), mx.StartTime, mx.EndTime, mx.P11, mx.P21);
-        public static void ExeMy(MoveY my, OsbSprite brewObj) =>
-            brewObj.MoveY(CvtEasing(my.Easing), my.StartTime, my.EndTime, my.P11, my.P21);
-        public static void ExeP(Parameter p, OsbSprite brewObj)
+        public static void ExecuteBrew(this Element element, StoryboardLayer layParsed, OsbSprite brewObj = null)
+        {
+            if (brewObj == null)
+            {
+                if (element.Type == ElementType.Sprite)
+                    brewObj = layParsed.CreateSprite(element.ImagePath, ConvertOrigin(element.Origin),
+                        new Vector2((float)element.DefaultX, (float)element.DefaultY));
+                else
+                    brewObj = layParsed.CreateAnimation(element.ImagePath, (int)element.FrameCount, (int)element.FrameRate,
+                        ConvertLoopType(element.LoopType), ConvertOrigin(element.Origin),
+                        new Vector2((float)element.DefaultX, (float)element.DefaultY));
+            }
+
+            foreach (var mx in element.MoveXList) ExecuteSingle(mx, brewObj);
+            foreach (var my in element.MoveYList) ExecuteSingle(my, brewObj);
+            foreach (var s in element.ScaleList) ExecuteSingle(s, brewObj);
+            foreach (var f in element.FadeList) ExecuteSingle(f, brewObj);
+            foreach (var r in element.RotateList) ExecuteSingle(r, brewObj);
+            foreach (var v in element.VectorList) ExecuteDouble(v, brewObj);
+            foreach (var m in element.MoveList) ExecuteDouble(m, brewObj);
+            foreach (var c in element.ColorList) ExecuteTriple(c, brewObj);
+            foreach (var p in element.ParameterList) ExecuteP(p, brewObj);
+            foreach (var l in element.LoopList)
+            {
+                brewObj.StartLoopGroup(l.StartTime, l.LoopCount);
+                l.ExecuteBrew(layParsed, brewObj);
+                brewObj.EndGroup();
+            }
+            foreach (var t in element.TriggerList)
+            {
+                brewObj.StartTriggerGroup(t.TriggerType, t.StartTime, t.EndTime);
+                t.ExecuteBrew(layParsed, brewObj);
+                brewObj.EndGroup();
+            }
+        }
+        private static void ExecuteSingle(EventSingle e, OsbSprite brewObj)
+        {
+            switch (e)
+            {
+                case Scale _:
+                    brewObj.Scale(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start, e.End);
+                    break;
+                case Fade _:
+                    brewObj.Fade(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start, e.End);
+                    break;
+                case Rotate _:
+                    brewObj.Rotate(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start, e.End);
+                    break;
+                case MoveX _:
+                    brewObj.MoveX(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start, e.End);
+                    break;
+                case MoveY _:
+                    brewObj.MoveY(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start, e.End);
+                    break;
+            }
+        }
+
+        private static void ExecuteDouble(EventDouble e, OsbSprite brewObj)
+        {
+            switch (e)
+            {
+                case Move _:
+                    brewObj.Move(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start.x, e.Start.y, e.End.x,
+                        e.End.y);
+                    break;
+                case Vector _:
+                    brewObj.ScaleVec(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start.x, e.Start.y, e.End.x,
+                        e.End.y);
+                    break;
+            }
+        }
+
+        private static void ExecuteTriple(EventTriple e, OsbSprite brewObj)
+        {
+            switch (e)
+            {
+                case Color _:
+                    brewObj.Color(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start.x / 255d, e.Start.y / 255d,
+                        e.Start.z / 255d, e.End.x / 255d, e.End.y / 255d, e.End.z / 255d);
+                    break;
+            }
+        }
+
+        private static void ExecuteP(Parameter p, OsbSprite brewObj)
         {
             switch (p.PType)
             {
@@ -48,7 +110,7 @@ namespace LibOsb.BrewHelper
             }
         }
 
-        public static OsbOrigin CvtOrigin(OriginType libOrigin)
+        private static OsbOrigin ConvertOrigin(OriginType libOrigin)
         {
             switch (libOrigin)
             {
@@ -75,7 +137,8 @@ namespace LibOsb.BrewHelper
             }
 
         }
-        public static OsbLoopType CvtLoopType(LoopType libLoop)
+
+        private static OsbLoopType ConvertLoopType(LoopType libLoop)
         {
             switch (libLoop)
             {
@@ -88,7 +151,8 @@ namespace LibOsb.BrewHelper
             }
 
         }
-        public static OsbEasing CvtEasing(EasingType libEasing)
+
+        private static OsbEasing ConvertEasing(EasingType libEasing)
         {
             switch (libEasing)
             {

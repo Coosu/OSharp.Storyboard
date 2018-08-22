@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using LibOsb.Compress;
-using LibOsb.Model.Constants;
-using LibOsb.Util;
+using LibOsb.Enums;
+using LibOsb.Utils;
+using LibOsb.Utils.BrewExtension;
 using StorybrewCommon.Storyboarding;
 
 namespace LibOsb

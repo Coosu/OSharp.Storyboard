@@ -1,4 +1,4 @@
-﻿namespace LibOsb.Model.Constants
+﻿namespace LibOsb.Enums
 {
     public enum LayerType
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LibOsb.Model.EventType;
+using LibOsb.Models.EventType;
 
 namespace LibOsb.Compress
 {
@@ -40,23 +40,23 @@ namespace LibOsb.Compress
             foreach (var item in sbObj.TriggerList) Examine(item);
 
             // 验证物件完全消失的时间段
-            int tmpTime = -1;
+            double tmpTime = -1;
             bool fadeouting = false;
             for (int j = 0; j < sbObj.FadeList.Count; j++)
             {
                 var nowF = sbObj.FadeList[j];
-                if (j == 0 && nowF.P11.Equals(0) && nowF.StartTime > sbObj.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+                if (j == 0 && nowF.Start.Equals(0) && nowF.StartTime > sbObj.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
                 {
                     sbObj.FadeoutList.Add(sbObj.MinTime, nowF.StartTime);
                 }
-                else if (nowF.P21.Equals(0) && !fadeouting)  // f2=0，开始计时
+                else if (nowF.End.Equals(0) && !fadeouting)  // f2=0，开始计时
                 {
                     tmpTime = nowF.EndTime;
                     fadeouting = true;
                 }
                 else if (fadeouting)
                 {
-                    if (nowF.P11.Equals(0) && nowF.P21.Equals(0))
+                    if (nowF.Start.Equals(0) && nowF.End.Equals(0))
                         continue;
                     sbObj.FadeoutList.Add(tmpTime, nowF.StartTime);
                     fadeouting = false;
@@ -193,9 +193,9 @@ namespace LibOsb.Compress
                 defaultParam = 1;
             else if (tType == typeof(Rotate))
                 defaultParam = 0;
-            else if (!element.IsLOrT && tType == typeof(MoveX))
+            else if (!element.IsLorT && tType == typeof(MoveX))
                 defaultParam = (int)element.DefaultX;
-            else if (!element.IsLOrT && tType == typeof(MoveY))
+            else if (!element.IsLorT && tType == typeof(MoveY))
                 defaultParam = (int)element.DefaultY;
             else if (tType == typeof(Fade))
                 defaultParam = 1;
@@ -222,7 +222,7 @@ namespace LibOsb.Compress
                 }
                 if (i == 0)
                 {
-                    if (element.IsLOrT) break;
+                    if (element.IsLorT) break;
                     /* 当 此event唯一
                      * 且 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
                      * 且 此event开始时间 > obj最小时间 (或包括此event有两个以上的最小时间)
@@ -339,7 +339,7 @@ namespace LibOsb.Compress
                 }
                 if (i == 0)
                 {
-                    if (element.IsLOrT) break;
+                    if (element.IsLorT) break;
 
                     /* 当 此event唯一
                      * 且 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
@@ -430,29 +430,29 @@ namespace LibOsb.Compress
                 Color objNow = (Color)(object)list[i];
                 Color objPre = null;
                 if (i >= 1) objPre = (Color)(object)list[i - 1];
-                int nowStart = objNow.StartTime, nowEnd = objNow.EndTime;
-                int preStart = -1, preEnd = -1;
+                double nowStart = objNow.StartTime, nowEnd = objNow.EndTime;
+                double preStart = -1, preEnd = -1;
                 if (objPre != null)
                 {
                     preStart = objPre.StartTime;
                     preEnd = objPre.EndTime;
                 }
-                double nowP11 = objNow.P11, nowP12 = objNow.P12, nowP13 = objNow.P13,
-                    nowP21 = objNow.P21, nowP22 = objNow.P22, nowP23 = objNow.P23;
+                double nowP11 = objNow.Start.x, nowP12 = objNow.Start.y, nowP13 = objNow.Start.z,
+                    nowP21 = objNow.End.x, nowP22 = objNow.End.y, nowP23 = objNow.End.z;
                 double preP11 = -1, preP12 = -1, preP13 = -1,
                     preP21 = -1, preP22 = -1, preP23 = -1;
                 if (objPre != null)
                 {
-                    preP11 = objPre.P11;
-                    preP12 = objPre.P12;
-                    preP13 = objPre.P13;
-                    preP21 = objPre.P21;
-                    preP22 = objPre.P22;
-                    preP23 = objPre.P23;
+                    preP11 = objPre.Start.x;
+                    preP12 = objPre.Start.y;
+                    preP13 = objPre.Start.z;
+                    preP21 = objPre.End.x;
+                    preP22 = objPre.End.y;
+                    preP23 = objPre.End.z;
                 }
                 if (i == 0)
                 {
-                    if (element.IsLOrT) break;
+                    if (element.IsLorT) break;
                     /* 当 此event唯一
                      * 且 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
                      * 且 此event开始时间 > obj最小时间 (或包括此event有两个以上的最小时间)

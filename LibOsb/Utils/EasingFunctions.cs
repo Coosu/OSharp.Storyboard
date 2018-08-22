@@ -1,11 +1,7 @@
-﻿using LibOsb.Model.Constants;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using LibOsb.Enums;
 
-namespace LibOsb.Util
+namespace LibOsb.Utils
 {
     public static class EasingFunctions
     {

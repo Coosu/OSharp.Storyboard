@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using LibOsb.BrewHelper;
-using LibOsb.Model.Constants;
-using LibOsb.Model.EventClass;
-using LibOsb.Model.EventType;
+using LibOsb.Enums;
+using LibOsb.Models.EventClass;
+using LibOsb.Models.EventType;
 using OpenTK;
 using StorybrewCommon.Storyboarding;
 
@@ -29,7 +28,7 @@ namespace LibOsb
         public int InnerMaxTime { get; protected set; } = int.MinValue;
         public int InnerMinTime { get; protected set; } = int.MaxValue;
 
-        public bool IsSignificative => MinTime != MaxTime;
+        public bool IsValid => MinTime != MaxTime;
 
         public int MaxTime
         {
@@ -209,10 +208,10 @@ namespace LibOsb
 
         public override string ToString()
         {
-            if (!IsSignificative) return null;
+            if (!IsValid) return null;
 
             var sb = new StringBuilder();
-            if (!IsLOrT)
+            if (!IsLorT)
             {
                 sb.Append(string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY));
                 if (FrameCount != null)
@@ -220,7 +219,7 @@ namespace LibOsb
                 else
                     sb.AppendLine();
             }
-            string index = (IsLOrT) ? "  " : " ";
+            string index = IsLorT ? "  " : " ";
             for (int i = 1; i <= MoveList.Count; i++) sb.AppendLine(index + MoveList[i - 1]);
             for (int i = 1; i <= ScaleList.Count; i++) sb.AppendLine(index + ScaleList[i - 1]);
             for (int i = 1; i <= FadeList.Count; i++) sb.AppendLine(index + FadeList[i - 1]);
@@ -244,7 +243,7 @@ namespace LibOsb
 
         #region non-public member
         private bool _isTriggering, _isLooping;
-        internal bool IsLOrT = false;
+        internal bool IsLorT = false;
 
         internal static Element Parse(string osbString, int baseLine)
         {
@@ -518,57 +517,57 @@ namespace LibOsb
             foreach (var t in MoveList)
             {
                 t._Adjust(offsetX, offsetY);
-                if (IsLOrT)
+                if (IsLorT)
                     continue;
                 t._AdjustTime(offsetTiming);
             }
             foreach (var t in MoveXList)
             {
                 t._Adjust(offsetX);
-                if (IsLOrT)
+                if (IsLorT)
                     continue;
                 t._AdjustTime(offsetTiming);
             }
             foreach (var t in MoveYList)
             {
-                t._Adjust(offsetY);
-                if (IsLOrT)
+                t.Adjust(offsetY);
+                if (IsLorT)
                     continue;
                 t._AdjustTime(offsetTiming);
             }
             foreach (var t in ColorList)
             {
-                if (IsLOrT)
+                if (IsLorT)
                     break;
                 t._AdjustTime(offsetTiming);
             }
             foreach (var t in FadeList)
             {
-                if (IsLOrT)
+                if (IsLorT)
                     break;
                 t._AdjustTime(offsetTiming);
             }
             foreach (var t in ParameterList)
             {
-                if (IsLOrT)
+                if (IsLorT)
                     break;
                 t._AdjustTime(offsetTiming);
             }
             foreach (var t in RotateList)
             {
-                if (IsLOrT)
+                if (IsLorT)
                     break;
                 t._AdjustTime(offsetTiming);
             }
             foreach (var t in ScaleList)
             {
-                if (IsLOrT)
+                if (IsLorT)
                     break;
                 t._AdjustTime(offsetTiming);
             }
             foreach (var t in VectorList)
             {
-                if (IsLOrT)
+                if (IsLorT)
                     break;
                 t._AdjustTime(offsetTiming);
             }

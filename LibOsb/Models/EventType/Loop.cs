@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace LibOsb.Model.EventType
+namespace LibOsb.Models.EventType
 {
     public class Loop : Element
     {
@@ -15,10 +11,10 @@ namespace LibOsb.Model.EventType
         {
             StartTime = startTime;
             LoopCount = loopCount;
-            IsLOrT = true;
+            IsLorT = true;
         }
         public override string ToString()
-        => string.Join(",", " L", StartTime, LoopCount) + "\r\n" + base.ToString();
+        => $"{string.Join(",", " L", StartTime, LoopCount)}{Environment.NewLine}{base.ToString()}";
 
     }
 }

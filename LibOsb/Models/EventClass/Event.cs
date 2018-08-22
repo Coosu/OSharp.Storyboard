@@ -1,30 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LibOsb.Model.Constants;
+using LibOsb.Enums;
 
-namespace LibOsb
+namespace LibOsb.Models.EventClass
 {
     /// <summary>
     /// Parent class of all actions. Should not be instantiated directly.
     /// </summary>
     public abstract class Event
     {
-        public int StartTime { get; internal set; }
-        public int EndTime { get; internal set; }
+        public double StartTime { get; internal set; }
+        public double EndTime { get; internal set; }
         public EasingType Easing { get; protected set; }
         public string Type { get; protected set; }
-        public string ScriptParams { get; protected set; }
+        public abstract string ScriptParams { get; }
         // 扩展属性
         public abstract bool IsStatic { get; }
 
-        internal abstract void BuildParams();
-
         public override string ToString()
         {
-            var endTime = StartTime == EndTime ? "" : EndTime.ToString();
-            return string.Join(",", Type, (int)Enum.Parse(typeof(EasingType), Easing.ToString()), StartTime, endTime, ScriptParams);
+            return string.Join(",", Type, (int)System.Enum.Parse(typeof(EasingType), Easing.ToString()),
+                Math.Round(StartTime), StartTime.Equals(EndTime) ? "" : ((int)Math.Round(EndTime)).ToString(),
+                ScriptParams);
         }
 
         internal void _AdjustTime(int time)

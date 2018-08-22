@@ -1,11 +1,7 @@
-﻿using LibOsb.EventClass;
-using LibOsb.Model.Constants;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using LibOsb.Enums;
+using LibOsb.Models.EventClass;
 
-namespace LibOsb.Model.EventType
+namespace LibOsb.Models.EventType
 {
     internal class MoveX : EventSingle
     {
@@ -14,9 +10,8 @@ namespace LibOsb.Model.EventType
 
         internal void _Adjust(double x)
         {
-            P11 += x;
-            P21 += x;
-            BuildParams();
+            Start += x;
+            End += x;
         }
     }
 

@@ -1,11 +1,7 @@
-﻿using LibOsb.Model.Constants;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using LibOsb.Enums;
 
-namespace LibOsb.Model.EventType
+namespace LibOsb.Models.EventType
 {
     public class Trigger : Element
     {
@@ -60,14 +56,14 @@ namespace LibOsb.Model.EventType
             StartTime = startTime;
             EndTime = endTime;
             TriggerType = triggerName;
-            IsLOrT = true;
+            IsLorT = true;
         }
         internal Trigger(int startTime, int endTime, string triggerName)
         {
             StartTime = startTime;
             EndTime = endTime;
             TriggerType = triggerName;
-            IsLOrT = true;
+            IsLorT = true;
         }
 
         public override string ToString() => string.Join(",", " T", TriggerType, StartTime, EndTime) + "\r\n" + base.ToString();

@@ -1,15 +1,13 @@
-﻿using LibOsb.Model.Constants;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using LibOsb.Enums;
+using LibOsb.Models.EventClass;
 
-namespace LibOsb.Model.EventType
+namespace LibOsb.Models.EventType
 {
     public class Parameter : Event
     {
         public string PType { get; }
 
+        public override string ScriptParams => PType;
         public override bool IsStatic => true;
 
         public Parameter(EasingType easing, int starttime, int endtime, string ptype)
@@ -19,8 +17,6 @@ namespace LibOsb.Model.EventType
             StartTime = starttime;
             EndTime = endtime;
             PType = ptype;
-            BuildParams();
         }
-        internal sealed override void BuildParams() => ScriptParams = PType;
     }
 }
