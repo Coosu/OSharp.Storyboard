@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace LibOsb.Model
+namespace LibOsb
 {
     public class ElementManager
     {
-        internal List<ElementGroup> GroupList { get; set; } = new List<ElementGroup>();
+        private List<ElementGroup> GroupList { get; set; } = new List<ElementGroup>();
 
         public void SortByIndex()
         {
@@ -24,7 +24,7 @@ namespace LibOsb.Model
         {
             foreach (var obj in elementGroup.ElementList)
             {
-                obj._Adjust(offsetX, offsetY, offsetTiming);
+                obj.Adjust(offsetX, offsetY, offsetTiming);
             }
             return elementGroup;
         }

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using LibOsb.Compress;
 using LibOsb.Model.Constants;
+using LibOsb.Util;
 using StorybrewCommon.Storyboarding;
 
-namespace LibOsb.Model
+namespace LibOsb
 {
     public class ElementGroup : IDisposable
     {
@@ -105,7 +107,6 @@ namespace LibOsb.Model
             foreach (var lib in ElementList)
             {
                 lib.ExecuteBrew(layParsed);
-
             }
         }
 

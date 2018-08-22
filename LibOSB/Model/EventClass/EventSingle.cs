@@ -11,8 +11,10 @@ namespace LibOsb.EventClass
     {
         public double P11 { get; internal set; }
         public double P21 { get; internal set; }
+        public (int, int) Param { get; internal set; }
 
-        public override bool IsStatic => P11 == P21;
+
+        public override bool IsStatic => P11.Equals(P21);
 
         protected void Init(string type, EasingType easing, int startTime, int endTime, double preParam, double postParam)
         {
@@ -28,7 +30,7 @@ namespace LibOsb.EventClass
 
         internal override void BuildParams()
         {
-            if (P11 == P21)
+            if (P11.Equals(P21))
                 ScriptParams = P11.ToString(CultureInfo.InvariantCulture);
             else
                 ScriptParams = P11 + "," + P21;

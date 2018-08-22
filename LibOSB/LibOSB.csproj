@@ -48,6 +48,9 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -59,6 +62,7 @@
   <ItemGroup>
     <Compile Include="Camera\Camera2D.cs" />
     <Compile Include="BrewHelper\BrewConvert.cs" />
+    <Compile Include="Compress\ElementCompress.cs" />
     <Compile Include="Model\EventClass\EventDouble.cs" />
     <Compile Include="Model\EventClass\EventSingle.cs" />
     <Compile Include="Model\EventClass\EventTriple.cs" />
@@ -81,19 +85,18 @@
     <Compile Include="Model\Constants\LoopType.cs" />
     <Compile Include="Model\Constants\OriginType.cs" />
     <Compile Include="Model\Constants\ElementType.cs" />
-    <Compile Include="Model\ElementManager.cs" />
-    <Compile Include="Model\ElementGroup.cs" />
-    <Compile Include="Model\Element.cs" />
+    <Compile Include="ElementManager.cs" />
+    <Compile Include="ElementGroup.cs" />
+    <Compile Include="Element.cs" />
     <Compile Include="Demo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\EasingFunctions.cs" />
+    <Compile Include="Util\ElementExtension.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Compress\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

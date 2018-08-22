@@ -60,14 +60,14 @@ namespace LibOsb.Model.EventType
             StartTime = startTime;
             EndTime = endTime;
             TriggerType = triggerName;
-            IsInnerClass = true;
+            IsLOrT = true;
         }
         internal Trigger(int startTime, int endTime, string triggerName)
         {
             StartTime = startTime;
             EndTime = endTime;
             TriggerType = triggerName;
-            IsInnerClass = true;
+            IsLOrT = true;
         }
 
         public override string ToString() => string.Join(",", " T", TriggerType, StartTime, EndTime) + "\r\n" + base.ToString();

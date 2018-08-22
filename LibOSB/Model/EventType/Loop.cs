@@ -15,7 +15,7 @@ namespace LibOsb.Model.EventType
         {
             StartTime = startTime;
             LoopCount = loopCount;
-            IsInnerClass = true;
+            IsLOrT = true;
         }
         public override string ToString()
         => string.Join(",", " L", StartTime, LoopCount) + "\r\n" + base.ToString();
