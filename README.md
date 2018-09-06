@@ -1,2 +1,4 @@
-# Storyboard-Library
-Independent library from optimizer with more humanized desgin
+# OsbLib
+Use OsbLib to code and generate SBC(.osb code)
+
+Support using in StoryBrew and use ExecuteBrew().
