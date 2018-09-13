@@ -1,6 +1,6 @@
-﻿namespace OsbTool
+﻿namespace Milkitic.OsbTool
 {
-    partial class frmMain
+    partial class FrmMain
     {
         /// <summary>
         /// 必需的设计器变量。
@@ -270,7 +270,7 @@
             this.Controls.Add(this.tabC1);
             this.Controls.Add(this.tbHandled);
             this.Controls.Add(this.tbSource);
-            this.Name = "frmMain";
+            this.Name = "FrmMain";
             this.Text = "Storyboard Tool";
             this.tabC1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);

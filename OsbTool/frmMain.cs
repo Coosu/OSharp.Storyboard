@@ -1,20 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using LibOsb;
+using Milkitic.OsbLib;
 
-namespace OsbTool
+namespace Milkitic.OsbTool
 {
-    public partial class frmMain : Form
+    public partial class FrmMain : Form
     {
-        public frmMain()
+        public FrmMain()
         {
             InitializeComponent();
         }
@@ -25,8 +18,8 @@ namespace OsbTool
             {
                 string osb = tbSource.Text;
                 int timing = int.Parse(tbTiming.Text);
-                double x = double.Parse(tbX.Text);
-                double y = double.Parse(tbY.Text);
+                float x = float.Parse(tbX.Text);
+                float y = float.Parse(tbY.Text);
                 var before = ElementGroup.Parse(osb, 0);
                 //tbSource.Text = before.ToString();
                 var after = ElementManager.Adjust(before, x, y, timing);
