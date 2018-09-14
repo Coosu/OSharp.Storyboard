@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Text;
 
-namespace Milkitic.OsbLib.Models.EventClass
+namespace Milkitic.OsbLib.Models
 {
-    // 差个排序
+    //todo: 差个排序
     public class TimeRange
     {
         public List<(float startTime, float endTime)> TimingList { get; set; } = new List<(float, float)>();

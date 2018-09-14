@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Milkitic.OsbLib;
+using System;
+using System.IO;
 using System.Windows.Forms;
-using Milkitic.OsbTool;
+using Milkitic.OsbLib.Extension;
 
-namespace OsbTool
+namespace Milkitic.OsbTool
 {
     static class Program
     {
@@ -15,6 +14,13 @@ namespace OsbTool
         [STAThread]
         static void Main()
         {
+            var sb = File.ReadAllText(
+                @"D:\Program Files (x86)\osu!\Songs\396495 yuiko - GLORIOUS_DAYS(Short)\yuiko - GLORIOUS_DAYS(Short) (Karen).osb");
+            ElementGroup eg = ElementGroup.Parse(sb, 0);
+            eg.Expand();
+            File.WriteAllText(@"D:\Program Files (x86)\osu!\Songs\396495 yuiko - GLORIOUS_DAYS(Short)\output.osb",
+                eg.ToString());
+            return;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new FrmMain());

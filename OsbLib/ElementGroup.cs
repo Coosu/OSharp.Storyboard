@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Milkitic.OsbLib.Enums;
+using Milkitic.OsbLib.Extension;
+using StorybrewCommon.Storyboarding;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Milkitic.OsbLib.Compress;
-using Milkitic.OsbLib.Enums;
-using Milkitic.OsbLib.Utils.BrewExtension;
-using StorybrewCommon.Storyboarding;
 
 namespace Milkitic.OsbLib
 {
@@ -112,9 +111,10 @@ namespace Milkitic.OsbLib
 
         public void Compress()
         {
+            throw new NotImplementedException();
             foreach (var obj in ElementList)
             {
-                obj.Compress();
+                //obj.Compress();
             }
         }
         public override string ToString()
@@ -131,36 +131,27 @@ namespace Milkitic.OsbLib
         public static ElementGroup Parse(string osbString, int layerIndex)
         {
             StringBuilder sb = new StringBuilder();
-            ElementGroup obj = null;
+            ElementGroup elementGroup = new ElementGroup(layerIndex);
             int currentLine = 1;
+            int elmentLines = 0;
 
             try
             {
                 var lines = osbString.Replace("\r", "").Split('\n');
-                bool isFirst = true, isOpen = false;
-                int lineCount = 0;
+                bool isFirst = true, startReading = false;
+
                 foreach (var line in lines)
                 {
                     var pars = line.Split(',');
                     if (pars[0] == "Sprite" || pars[0] == "Animation")
                     {
-                        isOpen = true;
-                        if (isFirst)
-                        {
-                            isFirst = false;
-                        }
-                        else
-                        {
-                            if (obj == null)
-                                obj = new ElementGroup(layerIndex);
-                            obj.Add(Element.Parse(sb.ToString(), currentLine - lineCount));
-                            sb.Clear();
-                            lineCount = 0;
-                        }
+                        startReading = true;
+                        if (isFirst) isFirst = false;
+                        else ParseElement();
                     }
                     else if (line.IndexOf("//", StringComparison.Ordinal) == 0 || line.IndexOf("[Events]", StringComparison.Ordinal) == 0)
                     {
-                        lineCount++;
+                        elmentLines++;
                         currentLine++;
                         continue;
                     }
@@ -168,25 +159,28 @@ namespace Milkitic.OsbLib
                     {
                         throw new Exception($"Unknown script: \"{pars[0]}\" at line: {currentLine}");
                     }
-                    lineCount++;
+
+                    elmentLines++;
                     sb.AppendLine(line);
                     currentLine++;
                 }
-                if (isOpen)
-                {
-                    if (obj == null)
-                        obj = new ElementGroup(layerIndex);
-                    obj.Add(Element.Parse(sb.ToString(), currentLine - lineCount));
-                    sb.Clear();
-                    isOpen = false;
-                }
+
+                if (startReading) ParseElement();
             }
             catch (Exception ex)
             {
                 throw ex;
             }
 
-            return obj;
+            return elementGroup;
+
+            void ParseElement()
+            {
+                elementGroup.Add(Element.Parse(sb.ToString(), currentLine - elmentLines));
+                sb.Clear();
+                elmentLines = 0;
+            }
         }
+
     }
 }

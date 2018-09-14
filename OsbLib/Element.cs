@@ -1,55 +1,120 @@
-﻿using System;
+﻿using Milkitic.OsbLib.Enums;
+using Milkitic.OsbLib.Models;
+using Milkitic.OsbLib.Models.EventType;
+using OpenTK;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
-using Milkitic.OsbLib.Enums;
-using Milkitic.OsbLib.Models.EventClass;
-using Milkitic.OsbLib.Models.EventType;
 
 namespace Milkitic.OsbLib
 {
     /// <summary>
     /// Represents a storyboard element. This class cannot be inherited.
     /// </summary>
-    public class Element
+    public class Element : EventContainer
     {
         public ElementType Type { get; protected set; }
         public LayerType Layer { get; protected set; }
         public OriginType Origin { get; protected set; }
         public string ImagePath { get; protected set; }
-        public float? DefaultY { get; internal set; }
-        public float? DefaultX { get; internal set; }
-        public LoopType LoopType { get; protected set; }
-        public float? FrameCount { get; protected set; }
-        public float? FrameRate { get; protected set; }
+        public float DefaultY { get; internal set; }
+        public float DefaultX { get; internal set; }
 
-        public float InnerMaxTime { get; protected set; } = float.MinValue;
-        public float InnerMinTime { get; protected set; } = float.MaxValue;
+        //扩展
+        public override List<Event> EventList { get; set; } = new List<Event>();
+        public List<Loop> LoopList { get; } = new List<Loop>();
+        public List<Trigger> TriggerList { get; } = new List<Trigger>();
 
-        public bool IsValid => MinTime != MaxTime;
+        public List<Fade> FadeList =>
+            EventList.Where(k => k.EventType == EventEnum.Fade).Select(k => (Fade)k).ToList();
+        public List<Color> ColorList =>
+            EventList.Where(k => k.EventType == EventEnum.Color).Select(k => (Color)k).ToList();
+        public List<Move> MoveList =>
+            EventList.Where(k => k.EventType == EventEnum.Move).Select(k => (Move)k).ToList();
+        public List<MoveX> MoveXList =>
+            EventList.Where(k => k.EventType == EventEnum.MoveX).Select(k => (MoveX)k).ToList();
+        public List<MoveY> MoveYList =>
+            EventList.Where(k => k.EventType == EventEnum.MoveY).Select(k => (MoveY)k).ToList();
+        public List<Parameter> ParameterList =>
+            EventList.Where(k => k.EventType == EventEnum.Parameter).Select(k => (Parameter)k).ToList();
+        public List<Rotate> RotateList =>
+            EventList.Where(k => k.EventType == EventEnum.Rotate).Select(k => (Rotate)k).ToList();
+        public List<Scale> ScaleList =>
+            EventList.Where(k => k.EventType == EventEnum.Scale).Select(k => (Scale)k).ToList();
+        public List<Vector> VectorList =>
+            EventList.Where(k => k.EventType == EventEnum.Vector).Select(k => (Vector)k).ToList();
 
-        public float MaxTime
+        public override float MaxTime
         {
             get
             {
-                float max = InnerMaxTime;
-                foreach (var item in LoopList)
-                {
-                    float time = item.InnerMaxTime * item.LoopCount + item.StartTime;
-                    if (time > max) max = time;
-                }
-                foreach (var item in TriggerList)
-                {
-                    float time = item.InnerMaxTime + item.EndTime;
-                    if (time > max) max = time;
-                }
-                return max;
+                List<float> max = new List<float>();
+                if (EventList.Count > 0)
+                    max.Add(EventList.Max(k => k.EndTime));
+                if (LoopList.Count > 0)
+                    max.Add(LoopList.Max(k => k.OutterMaxTime));
+                if (TriggerList.Count > 0)
+                    max.Add(TriggerList.Max(k => k.MaxTime));
+                return max.Count == 0 ? 0 : max.Max();
             }
         }
-        public float MinTime => InnerMinTime;
+
+        public override float MinTime
+        {
+            get
+            {
+                List<float> min = new List<float>();
+                if (EventList.Count > 0)
+                    min.Add(EventList.Min(k => k.StartTime));
+                if (LoopList.Count > 0)
+                    min.Add(LoopList.Min(k => k.OutterMinTime));
+                if (TriggerList.Count > 0)
+                    min.Add(TriggerList.Min(k => k.MinTime));
+                return min.Count == 0 ? 0 : min.Min();
+            }
+        }
+
+        public override float MaxStartTime
+        {
+            get
+            {
+                List<float> max = new List<float>();
+                if (EventList.Count > 0)
+                    max.Add(EventList.Max(k => k.StartTime));
+                if (LoopList.Count > 0)
+                    max.Add(LoopList.Max(k => k.OutterMinTime));
+                if (TriggerList.Count > 0)
+                    max.Add(TriggerList.Max(k => k.MinTime));
+                return max.Count == 0 ? 0 : max.Max();
+            }
+        }
+
+        public override float MinEndTime
+        {
+            get
+            {
+                List<float> min = new List<float>();
+                if (EventList.Count > 0)
+                    min.Add(EventList.Min(k => k.EndTime));
+                if (LoopList.Count > 0)
+                    min.Add(LoopList.Min(k => k.OutterMaxTime));
+                if (TriggerList.Count > 0)
+                    min.Add(TriggerList.Min(k => k.MaxTime));
+                return min.Count == 0 ? 0 : min.Min();
+            }
+        }
+
+        public bool IsValid => MinTime != MaxTime;
 
         public int MaxTimeCount { get; internal set; } = 1;
         public int MinTimeCount { get; internal set; } = 1;
+
+        public TimeRange FadeoutList { get; internal set; } = new TimeRange();
+
+        // Loop control
+        private bool _isTriggering, _isLooping;
 
         /// <summary>
         /// Create a storyboard element by a static image.
@@ -70,32 +135,7 @@ namespace Milkitic.OsbLib
             DefaultY = defaultY;
             _isLooping = false;
         }
-        /// <summary>
-        /// Create a storyboard element by a dynamic image.
-        /// </summary>
-        /// <param name="type">Set element type.</param>
-        /// <param name="layer">Set element layer.</param>
-        /// <param name="origin">Set element origin.</param>
-        /// <param name="imagePath">Set image path.</param>
-        /// <param name="defaultX">Set default x-coordinate of location.</param>
-        /// <param name="defaultY">Set default x-coordinate of location.</param>
-        /// <param name="frameCount">Set frame count.</param>
-        /// <param name="frameRate">Set frame rate (frame delay).</param>
-        /// <param name="loopType">Set loop type.</param>
-        /// 
-        public Element(ElementType type, LayerType layer, OriginType origin, string imagePath, float defaultX, float defaultY, float frameCount, float frameRate, LoopType loopType)
-        {
-            Type = type;
-            Layer = layer;
-            Origin = origin;
-            ImagePath = imagePath;
-            DefaultX = defaultX;
-            DefaultY = defaultY;
-            FrameCount = frameCount;
-            FrameRate = frameRate;
-            LoopType = loopType;
-            _isLooping = false;
-        }
+
         public Element(string type, string layer, string origin, string imagePath, float defaultX, float defaultY)
         {
             Type = (ElementType)Enum.Parse(typeof(ElementType), type);
@@ -104,23 +144,6 @@ namespace Milkitic.OsbLib
             ImagePath = imagePath;
             DefaultX = defaultX;
             DefaultY = defaultY;
-            _isLooping = false;
-        }
-        public Element(string type, string layer, string origin, string imagePath, float defaultX, float defaultY, float frameCount, float frameRate, string loopType)
-        {
-            Type = (ElementType)Enum.Parse(typeof(ElementType), type);
-            Layer = (LayerType)Enum.Parse(typeof(LayerType), layer);
-            Origin = (OriginType)Enum.Parse(typeof(OriginType), origin);
-            ImagePath = imagePath;
-            DefaultX = defaultX;
-            DefaultY = defaultY;
-            FrameCount = frameCount;
-            FrameRate = frameRate;
-            LoopType = (LoopType)Enum.Parse(typeof(LoopType), loopType);
-            _isLooping = false;
-        }
-        internal Element()
-        {
             _isLooping = false;
         }
 
@@ -148,88 +171,132 @@ namespace Milkitic.OsbLib
         public void EndLoop()
         {
             if (!_isLooping && !_isTriggering) throw new Exception("You can not stop a loop when a loop isn't started.");
+            TryEndLoop();
+        }
+
+        private void TryEndLoop()
+        {
             _isLooping = false;
             _isTriggering = false;
         }
 
         #region 折叠：Event function
-        public void Move(int startTime, System.Drawing.PointF location) => AddMove(0, startTime, startTime, location.X, location.Y, location.X, location.Y);
-        public void Move(int startTime, float x, float y) => AddMove(0, startTime, startTime, x, y, x, y);
-        public void Move(int startTime, int endTime, float x, float y) => AddMove(0, startTime, endTime, x, y, x, y);
-        public void Move(EasingType easing, int startTime, int endTime, System.Drawing.PointF startLocation, System.Drawing.PointF endLocation) => AddMove(easing, startTime, endTime, startLocation.X, startLocation.Y, endLocation.X, endLocation.Y);
-        public void Move(EasingType easing, int startTime, int endTime, float x1, float y1, float x2, float y2) => AddMove(easing, startTime, endTime, x1, y1, x2, y2);
 
-        public void Fade(int startTime, float alpha) => AddFade(0, startTime, startTime, alpha, alpha);
-        public void Fade(int startTime, int endTime, float alpha) => AddFade(0, startTime, endTime, alpha, alpha);
-        public void Fade(EasingType easing, int startTime, int endTime, float startAlpha, float endAlpha) => AddFade(easing, startTime, endTime, startAlpha, endAlpha);
+        // Move
+        public void Move(int startTime, Vector2 point) =>
+            AddEvent(EventEnum.Move, 0, startTime, startTime, point.X, point.Y, point.X, point.Y);
+        public void Move(int startTime, float x, float y) =>
+            AddEvent(EventEnum.Move, 0, startTime, startTime, x, y, x, y);
+        public void Move(int startTime, int endTime, float x, float y) =>
+            AddEvent(EventEnum.Move, 0, startTime, endTime, x, y, x, y);
+        public void Move(EasingType easing, int startTime, int endTime, Vector2 startPoint, Vector2 endPoint) =>
+            AddEvent(EventEnum.Move, easing, startTime, endTime, startPoint.X, startPoint.Y, endPoint.X, endPoint.Y);
+        public void Move(EasingType easing, int startTime, int endTime, float x1, float y1, float x2, float y2) =>
+            AddEvent(EventEnum.Move, easing, startTime, endTime, x1, y1, x2, y2);
 
-        public void Scale(int startTime, float scale) => AddScale(0, startTime, startTime, scale, scale);
-        public void Scale(int startTime, int endTime, float scale) => AddScale(0, startTime, endTime, scale, scale);
-        public void Scale(EasingType easing, int startTime, int endTime, float startScale, float endScale) => AddScale(easing, startTime, endTime, startScale, endScale);
+        // Fade
+        public void Fade(int startTime, float opacity) =>
+            AddEvent(EventEnum.Fade, 0, startTime, startTime, opacity, opacity);
+        public void Fade(int startTime, int endTime, float opacity) =>
+            AddEvent(EventEnum.Fade, 0, startTime, endTime, opacity, opacity);
+        public void Fade(EasingType easing, int startTime, int endTime, float startOpacity, float endOpacity) =>
+            AddEvent(EventEnum.Fade, 0, startTime, endTime, startOpacity, endOpacity);
 
-        public void Rotate(int startTime, float rotate) => AddRotate(0, startTime, startTime, rotate, rotate);
-        public void Rotate(int startTime, int endTime, float rotate) => AddRotate(0, startTime, endTime, rotate, rotate);
-        public void Rotate(EasingType easing, int startTime, int endTime, float startRotate, float endRotate) => AddRotate(easing, startTime, endTime, startRotate, endRotate);
+        // Scale
+        public void Scale(int startTime, float scale) =>
+            AddEvent(EventEnum.Scale, 0, startTime, startTime, scale, scale);
+        public void Scale(int startTime, int endTime, float scale) =>
+            AddEvent(EventEnum.Scale, 0, startTime, endTime, scale, scale);
+        public void Scale(EasingType easing, int startTime, int endTime, float startScale, float endScale) =>
+            AddEvent(EventEnum.Scale, easing, startTime, endTime, startScale, endScale);
 
-        public void MoveX(int startTime, float x) => AddMoveX(0, startTime, startTime, x, x);
-        public void MoveX(int startTime, int endTime, float x) => AddMoveX(0, startTime, endTime, x, x);
-        public void MoveX(EasingType easing, int startTime, int endTime, float startX, float endX) => AddMoveX(easing, startTime, endTime, startX, endX);
+        // Rotate
+        public void Rotate(int startTime, float rotate) =>
+            AddEvent(EventEnum.Rotate, 0, startTime, startTime, rotate, rotate);
+        public void Rotate(int startTime, int endTime, float rotate) =>
+            AddEvent(EventEnum.Rotate, 0, startTime, endTime, rotate, rotate);
+        public void Rotate(EasingType easing, int startTime, int endTime, float startRotate, float endRotate) =>
+            AddEvent(EventEnum.Rotate, easing, startTime, endTime, startRotate, endRotate);
 
-        public void MoveY(int startTime, float y) => AddMoveY(0, startTime, startTime, y, y);
-        public void MoveY(int startTime, int endTime, float y) => AddMoveY(0, startTime, endTime, y, y);
-        public void MoveY(EasingType easing, int startTime, int endTime, float startY, float endY) => AddMoveY(easing, startTime, endTime, startY, endY);
+        // MoveX
+        public void MoveX(int startTime, float x) =>
+            AddEvent(EventEnum.MoveX, 0, startTime, startTime, x, x);
+        public void MoveX(int startTime, int endTime, float x) =>
+            AddEvent(EventEnum.MoveX, 0, startTime, endTime, x, x);
+        public void MoveX(EasingType easing, int startTime, int endTime, float startX, float endX) =>
+            AddEvent(EventEnum.MoveX, easing, startTime, endTime, startX, endX);
 
-        public void Color(int startTime, System.Drawing.Color color) => AddColor(0, startTime, startTime, color.R, color.G, color.B, color.R, color.G, color.B);
-        public void Color(int startTime, int endTime, System.Drawing.Color color) => AddColor(0, startTime, endTime, color.R, color.G, color.B, color.R, color.G, color.B);
-        public void Color(EasingType easing, int startTime, int endTime, System.Drawing.Color color1, System.Drawing.Color color2) => AddColor(easing, startTime, endTime, color1.R, color1.G, color1.B, color2.R, color2.G, color2.B);
-        public void Color(int startTime, int r, int g, int b) => AddColor(0, startTime, startTime, r, g, b, r, g, b);
-        public void Color(int startTime, int endTime, int r, int g, int b) => AddColor(0, startTime, endTime, r, g, b, r, g, b);
-        public void Color(EasingType easing, int startTime, int endTime, int startR, int startG, int startB, int endR, int endG, int endB) => AddColor(easing, startTime, endTime, startR, startG, startB, endR, endG, endB);
+        // MoveY
+        public void MoveY(int startTime, float y) =>
+            AddEvent(EventEnum.MoveY, 0, startTime, startTime, y, y);
+        public void MoveY(int startTime, int endTime, float y) =>
+            AddEvent(EventEnum.MoveY, 0, startTime, endTime, y, y);
+        public void MoveY(EasingType easing, int startTime, int endTime, float startY, float endY) =>
+            AddEvent(EventEnum.MoveY, easing, startTime, endTime, startY, endY);
 
-        public void Vector(int startTime, System.Drawing.SizeF zoom) => AddVector(0, startTime, startTime, zoom.Width, zoom.Height, zoom.Width, zoom.Height);
-        public void Vector(int startTime, float w, float h) => AddVector(0, startTime, startTime, w, h, w, h);
-        public void Vector(int startTime, int endTime, float w, float h) => AddVector(0, startTime, endTime, w, h, w, h);
-        public void Vector(EasingType easing, int startTime, int endTime, System.Drawing.SizeF startZoom, System.Drawing.SizeF endZoom) => AddVector(easing, startTime, endTime, startZoom.Width, startZoom.Height, endZoom.Width, endZoom.Height);
-        public void Vector(EasingType easing, int startTime, int endTime, float w1, float h1, float w2, float h2) => AddVector(easing, startTime, endTime, w1, h1, w2, h2);
+        // Color
+        public void Color(int startTime, Vector3 color) =>
+            AddEvent(EventEnum.Color, 0, startTime, startTime, color.X, color.Y, color.Z, color.X, color.Y, color.Z);
+        public void Color(int startTime, int endTime, Vector3 color) =>
+            AddEvent(EventEnum.Color, 0, startTime, endTime, color.X, color.Y, color.Z, color.X, color.Y, color.Z);
+        public void Color(EasingType easing, int startTime, int endTime, Vector3 color1, Vector3 color2) =>
+            AddEvent(EventEnum.Color, easing, startTime, endTime, color1.X, color1.Y, color1.Z, color2.X, color2.Y, color2.Z);
+        public void Color(int startTime, int r, int g, int b) =>
+            AddEvent(EventEnum.Color, 0, startTime, startTime, r, g, b, r, g, b);
+        public void Color(int startTime, int endTime, int r, int g, int b) =>
+            AddEvent(EventEnum.Color, 0, startTime, endTime, r, g, b, r, g, b);
+        public void Color(EasingType easing, int startTime, int endTime, int startR, int startG, int startB, int endR, int endG, int endB) =>
+            AddEvent(EventEnum.Color, easing, startTime, endTime, startR, startG, startB, endR, endG, endB);
 
-        public void FlipH(int startTime) => AddParam(0, startTime, startTime, "H");
-        public void FlipH(int startTime, int endTime) => AddParam(0, startTime, endTime, "H");
-        public void FlipV(int startTime) => AddParam(0, startTime, startTime, "V");
-        public void FlipV(int startTime, int endTime) => AddParam(0, startTime, endTime, "V");
+        // Vector
+        public void Vector(int startTime, Vector2 vector) =>
+            AddEvent(EventEnum.Vector, 0, startTime, startTime, vector.X, vector.Y, vector.X, vector.Y);
+        public void Vector(int startTime, float w, float h) =>
+            AddEvent(EventEnum.Vector, 0, startTime, startTime, w, h, w, h);
+        public void Vector(int startTime, int endTime, float w, float h) =>
+            AddEvent(EventEnum.Vector, 0, startTime, endTime, w, h, w, h);
+        public void Vector(EasingType easing, int startTime, int endTime, Vector2 startZoom, Vector2 endZoom) =>
+            AddEvent(EventEnum.Vector, easing, startTime, endTime, startZoom.X, startZoom.Y, endZoom.X, endZoom.Y);
+        public void Vector(EasingType easing, int startTime, int endTime, float w1, float h1, float w2, float h2) =>
+            AddEvent(EventEnum.Vector, easing, startTime, endTime, w1, h1, w2, h2);
 
-        public void Lighting(int startTime) => AddParam(0, startTime, startTime, "A");
-        public void Lighting(int startTime, int endTime) => AddParam(0, startTime, endTime, "A");
+        //Extra
+        public void FlipH(int startTime) => AddEvent(0, startTime, startTime, ParameterEnum.Horizontal);
+        public void FlipH(int startTime, int endTime) => AddEvent(0, startTime, endTime, ParameterEnum.Horizontal);
 
-        internal void Parameter(EasingType easing, int startTime, int endTime, string type) => AddParam(easing, startTime, endTime, type);
+        public void FlipV(int startTime) => AddEvent(0, startTime, startTime, ParameterEnum.Vertical);
+        public void FlipV(int startTime, int endTime) => AddEvent(0, startTime, endTime, ParameterEnum.Vertical);
+
+        public void Additive(int startTime) =>
+            AddEvent(0, startTime, startTime, ParameterEnum.Additive);
+        public void Additive(int startTime, int endTime) =>
+            AddEvent(0, startTime, endTime, ParameterEnum.Additive);
+
+        public void Parameter(EasingType easing, int startTime, int endTime, ParameterEnum p) =>
+            AddEvent(easing, startTime, endTime, p);
         #endregion
-
 
         public override string ToString()
         {
-            if (!IsValid) return null;
+            if (!IsValid) return "";
 
+            var head = $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY)}\r\n";
+            return head + GetStringBody();
+        }
+
+        protected string GetStringBody()
+        {
             var sb = new StringBuilder();
-            if (!IsLorT)
-            {
-                sb.Append(string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY));
-                if (FrameCount != null)
-                    sb.AppendLine("," + string.Join(",", FrameCount, FrameRate, LoopType));
-                else
-                    sb.AppendLine();
-            }
-            string index = IsLorT ? "  " : " ";
-            for (int i = 1; i <= MoveList.Count; i++) sb.AppendLine(index + MoveList[i - 1]);
-            for (int i = 1; i <= ScaleList.Count; i++) sb.AppendLine(index + ScaleList[i - 1]);
-            for (int i = 1; i <= FadeList.Count; i++) sb.AppendLine(index + FadeList[i - 1]);
-            for (int i = 1; i <= RotateList.Count; i++) sb.AppendLine(index + RotateList[i - 1]);
-            for (int i = 1; i <= VectorList.Count; i++) sb.AppendLine(index + VectorList[i - 1]);
-            for (int i = 1; i <= ColorList.Count; i++) sb.AppendLine(index + ColorList[i - 1]);
-            for (int i = 1; i <= MoveXList.Count; i++) sb.AppendLine(index + MoveXList[i - 1]);
-            for (int i = 1; i <= MoveYList.Count; i++) sb.AppendLine(index + MoveYList[i - 1]);
-            for (int i = 1; i <= ParameterList.Count; i++) sb.AppendLine(index + ParameterList[i - 1]);
+            const string index = " ";
+            var events = EventList.GroupBy(k => k.EventType);
+            foreach (var kv in events)
+                foreach (var e in kv)
+                    sb.AppendLine(index + e);
+
             for (int i = 1; i <= LoopList.Count; i++) sb.Append(LoopList[i - 1]);
             for (int i = 1; i <= TriggerList.Count; i++) sb.Append(TriggerList[i - 1]);
-            return sb.ToString();
+            var body = sb.ToString();
+            return body;
         }
 
         public static Element Parse(string osbString)
@@ -239,21 +306,40 @@ namespace Milkitic.OsbLib
 
         public Element Clone() => (Element)MemberwiseClone();
 
-        public List<Move> MoveList { get; } = new List<Move>();
-        public List<Scale> ScaleList { get; } = new List<Scale>();
-        public List<Fade> FadeList { get; } = new List<Fade>();
-        public List<Rotate> RotateList { get; } = new List<Rotate>();
-        public List<Vector> VectorList { get; } = new List<Vector>();
-        public List<Color> ColorList { get; } = new List<Color>();
-        public List<MoveX> MoveXList { get; } = new List<MoveX>();
-        public List<MoveY> MoveYList { get; } = new List<MoveY>();
-        public List<Parameter> ParameterList { get; } = new List<Parameter>();
-        public List<Loop> LoopList { get; } = new List<Loop>();
-        public List<Trigger> TriggerList { get; } = new List<Trigger>();
+        /// <summary>
+        /// 调整物件参数
+        /// </summary>
+        public override void Adjust(float offsetX, float offsetY, int offsetTiming)
+        {
+            DefaultX += offsetX;
+            DefaultY += offsetY;
 
-        #region non-public member
-        private bool _isTriggering, _isLooping;
-        internal bool IsLorT = false;
+            foreach (var loop in LoopList)
+                loop.Adjust(offsetX, offsetY, offsetTiming);
+            foreach (var trigger in TriggerList)
+                trigger.Adjust(offsetX, offsetY, offsetTiming);
+
+            base.Adjust(offsetX, offsetY, offsetTiming);
+        }
+
+        public void AddEvent(EventEnum e, EasingType easing, float startTime, float endTime, float x1, float x2) =>
+            AddEvent(e, easing, startTime, endTime, new[] { x1 }, new[] { x2 });
+        public void AddEvent(EventEnum e, EasingType easing, float startTime, float endTime, float x1, float y1, float x2, float y2) =>
+            AddEvent(e, easing, startTime, endTime, new[] { x1, y1 }, new[] { x2, y2 });
+        public void AddEvent(EventEnum e, EasingType easing, float startTime, float endTime,
+            float x1, float y1, float z1, float x2, float y2, float z2) =>
+            AddEvent(e, easing, startTime, endTime, new[] { x1, y1, z1 }, new[] { x2, y2, z2 });
+        public void AddEvent(EasingType easing, float startTime, float endTime, ParameterEnum p) =>
+            AddEvent(EventEnum.Parameter, easing, startTime, endTime, new[] { (float)(int)p }, new[] { (float)(int)p });
+        public override void AddEvent(EventEnum e, EasingType easing, float startTime, float endTime, float[] start, float[] end, bool sequential = true)
+        {
+            if (_isLooping)
+                LoopList[LoopList.Count - 1].AddEvent(e, easing, startTime, endTime, start, end);
+            else if (_isTriggering)
+                TriggerList[TriggerList.Count - 1].AddEvent(e, easing, startTime, endTime, start, end);
+            else
+                base.AddEvent(e, easing, startTime, endTime, start, end, sequential);
+        }
 
         internal static Element Parse(string osbString, int baseLine)
         {
@@ -275,7 +361,7 @@ namespace Milkitic.OsbLib
                         if (pars.Length == 6)
                             obj = new Element(pars[0], pars[1], pars[2], pars[3].Trim('\"'), float.Parse(pars[4]), float.Parse(pars[5]));
                         else if (pars.Length == 9)
-                            obj = new Element(pars[0], pars[1], pars[2], pars[3].Trim('\"'), float.Parse(pars[4]), float.Parse(pars[5]),
+                            obj = new AnimatedElement(pars[0], pars[1], pars[2], pars[3].Trim('\"'), float.Parse(pars[4]), float.Parse(pars[5]),
                                 float.Parse(pars[6]), float.Parse(pars[7]), pars[8]);
                         else
                             throw new Exception("Sprite declared wrongly");
@@ -442,11 +528,10 @@ namespace Milkitic.OsbLib
                                 break;
 
                             case "P":
-                                string type;
                                 if (pars.Length == 5)
                                 {
-                                    type = pars[4];
-                                    obj.Parameter((EasingType)easing, startTime, endTime, type);
+                                    string type = pars[4];
+                                    obj.Parameter((EasingType)easing, startTime, endTime, type.ToEnum());
                                 }
                                 else
                                 {
@@ -489,6 +574,8 @@ namespace Milkitic.OsbLib
 
                     currentLine++;
                 }
+
+                obj.TryEndLoop();
             }
             catch (Exception ex)
             {
@@ -496,238 +583,5 @@ namespace Milkitic.OsbLib
             }
             return obj;
         }
-
-        #region 折叠：扩展属性
-
-        public TimeRange FadeoutList { get; internal set; } = new TimeRange();
-        public bool HasFade => FadeList.Count != 0;
-
-        #endregion
-
-        /// <summary>
-        /// 调整物件参数
-        /// </summary>
-        internal void Adjust(float offsetX, float offsetY, int offsetTiming)
-        {
-            if (DefaultX != null) DefaultX += offsetX;
-            if (DefaultY != null) DefaultY += offsetY;
-
-            foreach (var t in MoveList)
-            {
-                t._Adjust(offsetX, offsetY);
-                if (IsLorT)
-                    continue;
-                t._AdjustTime(offsetTiming);
-            }
-            foreach (var t in MoveXList)
-            {
-                t._Adjust(offsetX);
-                if (IsLorT)
-                    continue;
-                t._AdjustTime(offsetTiming);
-            }
-            foreach (var t in MoveYList)
-            {
-                t.Adjust(offsetY);
-                if (IsLorT)
-                    continue;
-                t._AdjustTime(offsetTiming);
-            }
-            foreach (var t in ColorList)
-            {
-                if (IsLorT)
-                    break;
-                t._AdjustTime(offsetTiming);
-            }
-            foreach (var t in FadeList)
-            {
-                if (IsLorT)
-                    break;
-                t._AdjustTime(offsetTiming);
-            }
-            foreach (var t in ParameterList)
-            {
-                if (IsLorT)
-                    break;
-                t._AdjustTime(offsetTiming);
-            }
-            foreach (var t in RotateList)
-            {
-                if (IsLorT)
-                    break;
-                t._AdjustTime(offsetTiming);
-            }
-            foreach (var t in ScaleList)
-            {
-                if (IsLorT)
-                    break;
-                t._AdjustTime(offsetTiming);
-            }
-            foreach (var t in VectorList)
-            {
-                if (IsLorT)
-                    break;
-                t._AdjustTime(offsetTiming);
-            }
-            foreach (var t in LoopList)
-            {
-                t.StartTime += offsetTiming;
-                t.Adjust(offsetX, offsetY, offsetTiming);
-            }
-            foreach (var t in TriggerList)
-            {
-                t.StartTime += offsetTiming;
-                t.EndTime += offsetTiming;
-                t.Adjust(offsetX, offsetY, offsetTiming);
-            }
-        }
-
-        #region 折叠：直接控制Event修改方法
-        private void AddEvent<T>(ICollection<T> list, T _event)
-        {
-            var t = typeof(T);
-            if (_isTriggering || _isLooping)
-            {
-                dynamic e = _event;
-                dynamic member = null;
-
-                if (_isTriggering) member = TriggerList[TriggerList.Count - 1];
-                else if (_isLooping) member = LoopList[LoopList.Count - 1];
-
-                if (e.StartTime < member.InnerMinTime)
-                {
-                    member.InnerMinTime = e.StartTime;
-                    member.MinTimeCount = 1;
-                }
-                else if (e.StartTime == member.InnerMinTime) member.MinTimeCount++;
-                if (e.EndTime > member.InnerMaxTime)
-                {
-                    member.InnerMaxTime = e.EndTime;
-                    member.MaxTimeCount = 1;
-                }
-                else if (e.StartTime == member.InnerMaxTime) member.MaxTimeCount++;
-            }
-            else
-            {
-                dynamic e = _event;
-                if (e.StartTime < InnerMinTime)
-                {
-                    InnerMinTime = e.StartTime;
-                    MinTimeCount = 1;
-                }
-                else if (e.StartTime == InnerMinTime) MinTimeCount++;
-                if (e.EndTime > InnerMaxTime)
-                {
-                    InnerMaxTime = e.EndTime;
-                    MaxTimeCount = 1;
-                }
-                else if (e.EndTime == InnerMaxTime) MaxTimeCount++;
-            }
-
-            list.Add(_event);
-        }
-        private void AddMove(EasingType easing, int startTime, int endTime, float x1, float y1, float x2, float y2)
-        {
-            var obj = new Move(easing, startTime, endTime, x1, y1, x2, y2);
-            if (!_isLooping && !_isTriggering)
-                AddEvent(MoveList, obj);
-            else if (_isLooping)
-                AddEvent(LoopList[LoopList.Count - 1].MoveList, obj);
-            else
-                AddEvent(TriggerList[TriggerList.Count - 1].MoveList, obj);
-        }
-        private void AddFade(EasingType easing, int startTime, int endTime, float f1, float f2)
-        {
-            CheckAlpha(f1);
-            CheckAlpha(f2);
-
-            var obj = new Fade(easing, startTime, endTime, f1, f2);
-            if (!_isLooping && !_isTriggering)
-                AddEvent(FadeList, obj);
-            else if (_isLooping)
-                AddEvent(LoopList[LoopList.Count - 1].FadeList, obj);
-            else
-                AddEvent(TriggerList[TriggerList.Count - 1].FadeList, obj);
-
-            void CheckAlpha(float a)
-            {
-                if (a < 0 || a > 1)
-                    Debug.WriteLine("[Warning] Alpha of fade should be between 0 and 1.");
-            }
-        }
-        private void AddScale(EasingType easing, int startTime, int endTime, float s1, float s2)
-        {
-            var obj = new Scale(easing, startTime, endTime, s1, s2);
-            if (!_isLooping && !_isTriggering)
-                AddEvent(ScaleList, obj);
-            else if (_isLooping)
-                AddEvent(LoopList[LoopList.Count - 1].ScaleList, obj);
-            else
-                AddEvent(TriggerList[TriggerList.Count - 1].ScaleList, obj);
-        }
-        private void AddRotate(EasingType easing, int startTime, int endTime, float r1, float r2)
-        {
-            var obj = new Rotate(easing, startTime, endTime, r1, r2);
-            if (!_isLooping && !_isTriggering)
-                AddEvent(RotateList, obj);
-            else if (_isLooping)
-                AddEvent(LoopList[LoopList.Count - 1].RotateList, obj);
-            else
-                AddEvent(TriggerList[TriggerList.Count - 1].RotateList, obj);
-        }
-        private void AddColor(EasingType easing, int startTime, int endTime, int r1, int g1, int b1, int r2, int g2, int b2)
-        {
-            var obj = new Color(easing, startTime, endTime, r1, g1, b1, r2, g2, b2);
-            if (!_isLooping && !_isTriggering)
-                AddEvent(ColorList, obj);
-            else if (_isLooping)
-                AddEvent(LoopList[LoopList.Count - 1].ColorList, obj);
-            else
-                AddEvent(TriggerList[TriggerList.Count - 1].ColorList, obj);
-        }
-        private void AddMoveX(EasingType easing, int startTime, int endTime, float x1, float x2)
-        {
-            var obj = new MoveX(easing, startTime, endTime, x1, x2);
-            if (!_isLooping && !_isTriggering)
-                AddEvent(MoveXList, obj);
-            else if (_isLooping)
-                AddEvent(LoopList[LoopList.Count - 1].MoveXList, obj);
-            else
-                AddEvent(TriggerList[TriggerList.Count - 1].MoveXList, obj);
-        }
-        private void AddMoveY(EasingType easing, int startTime, int endTime, float y1, float y2)
-        {
-            var obj = new MoveY(easing, startTime, endTime, y1, y2);
-            if (!_isLooping && !_isTriggering)
-                AddEvent(MoveYList, obj);
-            else if (_isLooping)
-                AddEvent(LoopList[LoopList.Count - 1].MoveYList, obj);
-            else
-                AddEvent(TriggerList[TriggerList.Count - 1].MoveYList, obj);
-        }
-        private void AddParam(EasingType easing, int startTime, int endTime, string p)
-        {
-            var obj = new Parameter(easing, startTime, endTime, p);
-            if (!_isLooping && !_isTriggering)
-                AddEvent(ParameterList, obj);
-            else if (_isLooping)
-                AddEvent(LoopList[LoopList.Count - 1].ParameterList, obj);
-            else
-                AddEvent(TriggerList[TriggerList.Count - 1].ParameterList, obj);
-        }
-        private void AddVector(EasingType easing, int startTime, int endTime, float vx1, float vy1, float vx2, float vy2)
-        {
-            var obj = new Vector(easing, startTime, endTime, vx1, vy1, vx2, vy2);
-            if (!_isLooping && !_isTriggering)
-                AddEvent(VectorList, obj);
-            else if (_isLooping)
-                AddEvent(LoopList[LoopList.Count - 1].VectorList, obj);
-            else
-                AddEvent(TriggerList[TriggerList.Count - 1].VectorList, obj);
-        }
-
-        #endregion
-
-        #endregion non-public member
     }
 }

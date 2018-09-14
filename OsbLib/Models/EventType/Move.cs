@@ -1,24 +1,23 @@
 ﻿using Milkitic.OsbLib.Enums;
-using Milkitic.OsbLib.Models.EventClass;
 
 namespace Milkitic.OsbLib.Models.EventType
 {
-    public class Move : EventDouble
+    public class Move : Event
     {
-        public Move(EasingType easing, float startTime, float endTime, (float x, float y) start, (float x, float y) end)
-            : this(easing, startTime, endTime, start.x, start.y, end.x, end.y)
-        {
-        }
+        public float X1 => Start[0];
+        public float Y1 => Start[1];
+        public float X2 => End[0];
+        public float Y2 => End[1];
 
         public Move(EasingType easing, float startTime, float endTime, float x1, float y1, float x2, float y2)
-        {
-            Init("M", easing, startTime, endTime, x1, y1, x2, y2);
-        }
+        : base(easing, startTime, endTime, new[] { x1, y1 }, new[] { x2, y2 }) => EventType = EventEnum.Move;
 
-        internal void _Adjust(float x, float y)
+        public void Adjust(float x, float y)
         {
-            Start = (Start.x + x, Start.y + y);
-            End = (End.x + x, End.y + y);
+            Start[0] += x;
+            Start[1] += y;
+            End[0] += x;
+            End[1] += y;
         }
     }
 }

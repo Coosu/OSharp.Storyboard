@@ -1,22 +1,13 @@
 ﻿using Milkitic.OsbLib.Enums;
-using Milkitic.OsbLib.Models.EventClass;
 
 namespace Milkitic.OsbLib.Models.EventType
 {
     public class Parameter : Event
     {
-        public string PType { get; }
+        public ParameterEnum Type => (ParameterEnum)(int)Start[0];
 
-        public override string ScriptParams => PType;
-        public override bool IsStatic => true;
-
-        public Parameter(EasingType easing, float starttime, float endtime, string pType)
-        {
-            Type = "P";
-            Easing = easing;
-            StartTime = starttime;
-            EndTime = endtime;
-            PType = pType;
-        }
+        public Parameter(EasingType easing, float startTime, float endTime, ParameterEnum type)
+            : base(easing, startTime, endTime, new[] { (float)(int)type }, new[] { (float)(int)type }) => 
+            EventType = EventEnum.Parameter;
     }
 }

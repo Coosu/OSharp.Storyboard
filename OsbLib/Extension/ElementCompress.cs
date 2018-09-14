@@ -1,13 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#if false
+using Milkitic.OsbLib.Models;
 using Milkitic.OsbLib.Models.EventType;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace Milkitic.OsbLib.Compress
+namespace Milkitic.OsbLib.Extension
 {
     public static class ElementCompress
     {
         public static void Compress(this Element element)
         {
+            Sort(element);
             Examine(element);
             FillFadeoutList(element);
             // 每个类型压缩从后往前
@@ -23,79 +27,113 @@ namespace Milkitic.OsbLib.Compress
         /// <summary>
         /// 检查timing是否合法，以及计算透明时间段
         /// </summary>
-        public static void Examine(this Element sbObj)
+        public static void Examine(this IEventContainer sbObj)
         {
-            if (sbObj.MoveList.Count != 0) CheckTiming(sbObj.MoveList);
-            if (sbObj.ScaleList.Count != 0) CheckTiming(sbObj.ScaleList);
-            if (sbObj.FadeList.Count != 0) CheckTiming(sbObj.FadeList);
-            if (sbObj.RotateList.Count != 0) CheckTiming(sbObj.RotateList);
-            if (sbObj.VectorList.Count != 0) CheckTiming(sbObj.VectorList);
-            if (sbObj.ColorList.Count != 0) CheckTiming(sbObj.ColorList);
-            if (sbObj.MoveXList.Count != 0) CheckTiming(sbObj.MoveXList);
-            if (sbObj.MoveYList.Count != 0) CheckTiming(sbObj.MoveYList);
-            if (sbObj.ParameterList.Count != 0) CheckTiming(sbObj.ParameterList);
-            foreach (var item in sbObj.LoopList) Examine(item);
-            foreach (var item in sbObj.TriggerList) Examine(item);
+            var events = sbObj.EventList.GroupBy(k => k.EventType);
+            foreach (var kv in events)
+            {
+                var list = kv.ToArray();
+                for (var i = 0; i < list.Length - 1; i++)
+                {
+                    Event objNext = list[i + 1];
+                    Event objNow = list[i];
+                    if (objNow.StartTime > objNow.EndTime)
+                    {
+                        //throw new ArgumentException("Start time should not be larger than end time.");
+                    }
+                    if (objNext.StartTime < objNow.EndTime)
+                    {
+                        //throw new Exception(obj_previous.ToString() + Environment.NewLine + obj_next.ToString());
+                    }
+                }
+            }
+
+            if (!(sbObj is Element e))
+                return;
+            foreach (var item in e.LoopList) Examine(item);
+            foreach (var item in e.TriggerList) Examine(item);
         }
 
-        public static void FillFadeoutList(this Element sbObj)
+        private static void Sort(IEventContainer container)
+        {
+            container.EventList.Sort(new EventSort<Event>());
+            if (!(container is Element e))
+                return;
+            foreach (var item in e.LoopList) Sort(item);
+            foreach (var item in e.TriggerList) Sort(item);
+        }
+
+        public static void FillFadeoutList(this Element element)
         {
             // 验证物件完全消失的时间段
             float tmpTime = -1;
             bool fadeouting = false;
-            for (int j = 0; j < sbObj.FadeList.Count; j++)
+            var fadeList = element.EventList.Where(k => k.EventType == EventEnum.Fade).ToArray();
+            for (int i = 0; i < fadeList.Length; i++)
             {
-                var nowF = sbObj.FadeList[j];
-                if (j == 0 && nowF.Start.Equals(0) && nowF.StartTime > sbObj.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+                Fade nowF = (Fade)fadeList[i];
+                if (i == 0 && nowF.F1.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
                 {
-                    sbObj.FadeoutList.Add(sbObj.MinTime, nowF.StartTime);
+                    element.FadeoutList.Add(element.MinTime, nowF.StartTime);
                 }
-                else if (nowF.End.Equals(0) && !fadeouting)  // f2=0，开始计时
+                else if (nowF.F2.Equals(0) && !fadeouting)  // f2=0，开始计时
                 {
                     tmpTime = nowF.EndTime;
                     fadeouting = true;
                 }
                 else if (fadeouting)
                 {
-                    if (nowF.Start.Equals(0) && nowF.End.Equals(0))
+                    if (nowF.F1.Equals(0) && nowF.F2.Equals(0))
                         continue;
-                    sbObj.FadeoutList.Add(tmpTime, nowF.StartTime);
+                    element.FadeoutList.Add(tmpTime, nowF.StartTime);
                     fadeouting = false;
                 }
             }
-            if (fadeouting && tmpTime != sbObj.MaxTime)  // 可能存在Fade后还有别的event
+
+            if (fadeouting && tmpTime != element.MaxTime)  // 可能存在Fade后还有别的event
             {
-                sbObj.FadeoutList.Add(tmpTime, sbObj.MaxTime);
+                element.FadeoutList.Add(tmpTime, element.MaxTime);
             }
         }
 
         /// <summary>
         /// 预压缩
         /// </summary>
-        private static void PreOptimize(Element element)
+        private static void PreOptimize(IEventContainer container)
         {
-            bool flag = true;
-            foreach (var item in element.LoopList)
+            if (container is Element ele)
             {
-                if (item.HasFade) flag = false;
-                PreOptimize(item);
+                bool flag = true;
+                foreach (var item in ele.LoopList)
+                {
+                    if (item.HasFade)
+                    {
+                        flag = false;
+                        break;
+                    }
+                    PreOptimize(item);
+                }
+                foreach (var item in ele.TriggerList)
+                {
+                    if (item.HasFade)
+                    {
+                        flag = false;
+                        break;
+                    }
+                    PreOptimize(item);
+                }
+                if (!flag) return;
             }
-            foreach (var item in element.TriggerList)
-            {
-                if (item.HasFade) flag = false;
-                PreOptimize(item);
-            }
-            if (!flag) return;
 
-            if (element.ScaleList.Count != 0) FixAll(element, element.ScaleList);
-            if (element.RotateList.Count != 0) FixAll(element, element.RotateList);
-            if (element.MoveXList.Count != 0) FixAll(element, element.MoveXList);
-            if (element.MoveYList.Count != 0) FixAll(element, element.MoveYList);
-            if (element.FadeList.Count != 0) FixAll(element, element.FadeList);
-            if (element.MoveList.Count != 0) FixAll(element, element.MoveList);
-            if (element.VectorList.Count != 0) FixAll(element, element.VectorList);
-            if (element.ColorList.Count != 0) FixAll(element, element.ColorList);
-            if (element.ParameterList.Count != 0) FixAll(element, element.ParameterList);
+            if (container.ScaleList.Count != 0) FixAll(container, container.ScaleList);
+            if (container.RotateList.Count != 0) FixAll(container, container.RotateList);
+            if (container.MoveXList.Count != 0) FixAll(container, container.MoveXList);
+            if (container.MoveYList.Count != 0) FixAll(container, container.MoveYList);
+            if (container.FadeList.Count != 0) FixAll(container, container.FadeList);
+            if (container.MoveList.Count != 0) FixAll(container, container.MoveList);
+            if (container.VectorList.Count != 0) FixAll(container, container.VectorList);
+            if (container.ColorList.Count != 0) FixAll(container, container.ColorList);
+            if (container.ParameterList.Count != 0) FixAll(container, container.ParameterList);
             //if (_FadeoutList.Count > 0 && _FadeoutList.LastEndTime == MaxTime) InnerMaxTime = _FadeoutList.LastStartTime;
 
             //foreach (var item in LoopList) item.PreOptimize();
@@ -120,25 +158,7 @@ namespace Milkitic.OsbLib.Compress
             foreach (var item in element.TriggerList) NormalOptimize(item);
         }
 
-        /// <summary>
-        /// 检查Timing
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        private static void CheckTiming<T>(List<T> list)
-        {
-            list.Sort(new EventSort<T>());
-            for (int i = 1; i < list.Count; i++)
-            {
-                dynamic objNext = list[i];
-                dynamic objPrevious = list[i - 1];
-                if (objPrevious.StartTime > objPrevious.EndTime)
-                    //throw new ArgumentException("Start time should not be larger than end time.");
-                if (objNext.StartTime < objPrevious.EndTime)
-                {
-                    //throw new Exception(obj_previous.ToString() + Environment.NewLine + obj_next.ToString());
-                }
-            }
-        }
+
 
         /// <summary>
         /// 预压缩
@@ -147,7 +167,7 @@ namespace Milkitic.OsbLib.Compress
         {
             var tType = typeof(T);
 
-            #region 预压缩部分，待检验
+#region 预压缩部分，待检验
             if (tType != typeof(Fade))
             {
                 //int max_i = _list.Count - 1;
@@ -173,7 +193,7 @@ namespace Milkitic.OsbLib.Compress
                     }
                 }
             }
-            #endregion
+#endregion
 
             // if (tType == typeof(Scale))
             // FixSingle(ref _list);
@@ -522,16 +542,17 @@ namespace Milkitic.OsbLib.Compress
         /// <summary>
         /// 以timing排序event
         /// </summary>
-        private class EventSort<T> : IComparer<T>
+        private class EventSort<T> : IComparer<T> where T : Event
         {
-            public int Compare(T event1, T event2)
+            public int Compare(T e1, T e2)
             {
-                if (event1 == null || event2 == null)
+                if (e1 == null || e2 == null)
                     throw new NullReferenceException();
-                dynamic d1 = event1, d2 = event2;
-                if (d1.StartTime >= d2.StartTime) return 1;
+
+                if (e1.StartTime >= e2.StartTime) return 1;
                 return -1;
             }
         }
     }
 }
+#endif
