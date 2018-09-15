@@ -1,15 +1,26 @@
-﻿using System;
-using Milkitic.OsbLib.Enums;
+﻿using Milkitic.OsbLib.Enums;
+using Milkitic.OsbLib.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace Milkitic.OsbLib.Models.EventType
+namespace Milkitic.OsbLib
 {
-    public class Trigger : Element
+    public class Trigger : EventContainer
     {
-        public int StartTime { get; internal set; }
-        public int EndTime { get; internal set; }
-        public string TriggerType { get; internal set; }
+        public override List<Event> EventList { get; set; } = new List<Event>();
+        public int StartTime { get; set; }
+        public int EndTime { get; set; }
+        public string TriggerType { get; set; }
 
-        internal Trigger(int startTime, int endTime, TriggerType[] triggerType, int customSampleSet = -1)
+        public override float MaxTime => EndTime + EventList.Count > 0 ? EventList.Max(k => k.EndTime) : 0;
+        public override float MinTime => StartTime;
+        public override float MaxStartTime => EndTime + EventList.Count > 0 ? EventList.Max(k => k.StartTime) : 0; //if hitsound played at end time
+        public override float MinEndTime => StartTime; // if no hitsound here
+
+        public bool HasFade => EventList.Any(k => k.EventType == EventEnum.Fade);
+
+        public Trigger(int startTime, int endTime, IEnumerable<TriggerType> triggerType, int customSampleSet = -1)
         {
             const string hitSound = "HitSound";
             string sampleSet = "", additionsSampleSet = "", addition = "", custom = "";
@@ -56,14 +67,20 @@ namespace Milkitic.OsbLib.Models.EventType
             StartTime = startTime;
             EndTime = endTime;
             TriggerType = triggerName;
-            IsLorT = true;
         }
-        internal Trigger(int startTime, int endTime, string triggerName)
+
+        public Trigger(int startTime, int endTime, string triggerName)
         {
             StartTime = startTime;
             EndTime = endTime;
             TriggerType = triggerName;
-            IsLorT = true;
+        }
+
+        public override void Adjust(float offsetX, float offsetY, int offsetTiming)
+        {
+            StartTime += offsetTiming;
+            EndTime += offsetTiming;
+            base.Adjust(offsetX, offsetY, offsetTiming);
         }
 
         public override string ToString() => string.Join(",", " T", TriggerType, StartTime, EndTime) + "\r\n" + base.ToString();

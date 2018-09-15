@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Text;
 
-namespace Milkitic.OsbLib.Models.EventClass
+namespace Milkitic.OsbLib.Models
 {
-    // 差个排序
+    //todo: 差个排序
     public class TimeRange
     {
         public List<(float startTime, float endTime)> TimingList { get; set; } = new List<(float, float)>();
@@ -18,10 +18,10 @@ namespace Milkitic.OsbLib.Models.EventClass
         public void Add(float startTime, float endTime) =>
             TimingList.Add((startTime, endTime));
 
-        public bool InRange(int time)
+        public bool InRange(int time, int offsetStart = 0, int offsetEnd = 0)
         {
             foreach (var (startTime, endTime) in TimingList)
-                if (time >= startTime && time <= endTime)
+                if (time >= startTime + offsetStart && time <= endTime + offsetEnd)
                     return true;
             return false;
         }

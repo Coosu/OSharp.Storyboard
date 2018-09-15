@@ -62,26 +62,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnimatedElement.cs" />
     <Compile Include="Camera\Camera2D.cs" />
-    <Compile Include="ElementExtension.cs" />
-    <Compile Include="Utils\BrewExtension\BrewConvert.cs" />
-    <Compile Include="Compress\ElementCompress.cs" />
-    <Compile Include="Models\EventClass\EventDouble.cs" />
-    <Compile Include="Models\EventClass\EventSingle.cs" />
-    <Compile Include="Models\EventClass\EventTriple.cs" />
-    <Compile Include="Models\EventClass\TimeRange.cs" />
-    <Compile Include="Models\EventClass\Event.cs" />
-    <Compile Include="Models\EventType\Color.cs" />
-    <Compile Include="Models\EventType\Fade.cs" />
-    <Compile Include="Models\EventType\Loop.cs" />
-    <Compile Include="Models\EventType\Move.cs" />
-    <Compile Include="Models\EventType\MoveX.cs" />
-    <Compile Include="Models\EventType\MoveY.cs" />
-    <Compile Include="Models\EventType\Parameter.cs" />
-    <Compile Include="Models\EventType\Rotate.cs" />
-    <Compile Include="Models\EventType\Scale.cs" />
-    <Compile Include="Models\EventType\Trigger.cs" />
-    <Compile Include="Models\EventType\Vector.cs" />
+    <Compile Include="Extension\ElementExtension.cs" />
+    <Compile Include="Extension\BrewConvert.cs" />
+    <Compile Include="Extension\ElementCompress.cs" />
+    <Compile Include="EventContainer.cs" />
+    <Compile Include="Models\TimeRange.cs" />
+    <Compile Include="Loop.cs" />
+    <Compile Include="Trigger.cs" />
     <Compile Include="Enums\EasingType.cs" />
     <Compile Include="Enums\TriggerType.cs" />
     <Compile Include="Enums\LayerType.cs" />
@@ -92,6 +81,18 @@
     <Compile Include="ElementGroup.cs" />
     <Compile Include="Element.cs" />
     <Compile Include="Demo.cs" />
+    <Compile Include="Models\Event.cs" />
+    <Compile Include="Models\EventEnum.cs" />
+    <Compile Include="Models\EventType\Parameter.cs" />
+    <Compile Include="Models\EventType\Rotate.cs" />
+    <Compile Include="Models\EventType\Color.cs" />
+    <Compile Include="Models\EventType\Vector.cs" />
+    <Compile Include="Models\EventType\Scale.cs" />
+    <Compile Include="Models\EventType\MoveY.cs" />
+    <Compile Include="Models\EventType\MoveX.cs" />
+    <Compile Include="Models\EventType\Move.cs" />
+    <Compile Include="Models\EventType\Fade.cs" />
+    <Compile Include="Models\ParameterEnum.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\EasingFunctions.cs" />
   </ItemGroup>
@@ -99,8 +100,6 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="BrewHelper\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

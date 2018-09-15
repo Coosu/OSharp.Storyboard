@@ -1,116 +1,109 @@
-﻿using System;
-using Milkitic.OsbLib.Enums;
-using Milkitic.OsbLib.Models.EventClass;
+﻿using Milkitic.OsbLib.Enums;
+using Milkitic.OsbLib.Models;
 using Milkitic.OsbLib.Models.EventType;
 using OpenTK;
 using StorybrewCommon.Storyboarding;
+using System;
+using System.Linq;
 
-namespace Milkitic.OsbLib.Utils.BrewExtension
+namespace Milkitic.OsbLib.Extension
 {
     public static class BrewConvert
     {
-        public static void ExecuteBrew(this Element element, StoryboardLayer layParsed, OsbSprite brewObj = null)
+        public static void ExecuteBrew(this EventContainer ele, StoryboardLayer layParsed, OsbSprite brewObj = null)
         {
             if (brewObj == null)
             {
-                if (element.Type == ElementType.Sprite)
-                    brewObj = layParsed.CreateSprite(element.ImagePath, ConvertOrigin(element.Origin),
-                        new Vector2((float)element.DefaultX, (float)element.DefaultY));
-                else
-                    brewObj = layParsed.CreateAnimation(element.ImagePath, (int)element.FrameCount, (int)element.FrameRate,
-                        ConvertLoopType(element.LoopType), ConvertOrigin(element.Origin),
-                        new Vector2((float)element.DefaultX, (float)element.DefaultY));
+                switch (ele)
+                {
+                    case AnimatedElement ani:
+                        brewObj = layParsed.CreateAnimation(ani.ImagePath, (int)ani.FrameCount, (int)ani.FrameDelay,
+                            ToBrewType(ani.LoopType), ToBrewType(ani.Origin), new Vector2(ani.DefaultX, ani.DefaultY));
+                        foreach (var l in ani.LoopList)
+                        {
+                            brewObj.StartLoopGroup(l.StartTime, l.LoopCount);
+                            l.ExecuteBrew(layParsed, brewObj);
+                            brewObj.EndGroup();
+                        }
+                        foreach (var t in ani.TriggerList)
+                        {
+                            brewObj.StartTriggerGroup(t.TriggerType, t.StartTime, t.EndTime);
+                            t.ExecuteBrew(layParsed, brewObj);
+                            brewObj.EndGroup();
+                        }
+                        break;
+                    case Element sta:
+                        brewObj = layParsed.CreateSprite(sta.ImagePath, ToBrewType(sta.Origin),
+                            new Vector2(sta.DefaultX, sta.DefaultY));
+                        foreach (var l in sta.LoopList)
+                        {
+                            brewObj.StartLoopGroup(l.StartTime, l.LoopCount);
+                            l.ExecuteBrew(layParsed, brewObj);
+                            brewObj.EndGroup();
+                        }
+                        foreach (var t in sta.TriggerList)
+                        {
+                            brewObj.StartTriggerGroup(t.TriggerType, t.StartTime, t.EndTime);
+                            t.ExecuteBrew(layParsed, brewObj);
+                            brewObj.EndGroup();
+                        }
+                        break;
+                    default:
+                        throw new NullReferenceException("Can't be Loop/Trigger");
+                }
             }
 
-            foreach (var mx in element.MoveXList) ExecuteSingle(mx, brewObj);
-            foreach (var my in element.MoveYList) ExecuteSingle(my, brewObj);
-            foreach (var s in element.ScaleList) ExecuteSingle(s, brewObj);
-            foreach (var f in element.FadeList) ExecuteSingle(f, brewObj);
-            foreach (var r in element.RotateList) ExecuteSingle(r, brewObj);
-            foreach (var v in element.VectorList) ExecuteDouble(v, brewObj);
-            foreach (var m in element.MoveList) ExecuteDouble(m, brewObj);
-            foreach (var c in element.ColorList) ExecuteTriple(c, brewObj);
-            foreach (var p in element.ParameterList) ExecuteP(p, brewObj);
-            foreach (var l in element.LoopList)
+            foreach (var e in ele.EventList)
             {
-                brewObj.StartLoopGroup(l.StartTime, l.LoopCount);
-                l.ExecuteBrew(layParsed, brewObj);
-                brewObj.EndGroup();
+                switch (e)
+                {
+                    case Scale s:
+                        brewObj.Scale(ToBrewType(s.Easing), s.StartTime, s.EndTime, s.S1, s.S2);
+                        break;
+                    case Fade f:
+                        brewObj.Fade(ToBrewType(f.Easing), f.StartTime, f.EndTime, f.F1, f.F2);
+                        break;
+                    case Rotate r:
+                        brewObj.Rotate(ToBrewType(r.Easing), r.StartTime, r.EndTime, r.R1, r.R2);
+                        break;
+                    case MoveX mx:
+                        brewObj.MoveX(ToBrewType(mx.Easing), mx.StartTime, mx.EndTime, mx.X1, mx.X2);
+                        break;
+                    case MoveY my:
+                        brewObj.MoveY(ToBrewType(my.Easing), my.StartTime, my.EndTime, my.Y1, my.Y2);
+                        break;
+                    case Move m:
+                        brewObj.Move(ToBrewType(m.Easing), m.StartTime, m.EndTime, m.X1, m.Y1, m.X2, m.Y2);
+                        break;
+                    case Vector v:
+                        brewObj.ScaleVec(ToBrewType(v.Easing), v.StartTime, v.EndTime, v.Vx1, v.Vx1, v.Vx2, v.Vx2);
+                        break;
+                    case Color c:
+                        brewObj.Color(ToBrewType(c.Easing), c.StartTime, c.EndTime,
+                            c.R1 / 255d, c.G1 / 255d, c.B1 / 255d, c.R2 / 255d, c.G2 / 255d, c.B2 / 255d);
+                        break;
+                    case Parameter p:
+                        switch (p.Type)
+                        {
+                            case ParameterEnum.Additive:
+                                brewObj.Additive(p.StartTime, p.EndTime);
+                                break;
+                            case ParameterEnum.Horizontal:
+                                brewObj.FlipH(p.StartTime, p.EndTime);
+                                break;
+                            case ParameterEnum.Vertical:
+                                brewObj.FlipV(p.StartTime, p.EndTime);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                        break;
+                }
             }
-            foreach (var t in element.TriggerList)
-            {
-                brewObj.StartTriggerGroup(t.TriggerType, t.StartTime, t.EndTime);
-                t.ExecuteBrew(layParsed, brewObj);
-                brewObj.EndGroup();
-            }
-        }
-        private static void ExecuteSingle(EventSingle e, OsbSprite brewObj)
-        {
-            switch (e)
-            {
-                case Scale _:
-                    brewObj.Scale(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start, e.End);
-                    break;
-                case Fade _:
-                    brewObj.Fade(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start, e.End);
-                    break;
-                case Rotate _:
-                    brewObj.Rotate(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start, e.End);
-                    break;
-                case MoveX _:
-                    brewObj.MoveX(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start, e.End);
-                    break;
-                case MoveY _:
-                    brewObj.MoveY(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start, e.End);
-                    break;
-            }
+
         }
 
-        private static void ExecuteDouble(EventDouble e, OsbSprite brewObj)
-        {
-            switch (e)
-            {
-                case Move _:
-                    brewObj.Move(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start.x, e.Start.y, e.End.x,
-                        e.End.y);
-                    break;
-                case Vector _:
-                    brewObj.ScaleVec(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start.x, e.Start.y, e.End.x,
-                        e.End.y);
-                    break;
-            }
-        }
-
-        private static void ExecuteTriple(EventTriple e, OsbSprite brewObj)
-        {
-            switch (e)
-            {
-                case Color _:
-                    brewObj.Color(ConvertEasing(e.Easing), e.StartTime, e.EndTime, e.Start.x / 255d, e.Start.y / 255d,
-                        e.Start.z / 255d, e.End.x / 255d, e.End.y / 255d, e.End.z / 255d);
-                    break;
-            }
-        }
-
-        private static void ExecuteP(Parameter p, OsbSprite brewObj)
-        {
-            switch (p.PType)
-            {
-                case "A":
-                    brewObj.Additive(p.StartTime, p.EndTime);
-                    break;
-                case "H":
-                    brewObj.FlipH(p.StartTime, p.EndTime);
-                    break;
-                case "V":
-                    brewObj.FlipV(p.StartTime, p.EndTime);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private static OsbOrigin ConvertOrigin(OriginType libOrigin)
+        private static OsbOrigin ToBrewType(this OriginType libOrigin)
         {
             switch (libOrigin)
             {
@@ -138,7 +131,7 @@ namespace Milkitic.OsbLib.Utils.BrewExtension
 
         }
 
-        private static OsbLoopType ConvertLoopType(LoopType libLoop)
+        private static OsbLoopType ToBrewType(this LoopType libLoop)
         {
             switch (libLoop)
             {
@@ -152,7 +145,7 @@ namespace Milkitic.OsbLib.Utils.BrewExtension
 
         }
 
-        private static OsbEasing ConvertEasing(EasingType libEasing)
+        private static OsbEasing ToBrewType(this EasingType libEasing)
         {
             switch (libEasing)
             {
