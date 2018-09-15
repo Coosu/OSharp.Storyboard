@@ -362,7 +362,7 @@ namespace Milkitic.OsbLib
                             obj = new Element(pars[0], pars[1], pars[2], pars[3].Trim('\"'), float.Parse(pars[4]), float.Parse(pars[5]));
                         else if (pars.Length == 9)
                             obj = new AnimatedElement(pars[0], pars[1], pars[2], pars[3].Trim('\"'), float.Parse(pars[4]), float.Parse(pars[5]),
-                                float.Parse(pars[6]), float.Parse(pars[7]), pars[8]);
+                                int.Parse(pars[6]), float.Parse(pars[7]), pars[8]);
                         else
                             throw new Exception("Sprite declared wrongly");
                     }

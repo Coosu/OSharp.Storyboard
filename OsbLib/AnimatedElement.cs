@@ -9,8 +9,8 @@ namespace Milkitic.OsbLib
 {
     public class AnimatedElement : Element
     {
-        public float FrameCount { get; set; }
-        public float FrameRate { get; set; }
+        public int FrameCount { get; set; }
+        public float FrameDelay { get; set; }
         public LoopType LoopType { get; set; }
 
         /// <summary>
@@ -23,27 +23,27 @@ namespace Milkitic.OsbLib
         /// <param name="defaultX">Set default x-coordinate of location.</param>
         /// <param name="defaultY">Set default x-coordinate of location.</param>
         /// <param name="frameCount">Set frame count.</param>
-        /// <param name="frameRate">Set frame rate (frame delay).</param>
+        /// <param name="frameDelay">Set frame rate (frame delay).</param>
         /// <param name="loopType">Set loop type.</param>
         public AnimatedElement(ElementType type, LayerType layer, OriginType origin, string imagePath, float defaultX,
-            float defaultY, float frameCount, float frameRate, LoopType loopType) : base(type, layer, origin, imagePath, defaultX, defaultY)
+            float defaultY, int frameCount, float frameDelay, LoopType loopType) : base(type, layer, origin, imagePath, defaultX, defaultY)
         {
             FrameCount = frameCount;
-            FrameRate = frameRate;
+            FrameDelay = frameDelay;
             LoopType = loopType;
         }
         public AnimatedElement(string type, string layer, string origin, string imagePath, float defaultX,
-            float defaultY, float frameCount, float frameRate, string loopType) : base(type, layer, origin, imagePath, defaultX, defaultY)
+            float defaultY, int frameCount, float frameDelay, string loopType) : base(type, layer, origin, imagePath, defaultX, defaultY)
         {
             FrameCount = frameCount;
-            FrameRate = frameRate;
+            FrameDelay = frameDelay;
             LoopType = (LoopType)Enum.Parse(typeof(LoopType), loopType);
         }
 
         public override string ToString()
         {
             var head =
-                $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY, FrameCount, FrameRate, LoopType)}\r\n";
+                $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY, FrameCount, FrameDelay, LoopType)}\r\n";
             return head + GetStringBody();
         }
     }

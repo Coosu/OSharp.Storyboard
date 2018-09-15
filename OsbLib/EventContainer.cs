@@ -83,6 +83,8 @@ namespace Milkitic.OsbLib
                 if (startTime >= MaxStartTime)
                     EventList.Add(newE);
                 else
+                {
+                    compared = EventList.Count;
                     for (var i = EventList.Count - 1; i >= 0; i--)
                     {
                         Event v = EventList[i];
@@ -91,6 +93,8 @@ namespace Milkitic.OsbLib
                         else
                             break;
                     }
+                }
+
                 if (compared != -1)
                     EventList.Insert(compared, newE);
             }

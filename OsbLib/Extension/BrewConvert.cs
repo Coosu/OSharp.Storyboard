@@ -17,7 +17,7 @@ namespace Milkitic.OsbLib.Extension
                 switch (ele)
                 {
                     case AnimatedElement ani:
-                        brewObj = layParsed.CreateAnimation(ani.ImagePath, (int)ani.FrameCount, (int)ani.FrameRate,
+                        brewObj = layParsed.CreateAnimation(ani.ImagePath, (int)ani.FrameCount, (int)ani.FrameDelay,
                             ToBrewType(ani.LoopType), ToBrewType(ani.Origin), new Vector2(ani.DefaultX, ani.DefaultY));
                         foreach (var l in ani.LoopList)
                         {

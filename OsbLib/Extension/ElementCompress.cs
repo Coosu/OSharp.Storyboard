@@ -63,38 +63,7 @@ namespace Milkitic.OsbLib.Extension
             foreach (var item in e.TriggerList) Sort(item);
         }
 
-        public static void FillFadeoutList(this Element element)
-        {
-            // 验证物件完全消失的时间段
-            float tmpTime = -1;
-            bool fadeouting = false;
-            var fadeList = element.EventList.Where(k => k.EventType == EventEnum.Fade).ToArray();
-            for (int i = 0; i < fadeList.Length; i++)
-            {
-                Fade nowF = (Fade)fadeList[i];
-                if (i == 0 && nowF.F1.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
-                {
-                    element.FadeoutList.Add(element.MinTime, nowF.StartTime);
-                }
-                else if (nowF.F2.Equals(0) && !fadeouting)  // f2=0，开始计时
-                {
-                    tmpTime = nowF.EndTime;
-                    fadeouting = true;
-                }
-                else if (fadeouting)
-                {
-                    if (nowF.F1.Equals(0) && nowF.F2.Equals(0))
-                        continue;
-                    element.FadeoutList.Add(tmpTime, nowF.StartTime);
-                    fadeouting = false;
-                }
-            }
-
-            if (fadeouting && tmpTime != element.MaxTime)  // 可能存在Fade后还有别的event
-            {
-                element.FadeoutList.Add(tmpTime, element.MaxTime);
-            }
-        }
+       
 
         /// <summary>
         /// 预压缩
