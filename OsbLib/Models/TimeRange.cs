@@ -7,21 +7,21 @@ namespace Milkitic.OsbLib.Models
     //todo: 差个排序
     public class TimeRange
     {
-        public List<(float startTime, float endTime)> TimingList { get; set; } = new List<(float, float)>();
+        public List<Range> TimingList { get; set; } = new List<Range>();
 
-        public float FirstStartTime => TimingList[0].startTime;
-        public float FirstEndTime => TimingList[0].endTime;
-        public float LastStartTime => TimingList[TimingList.Count - 1].startTime;
-        public float LastEndTime => TimingList[TimingList.Count - 1].endTime;
+        public float FirstStartTime => TimingList[0].StartTime;
+        public float FirstEndTime => TimingList[0].EndTime;
+        public float LastStartTime => TimingList[TimingList.Count - 1].StartTime;
+        public float LastEndTime => TimingList[TimingList.Count - 1].EndTime;
         public int Count => TimingList.Count;
 
         public void Add(float startTime, float endTime) =>
-            TimingList.Add((startTime, endTime));
+            TimingList.Add(new Range(startTime, endTime));
 
         public bool InRange(int time, int offsetStart = 0, int offsetEnd = 0)
         {
-            foreach (var (startTime, endTime) in TimingList)
-                if (time >= startTime + offsetStart && time <= endTime + offsetEnd)
+            foreach (var range in TimingList)
+                if (time >= range.StartTime + offsetStart && time <= range.EndTime + offsetEnd)
                     return true;
             return false;
         }
@@ -30,7 +30,7 @@ namespace Milkitic.OsbLib.Models
         {
             for (int i = 0; i < TimingList.Count; i++)
             {
-                if (time.All(t => t >= TimingList[i].startTime && t <= TimingList[i].endTime))
+                if (time.All(t => t >= TimingList[i].StartTime && t <= TimingList[i].EndTime))
                 {
                     isLast = i == TimingList.Count - 1;
                     return true;
@@ -42,9 +42,21 @@ namespace Milkitic.OsbLib.Models
         public override string ToString()
         {
             var sb = new StringBuilder();
-            foreach (var (startTime, endTime) in TimingList)
-                sb.AppendLine(startTime + "," + endTime);
+            foreach (var range in TimingList)
+                sb.AppendLine(range.StartTime + "," + range.EndTime);
             return sb.ToString();
+        }
+
+        public struct Range
+        {
+            public readonly float StartTime;
+            public readonly float EndTime;
+
+            public Range(float startTime, float endTime)
+            {
+                StartTime = startTime;
+                EndTime = endTime;
+            }
         }
     }
 }

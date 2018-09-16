@@ -1,7 +1,6 @@
 ﻿using Milkitic.OsbLib.Enums;
 using Milkitic.OsbLib.Models;
 using Milkitic.OsbLib.Models.EventType;
-using OpenTK;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

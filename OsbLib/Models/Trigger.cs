@@ -1,10 +1,9 @@
-﻿using Milkitic.OsbLib.Enums;
-using Milkitic.OsbLib.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Milkitic.OsbLib.Enums;
 
-namespace Milkitic.OsbLib
+namespace Milkitic.OsbLib.Models
 {
     public class Trigger : EventContainer
     {

@@ -41,18 +41,9 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenTK">
-      <HintPath>D:\Program Files (x86)\storybrew.1.59\OpenTK.dll</HintPath>
-    </Reference>
-    <Reference Include="StorybrewCommon">
-      <HintPath>D:\Program Files (x86)\storybrew.1.59\StorybrewCommon.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -65,12 +56,12 @@
     <Compile Include="AnimatedElement.cs" />
     <Compile Include="Camera\Camera2D.cs" />
     <Compile Include="Extension\ElementExtension.cs" />
-    <Compile Include="Extension\BrewConvert.cs" />
     <Compile Include="Extension\ElementCompress.cs" />
     <Compile Include="EventContainer.cs" />
     <Compile Include="Models\TimeRange.cs" />
-    <Compile Include="Loop.cs" />
-    <Compile Include="Trigger.cs" />
+    <Compile Include="Models\Loop.cs" />
+    <Compile Include="Models\Vector.cs" />
+    <Compile Include="Models\Trigger.cs" />
     <Compile Include="Enums\EasingType.cs" />
     <Compile Include="Enums\TriggerType.cs" />
     <Compile Include="Enums\LayerType.cs" />
@@ -80,7 +71,6 @@
     <Compile Include="ElementManager.cs" />
     <Compile Include="ElementGroup.cs" />
     <Compile Include="Element.cs" />
-    <Compile Include="Demo.cs" />
     <Compile Include="Models\Event.cs" />
     <Compile Include="Models\EventEnum.cs" />
     <Compile Include="Models\EventType\Parameter.cs" />
@@ -98,7 +88,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

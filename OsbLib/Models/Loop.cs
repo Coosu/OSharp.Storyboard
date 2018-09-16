@@ -1,11 +1,8 @@
-﻿using Milkitic.OsbLib.Enums;
-using Milkitic.OsbLib.Models;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Milkitic.OsbLib
+namespace Milkitic.OsbLib.Models
 {
     public class Loop : EventContainer
     {

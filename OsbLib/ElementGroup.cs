@@ -1,6 +1,6 @@
 ﻿using Milkitic.OsbLib.Enums;
 using Milkitic.OsbLib.Extension;
-using StorybrewCommon.Storyboarding;
+//using StorybrewCommon.Storyboarding;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -101,21 +101,22 @@ namespace Milkitic.OsbLib
             }
         }
 
-        public void ExecuteBrew(StoryboardLayer layParsed)
-        {
-            foreach (var lib in ElementList)
-            {
-                lib.ExecuteBrew(layParsed);
-            }
-        }
+        //public void ExecuteBrew(StoryboardLayer layParsed)
+        //{
+        //    throw new NotImplementedException();
+        //    foreach (var lib in ElementList)
+        //    {
+        //        lib.ExecuteBrew(layParsed);
+        //    }
+        //}
 
         public void Compress()
         {
             throw new NotImplementedException();
-            foreach (var obj in ElementList)
-            {
-                //obj.Compress();
-            }
+            //foreach (var obj in ElementList)
+            //{
+            //    obj.Compress();
+            //}
         }
         public override string ToString()
         {
