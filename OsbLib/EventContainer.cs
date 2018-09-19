@@ -68,7 +68,7 @@ namespace Milkitic.OsbLib
                     newE = new Rotate(easing, startTime, endTime, start[0], end[0]);
                     break;
                 case EventEnum.Color:
-                    newE = new Color(easing, startTime, endTime, start[0], start[1], start[2], end[0], end[1], start[2]);
+                    newE = new Color(easing, startTime, endTime, start[0], start[1], start[2], end[0], end[1], end[2]);
                     break;
                 case EventEnum.Parameter:
                     newE = new Parameter(easing, startTime, endTime, (ParameterEnum)(int)start[0]);

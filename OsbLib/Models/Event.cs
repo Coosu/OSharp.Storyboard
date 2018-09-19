@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Milkitic.OsbLib.Models
 {
-    public abstract class Event
+    public class Event
     {
         public EventEnum EventType { get; set; }
         public EasingType Easing { get; set; }

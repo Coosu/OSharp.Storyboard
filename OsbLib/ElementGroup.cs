@@ -1,8 +1,10 @@
-﻿using Milkitic.OsbLib.Enums;
+﻿using MGLib.Osu.Reader.Osb;
+using Milkitic.OsbLib.Enums;
 using Milkitic.OsbLib.Extension;
 //using StorybrewCommon.Storyboarding;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Milkitic.OsbLib
@@ -129,6 +131,79 @@ namespace Milkitic.OsbLib
 
             return sb.ToString();
         }
+
+        public static ElementGroup Parse(string path)
+        {
+            ElementGroup group = new ElementGroup(0);
+            OsbElementList elements = new OsbElementList(path);
+            foreach (var mGele in elements)
+            {
+                var ele = new Element((ElementType)mGele.ElementType, mGele.Layer, mGele.Origin, mGele.TexturePath,
+                    mGele.Position.StartTime, mGele.Position.EndTime);
+                foreach (var e in mGele.Commands)
+                {
+                    if (e.CommandType == EventEnum.Loop)
+                    {
+                        ele.StartLoop(e.Time.StartTime, e.LoopCount);
+                        foreach (var subE in e.SubCommands)
+                            LoadEvents(ele, subE);
+
+                        ele.EndLoop();
+                    }
+                    else if (e.CommandType == EventEnum.Trigger)
+                    {
+                        ele.StartTrigger(e.Time.StartTime, e.Time.EndTime, e.Trigger);
+                        foreach (var subE in e.SubCommands)
+                            LoadEvents(ele, subE);
+
+                        ele.EndLoop();
+                    }
+                    else
+                        LoadEvents(ele, e);
+                }
+
+                group.Add(ele);
+            }
+
+            return group;
+        }
+
+        private static void LoadEvents(Element ele, Command subE)
+        {
+            var cmd = subE.Params.ToArray();
+            switch (subE.CommandType)
+            {
+                case EventEnum.Fade:
+                    ele.Fade(subE.EasingType, subE.Time.StartTime, subE.Time.EndTime, cmd[0], cmd[1]);
+                    break;
+                case EventEnum.Move:
+                    ele.Move(subE.EasingType, subE.Time.StartTime, subE.Time.EndTime, cmd[0], cmd[1], cmd[2], cmd[3]);
+                    break;
+                case EventEnum.MoveX:
+                    ele.MoveX(subE.EasingType, subE.Time.StartTime, subE.Time.EndTime, cmd[0], cmd[1]);
+                    break;
+                case EventEnum.MoveY:
+                    ele.MoveY(subE.EasingType, subE.Time.StartTime, subE.Time.EndTime, cmd[0], cmd[1]);
+                    break;
+                case EventEnum.Scale:
+                    ele.Scale(subE.EasingType, subE.Time.StartTime, subE.Time.EndTime, cmd[0], cmd[1]);
+                    break;
+                case EventEnum.Vector:
+                    ele.Vector(subE.EasingType, subE.Time.StartTime, subE.Time.EndTime, cmd[0], cmd[1], cmd[2], cmd[3]);
+                    break;
+                case EventEnum.Rotate:
+                    ele.Rotate(subE.EasingType, subE.Time.StartTime, subE.Time.EndTime, cmd[0], cmd[1]);
+                    break;
+                case EventEnum.Color:
+                    ele.Color(subE.EasingType, subE.Time.StartTime, subE.Time.EndTime,
+                        (int)cmd[0], (int)cmd[1], (int)cmd[2], (int)cmd[3], (int)cmd[4], (int)cmd[5]);
+                    break;
+                case EventEnum.Parameter:
+                    ele.Parameter(subE.EasingType, subE.Time.StartTime, subE.Time.EndTime, Models.ParameterEnum.Additive);
+                    break;
+            }
+        }
+
         public static ElementGroup Parse(string osbString, int layerIndex)
         {
             StringBuilder sb = new StringBuilder();

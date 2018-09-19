@@ -146,25 +146,25 @@ namespace Milkitic.OsbLib
             _isLooping = false;
         }
 
-        public void StartLoop(int startTime, int time)
+        public void StartLoop(int startTime, int loopCount)
         {
             if (_isLooping || _isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
             _isLooping = true;
-            LoopList.Add(new Loop(startTime, time));
+            LoopList.Add(new Loop(startTime, loopCount));
         }
 
-        public void StartTrigger(int startTime, int time, TriggerType[] triggerType, int customSampleSet = -1)
+        public void StartTrigger(int startTime, int endTime, TriggerType[] triggerType, int customSampleSet = -1)
         {
             if (_isLooping || _isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
             _isTriggering = true;
-            TriggerList.Add(new Trigger(startTime, time, triggerType, customSampleSet));
+            TriggerList.Add(new Trigger(startTime, endTime, triggerType, customSampleSet));
         }
 
-        public void StartTrigger(int startTime, int time, string triggerType)
+        public void StartTrigger(int startTime, int endTime, string triggerType)
         {
             if (_isLooping || _isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
             _isTriggering = true;
-            TriggerList.Add(new Trigger(startTime, time, triggerType));
+            TriggerList.Add(new Trigger(startTime, endTime, triggerType));
         }
 
         public void EndLoop()
