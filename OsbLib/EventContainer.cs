@@ -9,7 +9,7 @@ namespace Milkitic.OsbLib
 {
     public abstract class EventContainer
     {
-        public abstract List<Event> EventList { get; set; }
+        public abstract List<IEvent> EventList { get; set; }
 
         public abstract float MaxTime { get; }
         public abstract float MinTime { get; }
@@ -43,7 +43,7 @@ namespace Milkitic.OsbLib
         public virtual void AddEvent(EventEnum e, EasingType easing, float startTime, float endTime, float[] start, float[] end,
             bool sequential = true)
         {
-            Event newE;
+            IEvent newE;
             switch (e)
             {
                 case EventEnum.Fade:
@@ -87,7 +87,7 @@ namespace Milkitic.OsbLib
                     compared = EventList.Count;
                     for (var i = EventList.Count - 1; i >= 0; i--)
                     {
-                        Event v = EventList[i];
+                        IEvent v = EventList[i];
                         if (startTime < v.StartTime)
                             compared = i;
                         else

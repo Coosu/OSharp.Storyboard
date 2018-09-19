@@ -22,7 +22,7 @@ namespace Milkitic.OsbLib
         public float DefaultX { get; internal set; }
 
         //扩展
-        public override List<Event> EventList { get; set; } = new List<Event>();
+        public override List<IEvent> EventList { get; set; } = new List<IEvent>();
         public List<Loop> LoopList { get; } = new List<Loop>();
         public List<Trigger> TriggerList { get; } = new List<Trigger>();
 

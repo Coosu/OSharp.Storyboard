@@ -62,6 +62,7 @@
     <Compile Include="Extension\ElementCompress.cs" />
     <Compile Include="EventContainer.cs" />
     <Compile Include="MGOsu\Reader\OsbReader.cs" />
+    <Compile Include="Models\IEvent.cs" />
     <Compile Include="Models\TimeRange.cs" />
     <Compile Include="Models\Loop.cs" />
     <Compile Include="Models\Vector.cs" />

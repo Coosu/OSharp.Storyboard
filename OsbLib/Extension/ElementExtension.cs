@@ -46,7 +46,7 @@ namespace Milkitic.OsbLib.Extension
             var events = container.EventList.GroupBy(k => k.EventType);
             foreach (var kv in events)
             {
-                List<Event> list = kv.ToList();
+                List<IEvent> list = kv.ToList();
                 for (var i = 0; i < list.Count - 1; i++)
                 {
                     if (list[i].Start == list[i].End)
