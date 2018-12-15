@@ -9,7 +9,7 @@ namespace Milkitic.OsbLib
 {
     public abstract class EventContainer
     {
-        public abstract List<Event> EventList { get; set; }
+        public abstract List<IEvent> EventList { get; set; }
 
         public abstract float MaxTime { get; }
         public abstract float MinTime { get; }
@@ -43,32 +43,33 @@ namespace Milkitic.OsbLib
         public virtual void AddEvent(EventEnum e, EasingType easing, float startTime, float endTime, float[] start, float[] end,
             bool sequential = true)
         {
-            Event newE;
+            IEvent newE;
+            var ed = end.Length == 0 ? start : end;
             switch (e)
             {
                 case EventEnum.Fade:
-                    newE = new Fade(easing, startTime, endTime, start[0], end[0]);
+                    newE = new Fade(easing, startTime, endTime, start[0], ed[0]);
                     break;
                 case EventEnum.Move:
-                    newE = new Move(easing, startTime, endTime, start[0], start[1], end[0], end[1]);
+                    newE = new Move(easing, startTime, endTime, start[0], start[1], ed[0], ed[1]);
                     break;
                 case EventEnum.MoveX:
-                    newE = new MoveX(easing, startTime, endTime, start[0], end[0]);
+                    newE = new MoveX(easing, startTime, endTime, start[0], ed[0]);
                     break;
                 case EventEnum.MoveY:
-                    newE = new MoveY(easing, startTime, endTime, start[0], end[0]);
+                    newE = new MoveY(easing, startTime, endTime, start[0], ed[0]);
                     break;
                 case EventEnum.Scale:
-                    newE = new Scale(easing, startTime, endTime, start[0], end[0]);
+                    newE = new Scale(easing, startTime, endTime, start[0], ed[0]);
                     break;
                 case EventEnum.Vector:
-                    newE = new Vector(easing, startTime, endTime, start[0], start[1], end[0], end[1]);
+                    newE = new Vector(easing, startTime, endTime, start[0], start[1], ed[0], ed[1]);
                     break;
                 case EventEnum.Rotate:
-                    newE = new Rotate(easing, startTime, endTime, start[0], end[0]);
+                    newE = new Rotate(easing, startTime, endTime, start[0], ed[0]);
                     break;
                 case EventEnum.Color:
-                    newE = new Color(easing, startTime, endTime, start[0], start[1], start[2], end[0], end[1], start[2]);
+                    newE = new Color(easing, startTime, endTime, start[0], start[1], start[2], ed[0], ed[1], ed[2]);
                     break;
                 case EventEnum.Parameter:
                     newE = new Parameter(easing, startTime, endTime, (ParameterEnum)(int)start[0]);
@@ -76,7 +77,8 @@ namespace Milkitic.OsbLib
                 default:
                     throw new ArgumentOutOfRangeException(nameof(e), e, null);
             }
-
+            if (EventList == null)
+                EventList = new List<IEvent>();
             if (sequential && EventList.Count > 0)
             {
                 int compared = -1;
@@ -87,7 +89,7 @@ namespace Milkitic.OsbLib
                     compared = EventList.Count;
                     for (var i = EventList.Count - 1; i >= 0; i--)
                     {
-                        Event v = EventList[i];
+                        IEvent v = EventList[i];
                         if (startTime < v.StartTime)
                             compared = i;
                         else

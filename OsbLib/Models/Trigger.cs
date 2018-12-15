@@ -7,7 +7,7 @@ namespace Milkitic.OsbLib.Models
 {
     public class Trigger : EventContainer
     {
-        public override List<Event> EventList { get; set; } = new List<Event>();
+        public override List<IEvent> EventList { get; set; } = new List<IEvent>();
         public int StartTime { get; set; }
         public int EndTime { get; set; }
         public string TriggerType { get; set; }

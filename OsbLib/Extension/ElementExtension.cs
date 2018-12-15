@@ -3,11 +3,17 @@ using Milkitic.OsbLib.Models;
 using Milkitic.OsbLib.Models.EventType;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Milkitic.OsbLib.Extension
 {
     public static class ElementExtension
     {
+        public static async Task ExpandAsync(this ElementGroup eleG)
+        {
+            await Task.Run(() => { Expand(eleG); });
+        }
+
         public static void Expand(this ElementGroup eleG)
         {
             foreach (var ele in eleG.ElementList)
@@ -21,32 +27,38 @@ namespace Milkitic.OsbLib.Extension
         {
             if (container is Element element)
             {
-                foreach (var l in element.LoopList)
-                    l.Expand();
-                foreach (var t in element.TriggerList)
-                    t.Expand();
-                foreach (var l in element.LoopList)
+                if (element.LoopList != null)
+                    foreach (var l in element.LoopList)
+                        l.Expand();
+                if (element.TriggerList != null)
+                    foreach (var t in element.TriggerList)
+                        t.Expand();
+                if (element.LoopList != null)
                 {
-                    var loopCount = l.LoopCount;
-                    var startT = l.StartTime;
-                    for (int times = 0; times < loopCount; times++)
+                    foreach (var l in element.LoopList)
                     {
-                        var additionT = startT + times * l.MaxTime;
-                        foreach (var e in l.EventList)
+                        var loopCount = l.LoopCount;
+                        var startT = l.StartTime;
+                        for (int times = 0; times < loopCount; times++)
                         {
-                            element.AddEvent(e.EventType, e.Easing, additionT + e.StartTime, additionT + e.EndTime,
-                                e.Start, e.End);
+                            var additionT = startT + times * l.MaxTime;
+                            foreach (var e in l.EventList)
+                            {
+                                element.AddEvent(e.EventType, e.Easing, additionT + e.StartTime, additionT + e.EndTime,
+                                    e.Start, e.End);
+                            }
                         }
                     }
-                }
 
-                element.LoopList.Clear();
+                    element.LoopList.Clear();
+                }
             }
 
-            var events = container.EventList.GroupBy(k => k.EventType);
+            var events = container.EventList?.GroupBy(k => k.EventType);
+            if (events == null) return;
             foreach (var kv in events)
             {
-                List<Event> list = kv.ToList();
+                List<IEvent> list = kv.ToList();
                 for (var i = 0; i < list.Count - 1; i++)
                 {
                     if (list[i].Start == list[i].End)
@@ -66,28 +78,29 @@ namespace Milkitic.OsbLib.Extension
             float startTime = -1;
             bool fadeouting = false;
             var fadeList = element.FadeList;
-            for (int i = 0; i < fadeList.Count; i++)
-            {
-                Fade nowF = fadeList[i];
-                if (i == 0 && nowF.F1.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+            if (fadeList != null)
+                for (int i = 0; i < fadeList.Count; i++)
                 {
-                    startTime = element.MinTime;
-                    fadeouting = true;
-                }
+                    Fade nowF = fadeList[i];
+                    if (i == 0 && nowF.F1.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+                    {
+                        startTime = element.MinTime;
+                        fadeouting = true;
+                    }
 
-                if (nowF.F2.Equals(0) && !fadeouting)  // f2=0，开始计时
-                {
-                    startTime = nowF.EndTime;
-                    fadeouting = true;
+                    if (nowF.F2.Equals(0) && !fadeouting)  // f2=0，开始计时
+                    {
+                        startTime = nowF.EndTime;
+                        fadeouting = true;
+                    }
+                    else if (fadeouting)
+                    {
+                        if (nowF.F1.Equals(0) && nowF.F2.Equals(0))
+                            continue;
+                        element.FadeoutList.Add(startTime, nowF.StartTime);
+                        fadeouting = false;
+                    }
                 }
-                else if (fadeouting)
-                {
-                    if (nowF.F1.Equals(0) && nowF.F2.Equals(0))
-                        continue;
-                    element.FadeoutList.Add(startTime, nowF.StartTime);
-                    fadeouting = false;
-                }
-            }
 
             if (fadeouting && startTime != element.MaxTime)  // 可能存在Fade后还有别的event
             {
@@ -96,28 +109,29 @@ namespace Milkitic.OsbLib.Extension
 
             // only test not optimized
             var scaList = element.ScaleList;
-            for (int i = 0; i < scaList.Count; i++)
-            {
-                Scale nowF = scaList[i];
-                if (i == 0 && nowF.S1.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+            if (scaList != null)
+                for (int i = 0; i < scaList.Count; i++)
                 {
-                    startTime = element.MinTime;
-                    fadeouting = true;
-                }
+                    Scale nowF = scaList[i];
+                    if (i == 0 && nowF.S1.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+                    {
+                        startTime = element.MinTime;
+                        fadeouting = true;
+                    }
 
-                if (nowF.S2.Equals(0) && !fadeouting)  // f2=0，开始计时
-                {
-                    startTime = nowF.EndTime;
-                    fadeouting = true;
+                    if (nowF.S2.Equals(0) && !fadeouting)  // f2=0，开始计时
+                    {
+                        startTime = nowF.EndTime;
+                        fadeouting = true;
+                    }
+                    else if (fadeouting)
+                    {
+                        if (nowF.S1.Equals(0) && nowF.S2.Equals(0))
+                            continue;
+                        element.FadeoutList.Add(startTime, nowF.StartTime);
+                        fadeouting = false;
+                    }
                 }
-                else if (fadeouting)
-                {
-                    if (nowF.S1.Equals(0) && nowF.S2.Equals(0))
-                        continue;
-                    element.FadeoutList.Add(startTime, nowF.StartTime);
-                    fadeouting = false;
-                }
-            }
 
             if (fadeouting && startTime != element.MaxTime)  // 可能存在Fade后还有别的event
             {

@@ -20,7 +20,7 @@ namespace Milkitic.OsbTool
                 int timing = int.Parse(tbTiming.Text);
                 float x = float.Parse(tbX.Text);
                 float y = float.Parse(tbY.Text);
-                var before = ElementGroup.Parse(osb, 0);
+                var before = ElementGroup.Parse(osb);
                 //tbSource.Text = before.ToString();
                 var after = ElementManager.Adjust(before, x, y, timing);
                 tbHandled.Text = after.ToString();
@@ -71,7 +71,7 @@ namespace Milkitic.OsbTool
             ElementManager em = new ElementManager();
             try
             {
-                var parsed = ElementGroup.Parse(text, 0);
+                var parsed = ElementGroup.Parse(text);
                 parsed.Compress();
                 em.Add(parsed);
                 em.Save(tPath);

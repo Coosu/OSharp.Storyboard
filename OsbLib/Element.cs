@@ -21,40 +21,41 @@ namespace Milkitic.OsbLib
         public float DefaultY { get; internal set; }
         public float DefaultX { get; internal set; }
 
+        internal bool SafeMode = true;
         //扩展
-        public override List<Event> EventList { get; set; } = new List<Event>();
-        public List<Loop> LoopList { get; } = new List<Loop>();
-        public List<Trigger> TriggerList { get; } = new List<Trigger>();
+        public override List<IEvent> EventList { get; set; }
+        public List<Loop> LoopList { get; set; }
+        public List<Trigger> TriggerList { get; set; }
 
         public List<Fade> FadeList =>
-            EventList.Where(k => k.EventType == EventEnum.Fade).Select(k => (Fade)k).ToList();
+            EventList?.Where(k => k.EventType == EventEnum.Fade).Select(k => (Fade)k).ToList();
         public List<Color> ColorList =>
-            EventList.Where(k => k.EventType == EventEnum.Color).Select(k => (Color)k).ToList();
+            EventList?.Where(k => k.EventType == EventEnum.Color).Select(k => (Color)k).ToList();
         public List<Move> MoveList =>
-            EventList.Where(k => k.EventType == EventEnum.Move).Select(k => (Move)k).ToList();
+            EventList?.Where(k => k.EventType == EventEnum.Move).Select(k => (Move)k).ToList();
         public List<MoveX> MoveXList =>
-            EventList.Where(k => k.EventType == EventEnum.MoveX).Select(k => (MoveX)k).ToList();
+            EventList?.Where(k => k.EventType == EventEnum.MoveX).Select(k => (MoveX)k).ToList();
         public List<MoveY> MoveYList =>
-            EventList.Where(k => k.EventType == EventEnum.MoveY).Select(k => (MoveY)k).ToList();
+            EventList?.Where(k => k.EventType == EventEnum.MoveY).Select(k => (MoveY)k).ToList();
         public List<Parameter> ParameterList =>
-            EventList.Where(k => k.EventType == EventEnum.Parameter).Select(k => (Parameter)k).ToList();
+            EventList?.Where(k => k.EventType == EventEnum.Parameter).Select(k => (Parameter)k).ToList();
         public List<Rotate> RotateList =>
-            EventList.Where(k => k.EventType == EventEnum.Rotate).Select(k => (Rotate)k).ToList();
+            EventList?.Where(k => k.EventType == EventEnum.Rotate).Select(k => (Rotate)k).ToList();
         public List<Scale> ScaleList =>
-            EventList.Where(k => k.EventType == EventEnum.Scale).Select(k => (Scale)k).ToList();
+            EventList?.Where(k => k.EventType == EventEnum.Scale).Select(k => (Scale)k).ToList();
         public List<Vector> VectorList =>
-            EventList.Where(k => k.EventType == EventEnum.Vector).Select(k => (Vector)k).ToList();
+            EventList?.Where(k => k.EventType == EventEnum.Vector).Select(k => (Vector)k).ToList();
 
         public override float MaxTime
         {
             get
             {
                 List<float> max = new List<float>();
-                if (EventList.Count > 0)
+                if (EventList?.Count > 0)
                     max.Add(EventList.Max(k => k.EndTime));
-                if (LoopList.Count > 0)
+                if (LoopList?.Count > 0)
                     max.Add(LoopList.Max(k => k.OutterMaxTime));
-                if (TriggerList.Count > 0)
+                if (TriggerList?.Count > 0)
                     max.Add(TriggerList.Max(k => k.MaxTime));
                 return max.Count == 0 ? 0 : max.Max();
             }
@@ -65,11 +66,11 @@ namespace Milkitic.OsbLib
             get
             {
                 List<float> min = new List<float>();
-                if (EventList.Count > 0)
+                if (EventList?.Count > 0)
                     min.Add(EventList.Min(k => k.StartTime));
-                if (LoopList.Count > 0)
+                if (LoopList?.Count > 0)
                     min.Add(LoopList.Min(k => k.OutterMinTime));
-                if (TriggerList.Count > 0)
+                if (TriggerList?.Count > 0)
                     min.Add(TriggerList.Min(k => k.MinTime));
                 return min.Count == 0 ? 0 : min.Min();
             }
@@ -80,11 +81,11 @@ namespace Milkitic.OsbLib
             get
             {
                 List<float> max = new List<float>();
-                if (EventList.Count > 0)
+                if (EventList?.Count > 0)
                     max.Add(EventList.Max(k => k.StartTime));
-                if (LoopList.Count > 0)
+                if (LoopList?.Count > 0)
                     max.Add(LoopList.Max(k => k.OutterMinTime));
-                if (TriggerList.Count > 0)
+                if (TriggerList?.Count > 0)
                     max.Add(TriggerList.Max(k => k.MinTime));
                 return max.Count == 0 ? 0 : max.Max();
             }
@@ -95,11 +96,11 @@ namespace Milkitic.OsbLib
             get
             {
                 List<float> min = new List<float>();
-                if (EventList.Count > 0)
+                if (EventList?.Count > 0)
                     min.Add(EventList.Min(k => k.EndTime));
-                if (LoopList.Count > 0)
+                if (LoopList?.Count > 0)
                     min.Add(LoopList.Min(k => k.OutterMaxTime));
-                if (TriggerList.Count > 0)
+                if (TriggerList?.Count > 0)
                     min.Add(TriggerList.Min(k => k.MaxTime));
                 return min.Count == 0 ? 0 : min.Min();
             }
@@ -146,25 +147,31 @@ namespace Milkitic.OsbLib
             _isLooping = false;
         }
 
-        public void StartLoop(int startTime, int time)
+        public void StartLoop(int startTime, int loopCount)
         {
             if (_isLooping || _isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
             _isLooping = true;
-            LoopList.Add(new Loop(startTime, time));
+            if (LoopList == null)
+                LoopList = new List<Loop>();
+            LoopList.Add(new Loop(startTime, loopCount));
         }
 
-        public void StartTrigger(int startTime, int time, TriggerType[] triggerType, int customSampleSet = -1)
+        public void StartTrigger(int startTime, int endTime, TriggerType[] triggerType, int customSampleSet = -1)
         {
             if (_isLooping || _isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
             _isTriggering = true;
-            TriggerList.Add(new Trigger(startTime, time, triggerType, customSampleSet));
+            if (TriggerList == null)
+                TriggerList = new List<Trigger>();
+            TriggerList.Add(new Trigger(startTime, endTime, triggerType, customSampleSet));
         }
 
-        public void StartTrigger(int startTime, int time, string triggerType)
+        public void StartTrigger(int startTime, int endTime, string triggerType)
         {
             if (_isLooping || _isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
             _isTriggering = true;
-            TriggerList.Add(new Trigger(startTime, time, triggerType));
+            if (TriggerList == null)
+                TriggerList = new List<Trigger>();
+            TriggerList.Add(new Trigger(startTime, endTime, triggerType));
         }
 
         public void EndLoop()
@@ -173,7 +180,7 @@ namespace Milkitic.OsbLib
             TryEndLoop();
         }
 
-        private void TryEndLoop()
+        internal void TryEndLoop()
         {
             _isLooping = false;
             _isTriggering = false;
@@ -287,22 +294,21 @@ namespace Milkitic.OsbLib
         {
             var sb = new StringBuilder();
             const string index = " ";
-            var events = EventList.GroupBy(k => k.EventType);
-            foreach (var kv in events)
-                foreach (var e in kv)
-                    sb.AppendLine(index + e);
+            if (EventList != null)
+            {
+                var events = EventList.GroupBy(k => k.EventType);
+                foreach (var kv in events)
+                    foreach (var e in kv)
+                        sb.AppendLine(index + e);
+            }
 
-            for (int i = 1; i <= LoopList.Count; i++) sb.Append(LoopList[i - 1]);
-            for (int i = 1; i <= TriggerList.Count; i++) sb.Append(TriggerList[i - 1]);
+            if (LoopList != null)
+                for (int i = 1; i <= LoopList.Count; i++) sb.Append(LoopList[i - 1]);
+            if (TriggerList != null)
+                for (int i = 1; i <= TriggerList.Count; i++) sb.Append(TriggerList[i - 1]);
             var body = sb.ToString();
             return body;
         }
-
-        public static Element Parse(string osbString)
-        {
-            return Parse(osbString, 1);
-        }
-
         public Element Clone() => (Element)MemberwiseClone();
 
         /// <summary>
@@ -313,10 +319,12 @@ namespace Milkitic.OsbLib
             DefaultX += offsetX;
             DefaultY += offsetY;
 
-            foreach (var loop in LoopList)
-                loop.Adjust(offsetX, offsetY, offsetTiming);
-            foreach (var trigger in TriggerList)
-                trigger.Adjust(offsetX, offsetY, offsetTiming);
+            if (LoopList != null)
+                foreach (var loop in LoopList)
+                    loop.Adjust(offsetX, offsetY, offsetTiming);
+            if (TriggerList != null)
+                foreach (var trigger in TriggerList)
+                    trigger.Adjust(offsetX, offsetY, offsetTiming);
 
             base.Adjust(offsetX, offsetY, offsetTiming);
         }
@@ -337,7 +345,7 @@ namespace Milkitic.OsbLib
             else if (_isTriggering)
                 TriggerList[TriggerList.Count - 1].AddEvent(e, easing, startTime, endTime, start, end);
             else
-                base.AddEvent(e, easing, startTime, endTime, start, end, sequential);
+                base.AddEvent(e, easing, startTime, endTime, start, end, SafeMode && sequential);
         }
 
         internal static Element Parse(string osbString, int baseLine)
@@ -352,13 +360,17 @@ namespace Milkitic.OsbLib
                 {
                     var pars = line.Split(',');
 
-                    if (pars[0] == "Sprite" || pars[0] == "Animation")
+                    if (pars[0] == "Sprite" || pars[0] == "Animation" ||
+                        pars[0] == "4" || pars[0] == "6")
                     {
                         if (obj != null)
                             throw new Exception("Sprite declared repeatly");
 
                         if (pars.Length == 6)
+                        {
                             obj = new Element(pars[0], pars[1], pars[2], pars[3].Trim('\"'), float.Parse(pars[4]), float.Parse(pars[5]));
+                            obj.EventList = new List<IEvent>(lines.Length);
+                        }
                         else if (pars.Length == 9)
                             obj = new AnimatedElement(pars[0], pars[1], pars[2], pars[3].Trim('\"'), float.Parse(pars[4]), float.Parse(pars[5]),
                                 int.Parse(pars[6]), float.Parse(pars[7]), pars[8]);
@@ -377,16 +389,17 @@ namespace Milkitic.OsbLib
                             throw new Exception("Events shouldn't be declared after blank line");
 
                         // 验证层次是否合法
-                        if (pars[0].Length - pars[0].TrimStart(' ').Length > 2)
+                        if (pars[0].Length - pars[0].TrimStart(' ').Length > 2||
+                            pars[0].Length - pars[0].TrimStart('_').Length > 2)
                         {
                             throw new Exception("Unknown relation of the event");
                         }
-                        else if (pars[0].IndexOf("  ", StringComparison.Ordinal) == 0)
+                        else if (pars[0].StartsWith("  ") || pars[0].StartsWith("__"))
                         {
                             if (!isLooping && !isTriggring)
                                 throw new Exception("The event should be looping or triggering");
                         }
-                        else if (pars[0].IndexOf(" ", StringComparison.Ordinal) == 0)
+                        else if (pars[0].StartsWith(" ") || pars[0].StartsWith("_"))
                         {
                             if (isLooping || isTriggring)
                             {
@@ -401,7 +414,7 @@ namespace Milkitic.OsbLib
                         }
 
                         // 开始验证event类别
-                        pars[0] = pars[0].Trim();
+                        pars[0] = pars[0].Trim().Trim('_');
 
                         //if (pars.Length < 5 || pars.Length > 10)
                         //    throw new Exception("Line :" + currentLine + " (Wrong parameter for all events)");
