@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Globalization;
+using System.Linq;
 using Milkitic.OsbLib.Enums;
 
 namespace Milkitic.OsbLib.Models.EventType
@@ -34,6 +36,16 @@ namespace Milkitic.OsbLib.Models.EventType
         {
             StartTime += time;
             EndTime += time;
+        }
+
+        public override string ToString()
+        {
+            return string.Join(",",
+                EventType.ToShortString(),
+                (int)Easing,
+                Math.Round(StartTime).ToString(CultureInfo.InvariantCulture),
+                StartTime.Equals(EndTime) ? "" : Math.Round(EndTime).ToString(CultureInfo.InvariantCulture),
+                Script);
         }
     }
 }

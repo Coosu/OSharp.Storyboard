@@ -18,15 +18,14 @@ namespace Milkitic.OsbTool
         static void Main()
         {
             var path =
-                @"D:\Program Files (x86)\osu!\Songs\240675 P-Light - FUNKY SUMMER BEACH\PLight - FUNKY SUMMER BEACH (Chordzi).osb";
+                @"D:\Program Files (x86)\osu!\Songs\463479 Nanahira - Bassdrop Freaks (Long Ver)\Nanahira - Bassdrop Freaks (Long Ver.) (yf_bmp).osb";
             var sb = File.ReadAllText(path);
             Stopwatch sw = new Stopwatch();
             sw.Restart();
-            ElementGroup eg = ElementGroup.Parse(sb, 0);
+            ElementGroup eg = ElementGroup.Parse(path);
+            eg.Expand();
             Console.WriteLine(sw.ElapsedMilliseconds);
             sw.Restart();
-            ElementGroup eg2 = ElementGroup.Parse(path);
-            Console.WriteLine(sw.ElapsedMilliseconds);
             sw.Stop();
 
             foreach (var item in eg.ElementList)

@@ -22,5 +22,6 @@ namespace Milkitic.OsbLib.Models
         bool IsStatic { get; }
 
         void AdjustTime(float time);
+        string ToString();
     }
 }
