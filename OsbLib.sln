@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsbLib", "OsbLib\OsbLib.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsbTool", "OsbTool\OsbTool.csproj", "{AD984DEB-2818-438C-B861-C548A249A72D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OSharp.Storyboard", "OSharp.Storyboard\OSharp.Storyboard.csproj", "{FBF92849-BDAA-435F-BC91-8B7C73087D93}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{AD984DEB-2818-438C-B861-C548A249A72D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD984DEB-2818-438C-B861-C548A249A72D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD984DEB-2818-438C-B861-C548A249A72D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBF92849-BDAA-435F-BC91-8B7C73087D93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBF92849-BDAA-435F-BC91-8B7C73087D93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBF92849-BDAA-435F-BC91-8B7C73087D93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBF92849-BDAA-435F-BC91-8B7C73087D93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
