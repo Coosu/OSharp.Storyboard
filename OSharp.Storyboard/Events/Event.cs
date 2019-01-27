@@ -12,7 +12,10 @@ namespace OSharp.Storyboard.Events
         public float EndTime { get; set; }
         public float[] Start { get; }
         public float[] End { get; }
-        protected virtual string Script => Start.SequenceEqual(End) ? string.Join(",", Start) : $"{string.Join(",", Start)},{string.Join(",", End)}";
+
+        protected virtual string Script => Start.SequenceEqual(End)
+            ? string.Join(",", Start)
+            : $"{string.Join(",", Start)},{string.Join(",", End)}";
 
         public virtual int ParamLength => Start.Length;
         public virtual bool IsStatic => Start.Equals(End);
