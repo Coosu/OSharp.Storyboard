@@ -1,14 +1,18 @@
-﻿using System;
+﻿using OSharp.Storyboard.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace OSharp.Storyboard.Events.Containers
 {
     public sealed class Trigger : EventContainer
     {
+        private const string HitSound = "HitSound";
+
         public int StartTime { get; set; }
         public int EndTime { get; set; }
-        public string TriggerType { get; set; }
+        public string TriggerName { get; set; }
 
         public override float MaxTime =>
             EndTime +
@@ -28,60 +32,19 @@ namespace OSharp.Storyboard.Events.Containers
 
         //public bool HasFade => EventList.Any(k => k.EventType == EventType.Fade);
 
-        public Trigger(int startTime, int endTime, IEnumerable<TriggerType> triggerType, int customSampleSet = -1)
+        public Trigger(int startTime, int endTime, TriggerType triggerType, bool listenSample = false, uint? customSampleSet = null)
         {
-            const string hitSound = "HitSound";
-            string sampleSet = "", additionsSampleSet = "", addition = "", custom = "";
-            foreach (var item in triggerType)
-            {
-                var s = item.ToString();
-
-                if (sampleSet == "" &&
-                    (s.IndexOf("Drum") != -1 || s.IndexOf("Soft") != -1 || s.IndexOf("Normal") != -1))
-                {
-                    if (s.IndexOf("Drum") != -1) sampleSet = "Drum";
-                    else if (s.IndexOf("Soft") != -1) sampleSet = "Soft";
-                    else sampleSet = "Normal";
-                }
-                else if (additionsSampleSet == "" &&
-                     (s.IndexOf("Drum") != -1 || s.IndexOf("Soft") != -1 || s.IndexOf("Normal") != -1))
-                {
-                    if (s.IndexOf("Drum") != -1) additionsSampleSet = "Drum";
-                    else if (s.IndexOf("Soft") != -1) additionsSampleSet = "Soft";
-                    else additionsSampleSet = "Normal";
-                }
-                else if (sampleSet != "" &&
-                  (s.IndexOf("Drum") != -1 || s.IndexOf("Soft") != -1 || s.IndexOf("Normal") != -1))
-                    throw new Exception("SampleSet is conflict.");
-                else if (additionsSampleSet != "" &&
-                    (s.IndexOf("Drum") != -1 || s.IndexOf("Soft") != -1 || s.IndexOf("Normal") != -1))
-                    throw new Exception("AdditionsSampleSet is conflict.");
-
-                if (addition == "" &&
-                     (s.IndexOf("Clap") != -1 || s.IndexOf("Finish") != -1 || s.IndexOf("Whistle") != -1))
-                {
-                    if (s.IndexOf("Clap") != -1) addition = "Clap";
-                    else if (s.IndexOf("Finish") != -1) addition = "Finish";
-                    else addition = "Whistle";
-                }
-                else if (addition != "" &&
-                    (s.IndexOf("Clap") != -1 || s.IndexOf("Finish") != -1 || s.IndexOf("Whistle") != -1))
-                    throw new Exception("Addtion is conflict.");
-
-                if (customSampleSet != -1) custom = customSampleSet.ToString();
-            }
-            string triggerName = hitSound + sampleSet + additionsSampleSet + addition + custom;
-
             StartTime = startTime;
             EndTime = endTime;
-            TriggerType = triggerName;
+
+            TriggerName = GetTriggerString(triggerType, listenSample, customSampleSet);
         }
 
         public Trigger(int startTime, int endTime, string triggerName)
         {
             StartTime = startTime;
             EndTime = endTime;
-            TriggerType = triggerName;
+            TriggerName = triggerName;
         }
 
         public override void Adjust(float offsetX, float offsetY, int offsetTiming)
@@ -91,8 +54,47 @@ namespace OSharp.Storyboard.Events.Containers
             base.Adjust(offsetX, offsetY, offsetTiming);
         }
 
-        public override string ToString() => 
-            string.Join(",", " T", TriggerType, StartTime, EndTime) + "\r\n" +
-            base.ToString();
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            sb.AppendTrigger(this);
+            return sb.ToString();
+        }
+
+        private static string GetTriggerString(TriggerType triggerType, bool listenSample, uint? customSampleSet)
+        {
+            var sb = new StringBuilder(HitSound, 23);
+            if (triggerType.HasFlag(TriggerType.HitSoundSample))
+            {
+                if (listenSample)
+                    sb.Append("All");
+
+                if (triggerType.HasFlag(TriggerType.HitSoundNormal))
+                    sb.Append("Normal");
+                else if (triggerType.HasFlag(TriggerType.HitSoundSoft))
+                    sb.Append("Soft");
+                else if (triggerType.HasFlag(TriggerType.HitSoundDrum))
+                    sb.Append("Drum");
+
+                if (listenSample)
+                {
+                    var str = sb.ToString();
+                    return str.EndsWith("All") ? HitSound : str;
+                }
+            }
+
+            if (triggerType.HasFlag(TriggerType.HitSoundAddition))
+            {
+                if (triggerType.HasFlag(TriggerType.HitSoundWhistle))
+                    sb.Append("Whistle");
+                else if (triggerType.HasFlag(TriggerType.HitSoundFinish))
+                    sb.Append("Finish");
+                else if (triggerType.HasFlag(TriggerType.HitSoundClap))
+                    sb.Append("Clap");
+            }
+
+            if (customSampleSet != null) sb.Append(customSampleSet.ToString());
+            return sb.ToString();
+        }
     }
 }

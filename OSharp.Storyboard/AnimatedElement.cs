@@ -1,4 +1,6 @@
-﻿using System;
+﻿using OSharp.Storyboard.Internal;
+using System;
+using System.Text;
 
 namespace OSharp.Storyboard
 {
@@ -50,9 +52,13 @@ namespace OSharp.Storyboard
 
         public override string ToString()
         {
+            if (!IsWorthy) return "";
             var head =
-                $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY, FrameCount, FrameDelay, LoopType)}\r\n";
-            return head + GetStringBody();
+                $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY, FrameCount, FrameDelay, LoopType)}" +
+                Environment.NewLine;
+            var sb = new StringBuilder(head);
+            sb.AppendElementEvents(this);
+            return sb.ToString();
         }
     }
 }

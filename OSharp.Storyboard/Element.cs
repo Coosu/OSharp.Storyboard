@@ -1,11 +1,11 @@
-﻿using OSharp.Storyboard.Events;
+﻿using OSharp.Storyboard.Common;
+using OSharp.Storyboard.Events;
 using OSharp.Storyboard.Events.Containers;
+using OSharp.Storyboard.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using OSharp.Storyboard.Common;
-using OSharp.Storyboard.Internal;
 
 namespace OSharp.Storyboard
 {
@@ -101,7 +101,7 @@ namespace OSharp.Storyboard
 
         // Loop control
         private bool _isTriggering, _isLooping;
-        
+
         internal bool SafeMode = true;
 
         /// <summary>
@@ -142,18 +142,18 @@ namespace OSharp.Storyboard
             LoopList.Add(new Loop(startTime, loopCount));
         }
 
-        public void StartTrigger(int startTime, int endTime, TriggerType[] triggerType, int customSampleSet = -1)
+        public void StartTrigger(int startTime, int endTime, TriggerType triggerType, bool listenSample = false, uint? customSampleSet = null)
         {
             if (_isLooping || _isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
             _isTriggering = true;
-            TriggerList.Add(new Trigger(startTime, endTime, triggerType, customSampleSet));
+            TriggerList.Add(new Trigger(startTime, endTime, triggerType, listenSample, customSampleSet));
         }
 
-        public void StartTrigger(int startTime, int endTime, string triggerType)
+        public void StartTrigger(int startTime, int endTime, string triggerName)
         {
             if (_isLooping || _isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
             _isTriggering = true;
-            TriggerList.Add(new Trigger(startTime, endTime, triggerType));
+            TriggerList.Add(new Trigger(startTime, endTime, triggerName));
         }
 
         public void EndLoop()
@@ -267,36 +267,15 @@ namespace OSharp.Storyboard
         public override string ToString()
         {
             if (!IsWorthy) return "";
-
-            var head = $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY)}\r\n";
-            return head + GetStringBody();
-        }
-
-        protected string GetStringBody()
-        {
-            var sb = new StringBuilder();
-            const string index = " ";
-            if (EventList != null)
-            {
-                var events = EventList.GroupBy(k => k.EventType);
-                foreach (var kv in events)
-                    foreach (var e in kv)
-                        sb.AppendLine(index + e);
-            }
-
-            if (LoopList != null)
-                for (int i = 1; i <= LoopList.Count; i++) sb.Append(LoopList[i - 1]);
-            if (TriggerList != null)
-                for (int i = 1; i <= TriggerList.Count; i++) sb.Append(TriggerList[i - 1]);
-            var body = sb.ToString();
-            return body;
+            var head = $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY)}" +
+                Environment.NewLine;
+            var sb = new StringBuilder(head);
+            sb.AppendElementEvents(this);
+            return sb.ToString();
         }
 
         public Element Clone() => (Element)MemberwiseClone();
 
-        /// <summary>
-        /// 调整物件参数
-        /// </summary>
         public override void Adjust(float offsetX, float offsetY, int offsetTiming)
         {
             DefaultX += offsetX;
