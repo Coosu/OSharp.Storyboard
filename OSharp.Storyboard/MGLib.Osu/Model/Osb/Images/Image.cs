@@ -1,9 +1,7 @@
-﻿using MGLib.Osu.Model.Osb.Commands;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using OSharp.Storyboard.MGLib.Osu.Model.Osb.Commands;
 
-namespace MGLib.Osu.Model.Osb
+namespace OSharp.Storyboard.MGLib.Osu.Model.Osb.Images
 {
     public abstract class Image
     {

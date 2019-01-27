@@ -1,0 +1,43 @@
+﻿using System;
+using System.Globalization;
+
+namespace OSharp.Storyboard.Events
+{
+    public sealed class MoveX : Event, IAdjustablePositionEvent
+    {
+        public override EventType EventType => EventType.MoveX;
+
+        public float X1
+        {
+            get => Start[0];
+            set => Start[0] = value;
+        }
+
+        public float X2
+        {
+            get => End[0];
+            set => End[0] = value;
+        }
+
+        public MoveX(EasingType easing, float startTime, float endTime, float x1, float x2) :
+            base(easing, startTime, endTime, new[] { x1 }, new[] { x2 })
+        {
+        }
+
+        public void AdjustPosition(float x, float y)
+        {
+            Start[0] += x;
+            End[0] += x;
+        }
+
+        public override string ToString()
+        {
+            return string.Join(",",
+                EventType.ToShortString(),
+                (int)Easing,
+                Math.Round(StartTime).ToString(CultureInfo.InvariantCulture),
+                StartTime.Equals(EndTime) ? "" : Math.Round(EndTime).ToString(CultureInfo.InvariantCulture),
+                Script);
+        }
+    }
+}

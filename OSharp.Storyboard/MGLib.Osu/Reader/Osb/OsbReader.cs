@@ -1,12 +1,14 @@
-﻿using MGLib.Osu.Model.Osb;
-using System;
-using System.Linq;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using OSharp.Storyboard.MGLib.Osu.Model.Osb;
+using OSharp.Storyboard.MGLib.Osu.Model.Osb.Commands;
+using OSharp.Storyboard.MGLib.Osu.Model.Osb.Images;
 
-namespace MGLib.Osu.Reader.Osb
+namespace OSharp.Storyboard.MGLib.Osu.Reader.Osb
 {
     public struct Element
     {

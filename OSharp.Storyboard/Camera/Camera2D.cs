@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using OSharp.Storyboard.Enums;
+using OSharp.Storyboard.Events;
+using OSharp.Storyboard.Management;
 
 namespace OSharp.Storyboard.Camera
 {

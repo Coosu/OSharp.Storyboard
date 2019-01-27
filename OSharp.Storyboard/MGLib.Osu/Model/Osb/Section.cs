@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using OSharp.Storyboard.MGLib.Osu.Model.Osb.Images;
 
-namespace MGLib.Osu.Model.Osb
+namespace OSharp.Storyboard.MGLib.Osu.Model.Osb
 {
     public struct Section
     {

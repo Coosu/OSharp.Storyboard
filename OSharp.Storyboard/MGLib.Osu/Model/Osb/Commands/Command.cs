@@ -1,9 +1,4 @@
-﻿using MGLib.Osu.Model.Osb.Commands;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MGLib.Osu.Model.Osb
+﻿namespace OSharp.Storyboard.MGLib.Osu.Model.Osb.Commands
 {
     public class Command
     {

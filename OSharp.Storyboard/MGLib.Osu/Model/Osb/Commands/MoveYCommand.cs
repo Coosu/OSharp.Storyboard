@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace MGLib.Osu.Model.Osb.Commands
+namespace OSharp.Storyboard.MGLib.Osu.Model.Osb.Commands
 {
     public class MoveYCommand : MoveCommand
     {

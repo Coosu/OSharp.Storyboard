@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace MGLib.Osu.Model.Osb.Commands
+namespace OSharp.Storyboard.MGLib.Osu.Model.Osb.Commands
 {
     public class ColorCommand : Command
     {
