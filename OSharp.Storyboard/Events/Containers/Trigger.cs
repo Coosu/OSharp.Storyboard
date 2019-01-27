@@ -10,12 +10,23 @@ namespace OSharp.Storyboard.Events.Containers
         public int EndTime { get; set; }
         public string TriggerType { get; set; }
 
-        public override float MaxTime => EndTime + EventList.Count > 0 ? EventList.Max(k => k.EndTime) : 0;
+        public override float MaxTime =>
+            EndTime +
+            EventList.Count > 0
+                ? EventList.Max(k => k.EndTime)
+                : 0;
+
         public override float MinTime => StartTime;
-        public override float MaxStartTime => EndTime + EventList.Count > 0 ? EventList.Max(k => k.StartTime) : 0; //if hitsound played at end time
+
+        public override float MaxStartTime =>
+            EndTime +
+            EventList.Count > 0
+                ? EventList.Max(k => k.StartTime)
+                : 0; //if hitsound played at end time
+
         public override float MinEndTime => StartTime; // if no hitsound here
 
-        public bool HasFade => EventList.Any(k => k.EventType == EventType.Fade);
+        //public bool HasFade => EventList.Any(k => k.EventType == EventType.Fade);
 
         public Trigger(int startTime, int endTime, IEnumerable<TriggerType> triggerType, int customSampleSet = -1)
         {

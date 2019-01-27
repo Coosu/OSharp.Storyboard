@@ -6,7 +6,7 @@ namespace OSharp.Storyboard.Management
 {
     public class ElementManager
     {
-        private SortedSet<ElementGroup> GroupList { get; set; } = new SortedSet<ElementGroup>(new GroupSort());
+        private SortedSet<ElementGroup> GroupList { get; set; } = new SortedSet<ElementGroup>(new GroupComparer());
 
         public void CreateGroup(int layerIndex)
         {
