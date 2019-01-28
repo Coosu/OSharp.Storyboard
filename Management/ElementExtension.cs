@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using OSharp.Storyboard.Events;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using OSharp.Storyboard.Events;
 
 namespace OSharp.Storyboard.Management
 {
@@ -12,12 +12,29 @@ namespace OSharp.Storyboard.Management
             await Task.Run(() => { Expand(eleG); });
         }
 
+        public static void ExpandAndFillFadeout(this ElementGroup eleG)
+        {
+            eleG.InnerFix(true, true);
+        }
+
         public static void Expand(this ElementGroup eleG)
         {
+            eleG.InnerFix(true, false);
+        }
+
+        public static void FillFadeout(this ElementGroup eleG)
+        {
+            eleG.InnerFix(false, true);
+        }
+
+        private static void InnerFix(this ElementGroup eleG, bool expand, bool fillFadeout)
+        {
+            if (!expand && !fillFadeout)
+                return;
             foreach (var ele in eleG.ElementList)
             {
-                ele.Expand();
-                ele.FillFadeoutList();
+                if (expand) ele.Expand();
+                if (fillFadeout) ele.FillFadeoutList();
             }
         }
 
@@ -25,25 +42,30 @@ namespace OSharp.Storyboard.Management
         {
             if (container is Element element)
             {
-                if (element.LoopList != null)
-                    foreach (var l in element.LoopList)
-                        l.Expand();
-                if (element.TriggerList != null)
+                if (element.TriggerList.Any())
+                {
                     foreach (var t in element.TriggerList)
                         t.Expand();
-                if (element.LoopList != null)
+                }
+
+                if (element.LoopList.Any())
                 {
-                    foreach (var l in element.LoopList)
+                    foreach (var loop in element.LoopList)
                     {
-                        var loopCount = l.LoopCount;
-                        var startT = l.StartTime;
-                        for (int times = 0; times < loopCount; times++)
+                        loop.Expand();
+                        var loopCount = loop.LoopCount;
+                        var startTime = loop.StartTime;
+                        for (int count = 0; count < loopCount; count++)
                         {
-                            var additionT = startT + times * l.MaxTime;
-                            foreach (var e in l.EventList)
+                            var fixedStartTime = startTime + count * loop.MaxTime;
+                            foreach (var e in loop.EventList)
                             {
-                                element.AddEvent(e.EventType, e.Easing, additionT + e.StartTime, additionT + e.EndTime,
-                                    e.Start, e.End);
+                                element.AddEvent(
+                                    e.EventType,
+                                    e.Easing,
+                                    fixedStartTime + e.StartTime, fixedStartTime + e.EndTime,
+                                    e.Start, e.End
+                                );
                             }
                         }
                     }
@@ -59,12 +81,19 @@ namespace OSharp.Storyboard.Management
                 List<Event> list = kv.ToList();
                 for (var i = 0; i < list.Count - 1; i++)
                 {
-                    if (list[i].Start == list[i].End)
-                        list[i].EndTime = list[i + 1].StartTime;
-                    if (list[i].EndTime != list[i + 1].StartTime)
+                    if (list[i].Start == list[i].End) // case 1
                     {
-                        container.AddEvent(list[i].EventType, EasingType.Linear, list[i].EndTime, list[i + 1].StartTime,
-                            list[i].End, list[i].End);
+                        list[i].EndTime = list[i + 1].StartTime;
+                    }
+
+                    if (!list[i].EndTime.Equals(list[i + 1].StartTime)) // case 2
+                    {
+                        container.AddEvent(
+                            list[i].EventType,
+                            EasingType.Linear,
+                            list[i].EndTime, list[i + 1].StartTime,
+                            list[i].End, list[i].End
+                        );
                     }
                 }
             }
@@ -73,7 +102,7 @@ namespace OSharp.Storyboard.Management
         public static void FillFadeoutList(this Element element)
         {
             // 验证物件完全消失的时间段
-            float startTime = -1;
+            float startTime = float.MinValue;
             bool fadeouting = false;
             var fadeList = element.FadeList;
             if (fadeList != null)

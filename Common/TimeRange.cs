@@ -51,10 +51,9 @@ namespace OSharp.Storyboard.Common
 
         public override string ToString()
         {
-            var sb = new StringBuilder();
-            foreach (var range in TimingList)
-                sb.AppendLine(range.StartTime + "," + range.EndTime);
-            return sb.ToString();
+            return TimingList.Any()
+                ? string.Join(",", TimingList.Select(k => $"[{k.StartTime},{k.EndTime}]"))
+                : "{empty}";
         }
     }
 }
