@@ -142,6 +142,15 @@ namespace OSharp.Storyboard
             LoopList.Add(new Loop(startTime, loopCount));
         }
 
+        /// <summary>
+        /// Start a trigger group.
+        /// For more information, see: https://osu.ppy.sh/help/wiki/Storyboard_Scripting/Compound_Commands
+        /// </summary>
+        /// <param name="startTime">Group start time.</param>
+        /// <param name="endTime">Group end time.</param>
+        /// <param name="triggerType">Trigger type. It can be specified in a flag form like TriggerType.HitSoundWhistle | TriggerType.HitSoundSoft.</param>
+        /// <param name="listenSample">If use the listenSample, the trigger will listen to all hitsound in a track like HitsoundAllNormal.</param>
+        /// <param name="customSampleSet">Listen to a specific track. 0 represents default track.</param>
         public void StartTrigger(int startTime, int endTime, TriggerType triggerType, bool listenSample = false, uint? customSampleSet = null)
         {
             if (_isLooping || _isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
@@ -149,6 +158,13 @@ namespace OSharp.Storyboard
             TriggerList.Add(new Trigger(startTime, endTime, triggerType, listenSample, customSampleSet));
         }
 
+        /// <summary>
+        /// Start a trigger group.
+        /// For more information, see: https://osu.ppy.sh/help/wiki/Storyboard_Scripting/Compound_Commands
+        /// </summary>
+        /// <param name="startTime">Group start time.</param>
+        /// <param name="endTime">Group end time.</param>
+        /// <param name="triggerName">A valid trigger name.</param>
         public void StartTrigger(int startTime, int endTime, string triggerName)
         {
             if (_isLooping || _isTriggering) throw new Exception("You can not start another loop when the previous one isn't end.");
