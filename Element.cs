@@ -97,7 +97,7 @@ namespace OSharp.Storyboard
             }
         }
 
-        public TimeRange FadeoutList { get; } = new TimeRange();
+        public TimeRange ObsoleteList { get; } = new TimeRange();
 
         // Loop control
         private bool _isTriggering, _isLooping;

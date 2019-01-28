@@ -23,7 +23,7 @@ namespace OSharp.Storyboard.Management
             eleG.InnerFix(true, false);
         }
 
-        public static void FillFadeout(this ElementGroup eleG)
+        public static void FillObsoleteList(this ElementGroup eleG)
         {
             eleG.InnerFix(false, true);
         }
@@ -35,7 +35,7 @@ namespace OSharp.Storyboard.Management
             foreach (var ele in eleG.ElementList)
             {
                 if (expand) ele.Expand();
-                if (fillFadeout) ele.FillFadeoutList();
+                if (fillFadeout) ele.FillObsoleteList();
             }
         }
 
@@ -100,13 +100,8 @@ namespace OSharp.Storyboard.Management
             }
         }
 
-        public class EventSettings
-        {
-            public int Count { get; set; } = -1;
-            public bool IsFadingOut { get; set; } = false;
-            public float StartTime { get; set; } = float.MinValue;
-        }
-        public static void FillFadeoutList(this Element element)
+
+        public static void FillObsoleteList(this Element element)
         {
             var possibleList = element.EventList
                 .Where(k => k.EventType == EventType.Fade ||
@@ -146,7 +141,7 @@ namespace OSharp.Storyboard.Management
                         if (@event.Start.SequenceEqual(@event.GetUnworthyValue()) &&
                             @event.End.SequenceEqual(@event.GetUnworthyValue()))
                             continue;
-                        element.FadeoutList.Add(dic[@event.EventType].StartTime, @event.StartTime);
+                        element.ObsoleteList.Add(dic[@event.EventType].StartTime, @event.StartTime);
                         dic[@event.EventType].IsFadingOut = false;
                     }
                 }
@@ -156,46 +151,17 @@ namespace OSharp.Storyboard.Management
                     .Where(k => k.Value.IsFadingOut && !k.Value.StartTime.Equals(element.MaxTime))
                     .OrderBy(k => k.Value.StartTime))
                 {
-                    element.FadeoutList.Add(pair.Value.StartTime, element.MaxTime);
+                    element.ObsoleteList.Add(pair.Value.StartTime, element.MaxTime);
                     break;
                 }
             }
+        }
 
-
-
-            //// only test not optimized
-            //var scaList = element.ScaleList;
-            //if (scaList.Any())
-            //{
-            //    var i = -1;
-            //    foreach (Scale nowF in scaList)
-            //    {
-            //        i++;
-            //        if (i == 0 && nowF.StartScale.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
-            //        {
-            //            startTime = element.MinTime;
-            //            fadeouting = true;
-            //        }
-
-            //        if (nowF.EndScale.Equals(0) && !fadeouting)  // f2=0，开始计时
-            //        {
-            //            startTime = nowF.EndTime;
-            //            fadeouting = true;
-            //        }
-            //        else if (fadeouting)
-            //        {
-            //            if (nowF.StartScale.Equals(0) && nowF.EndScale.Equals(0))
-            //                continue;
-            //            element.FadeoutList.Add(startTime, nowF.StartTime);
-            //            fadeouting = false;
-            //        }
-            //    }
-            //}
-
-            //if (fadeouting && startTime != element.MaxTime)  // 可能存在Fade后还有别的event
-            //{
-            //    element.FadeoutList.Add(startTime, element.MaxTime);
-            //}
+        public class EventSettings
+        {
+            public int Count { get; set; } = -1;
+            public bool IsFadingOut { get; set; } = false;
+            public float StartTime { get; set; } = float.MinValue;
         }
     }
 }
