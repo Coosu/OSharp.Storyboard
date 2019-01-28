@@ -193,6 +193,10 @@ namespace OSharp.Storyboard
             AddEvent(EventType.Move, 0, startTime, startTime, x, y, x, y);
         public void Move(int startTime, int endTime, float x, float y) =>
             AddEvent(EventType.Move, 0, startTime, endTime, x, y, x, y);
+        public void Move(int startTime, int endTime, float x1, float y1, float x2, float y2) =>
+            AddEvent(EventType.Move, 0, startTime, endTime, x1, y1, x2, y2);
+        public void Move(int startTime, int endTime, Vector2 startPoint, Vector2 endPoint) =>
+            AddEvent(EventType.Move, 0, startTime, endTime, startPoint.X, startPoint.Y, endPoint.X, endPoint.Y);
         public void Move(EasingType easing, int startTime, int endTime, Vector2 startPoint, Vector2 endPoint) =>
             AddEvent(EventType.Move, easing, startTime, endTime, startPoint.X, startPoint.Y, endPoint.X, endPoint.Y);
         public void Move(EasingType easing, int startTime, int endTime, float x1, float y1, float x2, float y2) =>
@@ -203,14 +207,18 @@ namespace OSharp.Storyboard
             AddEvent(EventType.Fade, 0, startTime, startTime, opacity, opacity);
         public void Fade(int startTime, int endTime, float opacity) =>
             AddEvent(EventType.Fade, 0, startTime, endTime, opacity, opacity);
-        public void Fade(EasingType easing, int startTime, int endTime, float startOpacity, float endOpacity) =>
+        public void Fade(int startTime, int endTime, float startOpacity, float endOpacity) =>
             AddEvent(EventType.Fade, 0, startTime, endTime, startOpacity, endOpacity);
+        public void Fade(EasingType easing, int startTime, int endTime, float startOpacity, float endOpacity) =>
+            AddEvent(EventType.Fade, easing, startTime, endTime, startOpacity, endOpacity);
 
         // Scale
         public void Scale(int startTime, float scale) =>
             AddEvent(EventType.Scale, 0, startTime, startTime, scale, scale);
         public void Scale(int startTime, int endTime, float scale) =>
             AddEvent(EventType.Scale, 0, startTime, endTime, scale, scale);
+        public void Scale(int startTime, int endTime, float startScale, float endScale) =>
+            AddEvent(EventType.Scale, 0, startTime, endTime, startScale, endScale);
         public void Scale(EasingType easing, int startTime, int endTime, float startScale, float endScale) =>
             AddEvent(EventType.Scale, easing, startTime, endTime, startScale, endScale);
 
@@ -219,6 +227,8 @@ namespace OSharp.Storyboard
             AddEvent(EventType.Rotate, 0, startTime, startTime, rotate, rotate);
         public void Rotate(int startTime, int endTime, float rotate) =>
             AddEvent(EventType.Rotate, 0, startTime, endTime, rotate, rotate);
+        public void Rotate(int startTime, int endTime, float startRotate, float endRotate) =>
+            AddEvent(EventType.Rotate, 0, startTime, endTime, startRotate, endRotate);
         public void Rotate(EasingType easing, int startTime, int endTime, float startRotate, float endRotate) =>
             AddEvent(EventType.Rotate, easing, startTime, endTime, startRotate, endRotate);
 
@@ -227,6 +237,8 @@ namespace OSharp.Storyboard
             AddEvent(EventType.MoveX, 0, startTime, startTime, x, x);
         public void MoveX(int startTime, int endTime, float x) =>
             AddEvent(EventType.MoveX, 0, startTime, endTime, x, x);
+        public void MoveX(int startTime, int endTime, float startX, float endX) =>
+            AddEvent(EventType.MoveX, 0, startTime, endTime, startX, endX);
         public void MoveX(EasingType easing, int startTime, int endTime, float startX, float endX) =>
             AddEvent(EventType.MoveX, easing, startTime, endTime, startX, endX);
 
@@ -235,6 +247,8 @@ namespace OSharp.Storyboard
             AddEvent(EventType.MoveY, 0, startTime, startTime, y, y);
         public void MoveY(int startTime, int endTime, float y) =>
             AddEvent(EventType.MoveY, 0, startTime, endTime, y, y);
+        public void MoveY(int startTime, int endTime, float startY, float endY) =>
+            AddEvent(EventType.MoveY, 0, startTime, endTime, startY, endY);
         public void MoveY(EasingType easing, int startTime, int endTime, float startY, float endY) =>
             AddEvent(EventType.MoveY, easing, startTime, endTime, startY, endY);
 
@@ -243,12 +257,16 @@ namespace OSharp.Storyboard
             AddEvent(EventType.Color, 0, startTime, startTime, color.X, color.Y, color.Z, color.X, color.Y, color.Z);
         public void Color(int startTime, int endTime, Vector3 color) =>
             AddEvent(EventType.Color, 0, startTime, endTime, color.X, color.Y, color.Z, color.X, color.Y, color.Z);
+        public void Color(int startTime, int endTime, Vector3 color1, Vector3 color2) =>
+            AddEvent(EventType.Color, 0, startTime, endTime, color1.X, color1.Y, color1.Z, color2.X, color2.Y, color2.Z);
         public void Color(EasingType easing, int startTime, int endTime, Vector3 color1, Vector3 color2) =>
             AddEvent(EventType.Color, easing, startTime, endTime, color1.X, color1.Y, color1.Z, color2.X, color2.Y, color2.Z);
         public void Color(int startTime, int r, int g, int b) =>
             AddEvent(EventType.Color, 0, startTime, startTime, r, g, b, r, g, b);
         public void Color(int startTime, int endTime, int r, int g, int b) =>
             AddEvent(EventType.Color, 0, startTime, endTime, r, g, b, r, g, b);
+        public void Color(int startTime, int endTime, int startR, int startG, int startB, int endR, int endG, int endB) =>
+            AddEvent(EventType.Color, 0, startTime, endTime, startR, startG, startB, endR, endG, endB);
         public void Color(EasingType easing, int startTime, int endTime, int startR, int startG, int startB, int endR, int endG, int endB) =>
             AddEvent(EventType.Color, easing, startTime, endTime, startR, startG, startB, endR, endG, endB);
 
@@ -259,8 +277,12 @@ namespace OSharp.Storyboard
             AddEvent(EventType.Vector, 0, startTime, startTime, w, h, w, h);
         public void Vector(int startTime, int endTime, float w, float h) =>
             AddEvent(EventType.Vector, 0, startTime, endTime, w, h, w, h);
+        public void Vector(int startTime, int endTime, Vector2 startZoom, Vector2 endZoom) =>
+            AddEvent(EventType.Vector, 0, startTime, endTime, startZoom.X, startZoom.Y, endZoom.X, endZoom.Y);
         public void Vector(EasingType easing, int startTime, int endTime, Vector2 startZoom, Vector2 endZoom) =>
             AddEvent(EventType.Vector, easing, startTime, endTime, startZoom.X, startZoom.Y, endZoom.X, endZoom.Y);
+        public void Vector(int startTime, int endTime, float w1, float h1, float w2, float h2) =>
+            AddEvent(EventType.Vector, 0, startTime, endTime, w1, h1, w2, h2);
         public void Vector(EasingType easing, int startTime, int endTime, float w1, float h1, float w2, float h2) =>
             AddEvent(EventType.Vector, easing, startTime, endTime, w1, h1, w2, h2);
 
@@ -278,6 +300,7 @@ namespace OSharp.Storyboard
 
         public void Parameter(EasingType easing, int startTime, int endTime, ParameterType p) =>
             AddEvent(easing, startTime, endTime, p);
+
         #endregion
 
         public override string ToString()
