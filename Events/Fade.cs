@@ -7,13 +7,13 @@ namespace OSharp.Storyboard.Events
     {
         public override EventType EventType => EventType.Fade;
 
-        public float F1
+        public float StartOpacity
         {
             get => Start[0];
             set => Start[0] = value;
         }
 
-        public float F2
+        public float EndOpacity
         {
             get => End[0];
             set => End[0] = value;

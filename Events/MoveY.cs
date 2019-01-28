@@ -7,13 +7,13 @@ namespace OSharp.Storyboard.Events
     {
         public override EventType EventType => EventType.MoveY;
 
-        public float Y1
+        public float StartY
         {
             get => Start[0];
             set => Start[0] = value;
         }
 
-        public float Y2
+        public float EndY
         {
             get => End[0];
             set => End[0] = value;

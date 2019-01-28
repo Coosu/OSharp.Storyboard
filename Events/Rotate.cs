@@ -7,13 +7,13 @@ namespace OSharp.Storyboard.Events
     {
         public override EventType EventType => EventType.Rotate;
 
-        public float R1
+        public float StartRotate
         {
             get => Start[0];
             set => Start[0] = value;
         }
 
-        public float R2
+        public float EndRotate
         {
             get => End[0];
             set => End[0] = value;

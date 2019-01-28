@@ -81,21 +81,21 @@ namespace OSharp.Storyboard.Management
                 bool isFirst = true;
                 foreach (var nowF in fadeList)
                 {
-                    if (isFirst && nowF.F1.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+                    if (isFirst && nowF.StartOpacity.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
                     {
                         startTime = element.MinTime;
                         fadeouting = true;
                         isFirst = false;
                     }
 
-                    if (nowF.F2.Equals(0) && !fadeouting)  // f2=0，开始计时
+                    if (nowF.EndOpacity.Equals(0) && !fadeouting)  // f2=0，开始计时
                     {
                         startTime = nowF.EndTime;
                         fadeouting = true;
                     }
                     else if (fadeouting)
                     {
-                        if (nowF.F1.Equals(0) && nowF.F2.Equals(0))
+                        if (nowF.StartOpacity.Equals(0) && nowF.EndOpacity.Equals(0))
                             continue;
                         element.FadeoutList.Add(startTime, nowF.StartTime);
                         fadeouting = false;
@@ -115,21 +115,21 @@ namespace OSharp.Storyboard.Management
                 bool isFirst = true;
                 foreach (Scale nowF in scaList)
                 {
-                    if (isFirst && nowF.S1.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+                    if (isFirst && nowF.StartScale.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
                     {
                         startTime = element.MinTime;
                         fadeouting = true;
                         isFirst = false;
                     }
 
-                    if (nowF.S2.Equals(0) && !fadeouting)  // f2=0，开始计时
+                    if (nowF.EndScale.Equals(0) && !fadeouting)  // f2=0，开始计时
                     {
                         startTime = nowF.EndTime;
                         fadeouting = true;
                     }
                     else if (fadeouting)
                     {
-                        if (nowF.S1.Equals(0) && nowF.S2.Equals(0))
+                        if (nowF.StartScale.Equals(0) && nowF.EndScale.Equals(0))
                             continue;
                         element.FadeoutList.Add(startTime, nowF.StartTime);
                         fadeouting = false;

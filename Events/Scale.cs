@@ -7,13 +7,13 @@ namespace OSharp.Storyboard.Events
     {
         public override EventType EventType => EventType.Scale; 
        
-        public float S1
+        public float StartScale
         {
             get => Start[0];
             set => Start[0] = value;
         }
 
-        public float S2
+        public float EndScale
         {
             get => End[0];
             set => End[0] = value;

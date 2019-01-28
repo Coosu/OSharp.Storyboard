@@ -7,25 +7,25 @@ namespace OSharp.Storyboard.Events
     {
         public override EventType EventType => EventType.Vector;
 
-        public float Vx1
+        public float StartScaleX
         {
             get => Start[0];
             set => Start[0] = value;
         }
 
-        public float Vy1
+        public float StartScaleY
         {
             get => Start[1];
             set => Start[1] = value;
         }
 
-        public float Vx2
+        public float EndScaleX
         {
             get => End[0];
             set => End[0] = value;
         }
 
-        public float Vy2
+        public float EndScaleY
         {
             get => End[1];
             set => End[1] = value;

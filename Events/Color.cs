@@ -7,37 +7,37 @@ namespace OSharp.Storyboard.Events
     {
         public override EventType EventType => EventType.Color;
 
-        public float R1
+        public float StartR
         {
             get => Start[0];
             set => Start[0] = value;
         }
 
-        public float G1
+        public float StartG
         {
             get => Start[1];
             set => Start[1] = value;
         }
 
-        public float B1
+        public float StartB
         {
             get => Start[2];
             set => Start[2] = value;
         }
 
-        public float R2
+        public float EndR
         {
             get => End[0];
             set => End[0] = value;
         }
 
-        public float G2
+        public float EndG
         {
             get => End[1];
             set => End[1] = value;
         }
 
-        public float B2
+        public float EndB
         {
             get => End[2];
             set => End[2] = value;
