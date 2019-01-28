@@ -44,7 +44,7 @@ namespace OSharp.Storyboard.Events
         }
 
         public Color(EasingType easing, float startTime, float endTime, float r1, float g1, float b1, float r2,
-            float g2, float b2):base(easing,startTime, endTime,new[] { r1, g1, b1 }, new[] { r2, g2, b2 })
+            float g2, float b2) : base(easing, startTime, endTime, new[] { r1, g1, b1 }, new[] { r2, g2, b2 })
         {
         }
 
