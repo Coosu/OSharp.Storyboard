@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using OSharp.Storyboard.Internal;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -6,13 +7,11 @@ namespace OSharp.Storyboard.Common
 {
     public class TimeRange
     {
-        public SortedSet<RangeValue<float>> TimingList { get; } =
-            new SortedSet<RangeValue<float>>(new RangeComparer<float>());
+        private readonly SortedSet<TimingPoint> _timingPoints = new SortedSet<TimingPoint>(new TimingPointComparer());
+        private List<RangeValue<float>> _timingList;
 
-        //public float MinStartTime => NumericUtility.GetMinValue(TimingList.Select(k => k.StartTime));
-        //public float MinEndTime => NumericUtility.GetMinValue(TimingList.Select(k => k.EndTime));
-        //public float MaxStartTime => NumericUtility.GetMaxValue(TimingList.Select(k => k.StartTime));
-        //public float MaxEndTime => NumericUtility.GetMaxValue(TimingList.Select(k => k.EndTime));
+        public List<RangeValue<float>> TimingList => _timingList ?? (_timingList = GetTimingList());
+
         public float MinStartTime => TimingList.First().StartTime;
         public float MinEndTime => TimingList.First().EndTime;
         public float MaxStartTime => TimingList.Last().StartTime;
@@ -20,14 +19,60 @@ namespace OSharp.Storyboard.Common
 
         public int Count => TimingList.Count;
 
-        public void Add(float startTime, float endTime) =>
-            TimingList.Add(new RangeValue<float>(startTime, endTime));
+        public void Add(float startTime, float endTime)
+        {
+            _timingPoints.Add(new TimingPoint(startTime, true));
+            _timingPoints.Add(new TimingPoint(endTime, false));
+            _timingList = null;
+        }
 
-        public bool ContainsTimingPoint(int time, int offsetStart = 0, int offsetEnd = 0)
+        private List<RangeValue<float>> GetTimingList()
+        {
+            var list = new List<RangeValue<float>>();
+            float? tmpStart = null, tmpEnd = null;
+            var array = _timingPoints.ToArray();
+            for (var i = 0; i < array.Length; i++)
+            {
+                var timingPoint = array[i];
+                if (tmpStart == null && tmpEnd == null)
+                {
+                    if (timingPoint.IsStart)
+                    {
+                        tmpStart = timingPoint.Timing;
+                    }
+                }
+                else if (tmpEnd == null)
+                {
+                    if (!timingPoint.IsStart && i != array.Length - 1 &&
+                        array[i + 1].IsStart &&
+                        !timingPoint.Timing.Equals(array[i + 1].Timing) ||
+
+                        !timingPoint.IsStart &&
+                        i == array.Length - 1)
+                    {
+                        tmpEnd = timingPoint.Timing;
+                        list.Add(new RangeValue<float>(tmpStart.Value, tmpEnd.Value));
+                        tmpStart = null;
+                        tmpEnd = null;
+                    }
+                }
+            }
+
+            return list;
+        }
+
+        public bool ContainsTimingPoint(float time, out RangeValue<float>? patterned,
+            float offsetStart = 0,
+            float offsetEnd = 0)
         {
             foreach (var range in TimingList)
                 if (time >= range.StartTime + offsetStart && time <= range.EndTime + offsetEnd)
+                {
+                    patterned = range;
                     return true;
+                }
+
+            patterned = null;
             return false;
         }
 

@@ -100,11 +100,14 @@ namespace OSharp.Storyboard.Management
             }
         }
 
+        public class EventSettings
+        {
+            public int Count { get; set; } = -1;
+            public bool IsFadingOut { get; set; } = false;
+            public float StartTime { get; set; } = float.MinValue;
+        }
         public static void FillFadeoutList(this Element element)
         {
-            // 验证物件完全消失的时间段
-            float startTime = float.MinValue;
-            int fadeoutCount = 0;
             var possibleList = element.EventList
                 .Where(k => k.EventType == EventType.Fade ||
                             k.EventType == EventType.Scale ||
@@ -112,48 +115,53 @@ namespace OSharp.Storyboard.Management
 
             if (possibleList.Any())
             {
-                var dic = new Dictionary<EventType, int>
+                var dic = new Dictionary<EventType, EventSettings>
                 {
-                    [EventType.Fade] = -1,
-                    [EventType.Scale] = -1,
-                    [EventType.Vector] = -1
+                    [EventType.Fade] = new EventSettings(),
+                    [EventType.Scale] = new EventSettings(),
+                    [EventType.Vector] = new EventSettings()
                 };
                 foreach (var @event in possibleList)
                 {
-                    dic[@event.EventType]++;
+                    dic[@event.EventType].Count++;
                     // 最早的event晚于最小开始时间，默认加这一段
-                    if (dic[@event.EventType] == 0 &&
+                    if (dic[@event.EventType].Count == 0 &&
                         @event.Start.SequenceEqual(@event.GetUnworthyValue()) &&
                         @event.StartTime > element.MinTime)
                     {
-                        startTime = element.MinTime;
-                        fadeoutCount++;
+                        dic[@event.EventType].StartTime = element.MinTime;
+                        dic[@event.EventType].IsFadingOut = true;
                     }
 
                     // event.End为无用值时，开始计时
                     if (@event.End.SequenceEqual(@event.GetUnworthyValue()) &&
-                        fadeoutCount == 0)
+                        dic[@event.EventType].IsFadingOut == false)
                     {
-                        startTime = @event.EndTime;
-                        fadeoutCount++;
+                        dic[@event.EventType].StartTime = @event.EndTime;
+                        dic[@event.EventType].IsFadingOut = true;
                     }
 
-                    else if (fadeoutCount > 0)
+                    else if (dic[@event.EventType].IsFadingOut)
                     {
                         if (@event.Start.SequenceEqual(@event.GetUnworthyValue()) &&
                             @event.End.SequenceEqual(@event.GetUnworthyValue()))
                             continue;
-                        element.FadeoutList.Add(startTime, @event.StartTime);
-                        fadeoutCount--;
+                        element.FadeoutList.Add(dic[@event.EventType].StartTime, @event.StartTime);
+                        dic[@event.EventType].IsFadingOut = false;
                     }
+                }
+
+                // 可能存在遍历完后所有event后，仍存在某一项>0（后面还有别的event，算无用）
+                foreach (var pair in dic
+                    .Where(k => k.Value.IsFadingOut && !k.Value.StartTime.Equals(element.MaxTime))
+                    .OrderBy(k => k.Value.StartTime))
+                {
+                    element.FadeoutList.Add(pair.Value.StartTime, element.MaxTime);
+                    break;
                 }
             }
 
-            // 可能存在遍历完后所有event后，fadeoutCount仍>0（后面还有别的event，算无用）
-            if (fadeoutCount > 0 && !startTime.Equals(element.MaxTime))
-            {
-                element.FadeoutList.Add(startTime, element.MaxTime);
-            }
+
 
             //// only test not optimized
             //var scaList = element.ScaleList;
