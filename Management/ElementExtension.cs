@@ -109,18 +109,20 @@ namespace OSharp.Storyboard.Management
                 .Where(k => k.EventType == EventType.Fade ||
                             k.EventType == EventType.Scale ||
                             k.EventType == EventType.Vector);
+
             if (possibleList.Any())
             {
-                var i = -1;
-                /*
-                 * TODO:
-                 * Single i isn't a valid solution.
-                 */
+                var dic = new Dictionary<EventType, int>
+                {
+                    [EventType.Fade] = -1,
+                    [EventType.Scale] = -1,
+                    [EventType.Vector] = -1
+                };
                 foreach (var @event in possibleList)
                 {
-                    i++;
+                    dic[@event.EventType]++;
                     // 最早的event晚于最小开始时间，默认加这一段
-                    if (i == 0 &&
+                    if (dic[@event.EventType] == 0 &&
                         @event.Start.SequenceEqual(@event.GetUnworthyValue()) &&
                         @event.StartTime > element.MinTime)
                     {
