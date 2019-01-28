@@ -36,7 +36,7 @@ namespace OSharp.Storyboard.Internal
 
         public static void AppendLoop(this StringBuilder sb, Loop loop)
         {
-            var head = $"{string.Join(", ", " L", loop.StartTime, loop.LoopCount)}";
+            var head = $"{string.Join(",", " L", loop.StartTime, loop.LoopCount)}";
             sb.AppendLine(head);
             sb.AppendGroupedEvent(loop.EventList, 2);
         }
