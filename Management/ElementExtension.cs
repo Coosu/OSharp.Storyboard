@@ -105,16 +105,16 @@ namespace OSharp.Storyboard.Management
             float startTime = float.MinValue;
             bool fadeouting = false;
             var fadeList = element.FadeList;
-            if (fadeList != null)
+            if (fadeList.Any())
             {
-                bool isFirst = true;
+                var i = -1;
                 foreach (var nowF in fadeList)
                 {
-                    if (isFirst && nowF.StartOpacity.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+                    i++;
+                    if (i == 0 && nowF.StartOpacity.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
                     {
                         startTime = element.MinTime;
                         fadeouting = true;
-                        isFirst = false;
                     }
 
                     if (nowF.EndOpacity.Equals(0) && !fadeouting)  // f2=0，开始计时
@@ -122,6 +122,7 @@ namespace OSharp.Storyboard.Management
                         startTime = nowF.EndTime;
                         fadeouting = true;
                     }
+
                     else if (fadeouting)
                     {
                         if (nowF.StartOpacity.Equals(0) && nowF.EndOpacity.Equals(0))
@@ -137,39 +138,39 @@ namespace OSharp.Storyboard.Management
                 element.FadeoutList.Add(startTime, element.MaxTime);
             }
 
-            // only test not optimized
-            var scaList = element.ScaleList;
-            if (scaList != null)
-            {
-                bool isFirst = true;
-                foreach (Scale nowF in scaList)
-                {
-                    if (isFirst && nowF.StartScale.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
-                    {
-                        startTime = element.MinTime;
-                        fadeouting = true;
-                        isFirst = false;
-                    }
+            //// only test not optimized
+            //var scaList = element.ScaleList;
+            //if (scaList.Any())
+            //{
+            //    var i = -1;
+            //    foreach (Scale nowF in scaList)
+            //    {
+            //        i++;
+            //        if (i == 0 && nowF.StartScale.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+            //        {
+            //            startTime = element.MinTime;
+            //            fadeouting = true;
+            //        }
 
-                    if (nowF.EndScale.Equals(0) && !fadeouting)  // f2=0，开始计时
-                    {
-                        startTime = nowF.EndTime;
-                        fadeouting = true;
-                    }
-                    else if (fadeouting)
-                    {
-                        if (nowF.StartScale.Equals(0) && nowF.EndScale.Equals(0))
-                            continue;
-                        element.FadeoutList.Add(startTime, nowF.StartTime);
-                        fadeouting = false;
-                    }
-                }
-            }
+            //        if (nowF.EndScale.Equals(0) && !fadeouting)  // f2=0，开始计时
+            //        {
+            //            startTime = nowF.EndTime;
+            //            fadeouting = true;
+            //        }
+            //        else if (fadeouting)
+            //        {
+            //            if (nowF.StartScale.Equals(0) && nowF.EndScale.Equals(0))
+            //                continue;
+            //            element.FadeoutList.Add(startTime, nowF.StartTime);
+            //            fadeouting = false;
+            //        }
+            //    }
+            //}
 
-            if (fadeouting && startTime != element.MaxTime)  // 可能存在Fade后还有别的event
-            {
-                element.FadeoutList.Add(startTime, element.MaxTime);
-            }
+            //if (fadeouting && startTime != element.MaxTime)  // 可能存在Fade后还有别的event
+            //{
+            //    element.FadeoutList.Add(startTime, element.MaxTime);
+            //}
         }
     }
 }
