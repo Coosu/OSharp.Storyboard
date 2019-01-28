@@ -13,6 +13,10 @@ namespace OSharp.Storyboard.Events
                 return 1;
             if (x == null)
                 return -1;
+            if (x.EventType > y.EventType)
+                return 1;
+            if (x.EventType < y.EventType)
+                return -1;
             if (x.StartTime > y.StartTime)
                 return 1;
             if (x.StartTime < y.StartTime)

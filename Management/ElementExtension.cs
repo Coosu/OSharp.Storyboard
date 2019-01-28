@@ -1,4 +1,5 @@
 ﻿using OSharp.Storyboard.Events;
+using OSharp.Storyboard.Internal;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -105,38 +106,49 @@ namespace OSharp.Storyboard.Management
             float startTime = float.MinValue;
             int fadeoutCount = 0;
             var possibleList = element.EventList
-                .Where(k => k.EventType == EventType.Fade &&
-                            k.EventType == EventType.Scale &&
+                .Where(k => k.EventType == EventType.Fade ||
+                            k.EventType == EventType.Scale ||
                             k.EventType == EventType.Vector);
             if (possibleList.Any())
             {
                 var i = -1;
-                foreach (var nowF in possibleList)
+                /*
+                 * TODO:
+                 * Single i isn't a valid solution.
+                 */
+                foreach (var @event in possibleList)
                 {
                     i++;
-                    if (i == 0 && nowF.StartOpacity.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
+                    // 最早的event晚于最小开始时间，默认加这一段
+                    if (i == 0 &&
+                        @event.Start.SequenceEqual(@event.GetUnworthyValue()) &&
+                        @event.StartTime > element.MinTime)
                     {
                         startTime = element.MinTime;
                         fadeoutCount++;
                     }
 
-                    if (nowF.EndOpacity.Equals(0) && fadeoutCount == 0)  // f2=0，开始计时
+                    // event.End为无用值时，开始计时
+                    if (@event.End.SequenceEqual(@event.GetUnworthyValue()) &&
+                        fadeoutCount == 0)
                     {
-                        startTime = nowF.EndTime;
+                        startTime = @event.EndTime;
                         fadeoutCount++;
                     }
 
                     else if (fadeoutCount > 0)
                     {
-                        if (nowF.StartOpacity.Equals(0) && nowF.EndOpacity.Equals(0))
+                        if (@event.Start.SequenceEqual(@event.GetUnworthyValue()) &&
+                            @event.End.SequenceEqual(@event.GetUnworthyValue()))
                             continue;
-                        element.FadeoutList.Add(startTime, nowF.StartTime);
+                        element.FadeoutList.Add(startTime, @event.StartTime);
                         fadeoutCount--;
                     }
                 }
             }
 
-            if (fadeoutCount > 0 && !startTime.Equals(element.MaxTime))  // 可能存在Fade后还有别的event
+            // 可能存在遍历完后所有event后，fadeoutCount仍>0（后面还有别的event，算无用）
+            if (fadeoutCount > 0 && !startTime.Equals(element.MaxTime))
             {
                 element.FadeoutList.Add(startTime, element.MaxTime);
             }
