@@ -19,7 +19,9 @@ namespace OSharp.Storyboard.Management
 
         public List<Element> ElementList { get; set; } = new List<Element>();
 
-        public Element this[int index] { get => ElementList[index]; set => ElementList[index] = value; }
+        public Element this[int index] => ElementList[index];
+
+        public IEnumerable<Element> this[Func<Element, bool> predicate] => ElementList.Where(predicate);
 
         /// <summary>
         /// Create a storyboard element by a static image.
@@ -29,7 +31,7 @@ namespace OSharp.Storyboard.Management
         public Element CreateSprite(string filePath)
         {
             var obj = new Element(ElementType.Sprite, LayerType.Foreground, OriginType.Centre, filePath, 320, 240);
-            Add(obj);
+            AddElement(obj);
             return obj;
         }
 
@@ -42,7 +44,7 @@ namespace OSharp.Storyboard.Management
         public Element CreateSprite(OriginType origin, string filePath)
         {
             var obj = new Element(ElementType.Sprite, LayerType.Foreground, origin, filePath, 320, 240);
-            Add(obj);
+            AddElement(obj);
             return obj;
         }
 
@@ -56,7 +58,7 @@ namespace OSharp.Storyboard.Management
         public Element CreateSprite(LayerType layer, OriginType origin, string filePath)
         {
             var obj = new Element(ElementType.Sprite, layer, origin, filePath, 320, 240);
-            Add(obj);
+            AddElement(obj);
             return obj;
         }
 
@@ -71,7 +73,7 @@ namespace OSharp.Storyboard.Management
         public Element CreateSprite(LayerType layer, OriginType origin, string filePath, System.Drawing.Point defaultLocation)
         {
             var obj = new Element(ElementType.Sprite, layer, origin, filePath, defaultLocation.X, defaultLocation.Y);
-            Add(obj);
+            AddElement(obj);
             return obj;
         }
 
@@ -87,21 +89,18 @@ namespace OSharp.Storyboard.Management
         public Element CreateSprite(LayerType layer, OriginType origin, string filePath, int defaultX, int defaultY)
         {
             var obj = new Element(ElementType.Sprite, layer, origin, filePath, defaultX, defaultY);
-            Add(obj);
+            AddElement(obj);
             return obj;
         }
 
-        public void Add(Element obj)
+        public void AddElement(Element element)
         {
-            ElementList.Add(obj);
+            ElementList.Add(element);
         }
 
-        public void Add(params Element[] objs)
+        public void AddElement(params Element[] elements)
         {
-            foreach (var obj in objs)
-            {
-                ElementList.Add(obj);
-            }
+            ElementList.AddRange(elements);
         }
 
         //public void ExecuteBrew(StoryboardLayer layParsed)
@@ -147,7 +146,7 @@ namespace OSharp.Storyboard.Management
             ElementGroup elementGroup = new ElementGroup(0);
             Element obj = null;
             //int currentLine = 1;
-            bool isLooping = false, isTriggring = false, isBlank = false;
+            bool isLooping = false, isTriggering = false, isBlank = false;
             using (StreamReader sr = new StreamReader(path))
             {
                 int rowIndex = 0;
@@ -177,7 +176,7 @@ namespace OSharp.Storyboard.Management
             }
 
             if (obj != null)
-                elementGroup.Add(obj);
+                elementGroup.AddElement(obj);
 
             return elementGroup;
 
@@ -192,7 +191,7 @@ namespace OSharp.Storyboard.Management
                     {
                         obj.SafeMode = true;
                         obj.TryEndLoop();
-                        elementGroup.Add(obj);
+                        elementGroup.AddElement(obj);
                         obj = null;
                     }
 
@@ -201,7 +200,7 @@ namespace OSharp.Storyboard.Management
                         obj = new Element(pars[0], pars[1], pars[2], pars[3].Trim('\"'), float.Parse(pars[4]), float.Parse(pars[5]));
                         //obj.SafeMode = false;
                         isLooping = false;
-                        isTriggring = false;
+                        isTriggering = false;
                         isBlank = false;
                     }
                     else if (pars.Length == 9)
@@ -229,16 +228,16 @@ namespace OSharp.Storyboard.Management
                     }
                     else if (pars[0].StartsWith("  ") || pars[0].StartsWith("__"))
                     {
-                        if (!isLooping && !isTriggring)
+                        if (!isLooping && !isTriggering)
                             throw new Exception("The event should be looping or triggering");
                     }
                     else if (pars[0].StartsWith(" ") || pars[0].StartsWith("_"))
                     {
-                        if (isLooping || isTriggring)
+                        if (isLooping || isTriggering)
                         {
                             obj.EndLoop();
                             isLooping = false;
-                            isTriggring = false;
+                            isTriggering = false;
                         }
                     }
                     else
@@ -262,7 +261,7 @@ namespace OSharp.Storyboard.Management
                         endTime = pars[3] == "" ? startTime : int.Parse(pars[3]);
                     }
 
-                    ParseCommonCommand(obj, ref isLooping, ref isTriggring, pars, _event, easing, startTime, endTime);
+                    ParseCommonCommand(obj, ref isLooping, ref isTriggering, pars, _event, easing, startTime, endTime);
                 }
             }
         }
@@ -527,7 +526,7 @@ namespace OSharp.Storyboard.Management
 
             void ParseElement()
             {
-                elementGroup.Add(Element.Parse(sb.ToString(), currentLine - elmentLines));
+                elementGroup.AddElement(Element.Parse(sb.ToString(), currentLine - elmentLines));
                 sb.Clear();
                 elmentLines = 0;
             }
