@@ -50,7 +50,7 @@ namespace OSharp.Storyboard
             LoopType = (LoopType)Enum.Parse(typeof(LoopType), loopType);
         }
 
-        public override string ToString()
+        public override string ToOsbString()
         {
             if (!IsWorthy) return "";
             var head =

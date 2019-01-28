@@ -303,14 +303,20 @@ namespace OSharp.Storyboard
 
         #endregion
 
-        public override string ToString()
+        public virtual string ToOsbString()
         {
-            if (!IsWorthy) return "";
-            var head = $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY)}" +
-                Environment.NewLine;
-            var sb = new StringBuilder(head);
-            sb.AppendElementEvents(this);
+            var sb = new StringBuilder();
+            AppendOsbString(sb);
             return sb.ToString();
+        }
+
+        public void AppendOsbString(StringBuilder sb)
+        {
+            if (!IsWorthy) return;
+            var head = $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY)}" +
+                       Environment.NewLine;
+            sb.Append(head);
+            sb.AppendElementEvents(this);
         }
 
         public Element Clone() => (Element)MemberwiseClone();

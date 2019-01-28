@@ -64,7 +64,9 @@ namespace OSharp.Storyboard.Events.Containers
         private static string GetTriggerString(TriggerType triggerType, bool listenSample, uint? customSampleSet)
         {
             var sb = new StringBuilder(HitSound, 23);
-            if (triggerType.HasFlag(TriggerType.HitSoundSample))
+            if (triggerType.HasFlag(TriggerType.HitSoundNormal) ||
+                triggerType.HasFlag(TriggerType.HitSoundSoft) ||
+                triggerType.HasFlag(TriggerType.HitSoundDrum))
             {
                 if (listenSample)
                     sb.Append("All");
@@ -83,7 +85,9 @@ namespace OSharp.Storyboard.Events.Containers
                 }
             }
 
-            if (triggerType.HasFlag(TriggerType.HitSoundAddition))
+            if (triggerType.HasFlag(TriggerType.HitSoundWhistle) ||
+                triggerType.HasFlag(TriggerType.HitSoundFinish) ||
+                triggerType.HasFlag(TriggerType.HitSoundClap))
             {
                 if (triggerType.HasFlag(TriggerType.HitSoundWhistle))
                     sb.Append("Whistle");

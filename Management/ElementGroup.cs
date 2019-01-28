@@ -1,10 +1,10 @@
-﻿using System;
+﻿using OSharp.Storyboard.Events;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using OSharp.Storyboard.Events;
 
 //using StorybrewCommon.Storyboarding;
 
@@ -121,16 +121,20 @@ namespace OSharp.Storyboard.Management
             //    obj.Compress();
             //}
         }
-        public override string ToString()
+
+        public string ToOsbString()
         {
             StringBuilder sb = new StringBuilder();
+            AppendOsbString(sb);
+            return sb.ToString();
+        }
 
+        public void AppendOsbString(StringBuilder sb)
+        {
             foreach (var obj in ElementList)
             {
-                sb.Append(obj);
+                obj.AppendOsbString(sb);
             }
-
-            return sb.ToString();
         }
 
         public static async Task<ElementGroup> ParseAsync(string path)
