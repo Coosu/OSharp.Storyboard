@@ -17,6 +17,10 @@ namespace OSharp.Storyboard.Events
                 return 1;
             if (x.StartTime < y.StartTime)
                 return -1;
+            if (x.EndTime > y.EndTime)
+                return 1;
+            if (x.EndTime < y.EndTime)
+                return -1;
             return 0;
         }
     }
