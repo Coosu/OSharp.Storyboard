@@ -103,37 +103,40 @@ namespace OSharp.Storyboard.Management
         {
             // 验证物件完全消失的时间段
             float startTime = float.MinValue;
-            bool fadeouting = false;
-            var fadeList = element.FadeList;
-            if (fadeList.Any())
+            int fadeoutCount = 0;
+            var possibleList = element.EventList
+                .Where(k => k.EventType == EventType.Fade &&
+                            k.EventType == EventType.Scale &&
+                            k.EventType == EventType.Vector);
+            if (possibleList.Any())
             {
                 var i = -1;
-                foreach (var nowF in fadeList)
+                foreach (var nowF in possibleList)
                 {
                     i++;
                     if (i == 0 && nowF.StartOpacity.Equals(0) && nowF.StartTime > element.MinTime)  // 最早的F晚于最小开始时间，默认加这一段
                     {
                         startTime = element.MinTime;
-                        fadeouting = true;
+                        fadeoutCount++;
                     }
 
-                    if (nowF.EndOpacity.Equals(0) && !fadeouting)  // f2=0，开始计时
+                    if (nowF.EndOpacity.Equals(0) && fadeoutCount == 0)  // f2=0，开始计时
                     {
                         startTime = nowF.EndTime;
-                        fadeouting = true;
+                        fadeoutCount++;
                     }
 
-                    else if (fadeouting)
+                    else if (fadeoutCount > 0)
                     {
                         if (nowF.StartOpacity.Equals(0) && nowF.EndOpacity.Equals(0))
                             continue;
                         element.FadeoutList.Add(startTime, nowF.StartTime);
-                        fadeouting = false;
+                        fadeoutCount--;
                     }
                 }
             }
 
-            if (fadeouting && startTime != element.MaxTime)  // 可能存在Fade后还有别的event
+            if (fadeoutCount > 0 && !startTime.Equals(element.MaxTime))  // 可能存在Fade后还有别的event
             {
                 element.FadeoutList.Add(startTime, element.MaxTime);
             }
