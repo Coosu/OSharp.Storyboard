@@ -58,7 +58,7 @@ namespace OSharp.Storyboard.Management
                         var startTime = loop.StartTime;
                         for (int count = 0; count < loopCount; count++)
                         {
-                            var fixedStartTime = startTime + count * loop.MaxTime;
+                            var fixedStartTime = startTime + (count * loop.MaxTime);
                             foreach (var e in loop.EventList)
                             {
                                 element.AddEvent(
@@ -135,7 +135,6 @@ namespace OSharp.Storyboard.Management
                         dic[@event.EventType].StartTime = @event.EndTime;
                         dic[@event.EventType].IsFadingOut = true;
                     }
-
                     else if (dic[@event.EventType].IsFadingOut)
                     {
                         if (@event.Start.SequenceEqual(@event.GetUnworthyValue()) &&
