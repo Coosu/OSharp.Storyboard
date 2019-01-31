@@ -99,8 +99,7 @@ namespace OSharp.Storyboard.Management
                 }
             }
         }
-
-
+        
         public static void FillObsoleteList(this Element element)
         {
             var possibleList = element.EventList

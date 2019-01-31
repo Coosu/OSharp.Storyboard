@@ -1,4 +1,6 @@
-﻿using OSharp.Storyboard.Events;
+﻿using MGLib.Osu.Reader.Osb;
+using OSharp.Storyboard.Events;
+using OSharp.Storyboard.Internal;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -93,6 +95,28 @@ namespace OSharp.Storyboard.Management
             return obj;
         }
 
+        private AnimatedElement CreateAnimation(
+            LayerType layer,
+            OriginType origin,
+            string filePath,
+            int defaultX, int defaultY,
+            int frameCount, float frameDelay, LoopType loopType)
+        {
+            var obj = new AnimatedElement(
+                ElementType.Sprite,
+                layer,
+                origin,
+                filePath,
+                defaultX,
+                defaultY,
+                frameCount,
+                frameDelay,
+                loopType
+            );
+            AddElement(obj);
+            return obj;
+        }
+
         public void AddElement(Element element)
         {
             ElementList.Add(element);
@@ -136,11 +160,54 @@ namespace OSharp.Storyboard.Management
             }
         }
 
+        public static ElementGroup ParseFromFile(string path)
+        {
+            ElementGroup eg = new ElementGroup(0);
+            OsbElementList elements = new OsbElementList(path);
+            foreach (var item in elements)
+            {
+                Element obj;
+                switch (item.ElementType)
+                {
+                    case 0: // sprite
+                        obj = eg.CreateSprite(
+                            item.Layer.ToOSharp(),
+                            item.Origin.ToOSharp(),
+                            item.TexturePath, item.Position.Item1,
+                            item.Position.Item2
+                        );
+                        break;
+                    case 1: // animation
+                        obj = eg.CreateAnimation(
+                            item.Layer.ToOSharp(),
+                            item.Origin.ToOSharp(),
+                            item.TexturePath, item.Position.Item1,
+                            item.Position.Item2,
+                            item.FrameCount,
+                            item.FrameDelay,
+                            item.LoopType.ToOSharp()
+                        );
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                foreach (var cmd in item.Commands)
+                {
+                    obj.AddEvent(cmd.CommandType.ToOSharp(), cmd.EasingType.ToOSharp(), cmd.Time.Item1, cmd.Time.Item2, cmd.Params);
+                }
+            }
+
+            return eg;
+        }
+
+        [Obsolete("ParseAsync() is obsoleted, please use ParseFromFile() instead.")]
         public static async Task<ElementGroup> ParseAsync(string path)
         {
             return await Task.Run(() => Parse(path));
         }
 
+        [Obsolete("Parse() is obsoleted, please use ParseFromFile() instead.")]
         public static ElementGroup Parse(string path)
         {
             ElementGroup elementGroup = new ElementGroup(0);
@@ -189,7 +256,6 @@ namespace OSharp.Storyboard.Management
                 {
                     if (obj != null)
                     {
-                        obj.SafeMode = true;
                         obj.TryEndLoop();
                         elementGroup.AddElement(obj);
                         obj = null;
@@ -476,6 +542,7 @@ namespace OSharp.Storyboard.Management
             }
         }
 
+        [Obsolete("Parse() is obsoleted, please use ParseFromFile() instead.")]
         public static ElementGroup Parse(string osbString, int layerIndex)
         {
             StringBuilder sb = new StringBuilder();

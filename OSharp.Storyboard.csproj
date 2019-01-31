@@ -5,4 +5,13 @@
     <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="MGLib\MGLibTest\Properties\AssemblyInfo.cs" />
+    <Compile Remove="MGLib\MGLib\obj\Debug\netstandard2.0\MGLib.AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="MGLib\MGLibTest\Properties\" />
+  </ItemGroup>
+
 </Project>

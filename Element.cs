@@ -102,8 +102,6 @@ namespace OSharp.Storyboard
         // Loop control
         private bool _isTriggering, _isLooping;
 
-        internal bool SafeMode = true;
-
         /// <summary>
         /// Create a storyboard element by a static image.
         /// </summary>
@@ -346,14 +344,14 @@ namespace OSharp.Storyboard
         public void AddEvent(EasingType easing, float startTime, float endTime, ParameterType p) =>
             AddEvent(EventType.Parameter, easing, startTime, endTime, new[] { (float)(int)p }, new[] { (float)(int)p });
 
-        internal override void AddEvent(EventType e, EasingType easing, float startTime, float endTime, float[] start, float[] end, bool sequential = true)
+        internal override void AddEvent(EventType e, EasingType easing, float startTime, float endTime, float[] start, float[] end)
         {
             if (_isLooping)
                 LoopList[LoopList.Count - 1].AddEvent(e, easing, startTime, endTime, start, end);
             else if (_isTriggering)
                 TriggerList[TriggerList.Count - 1].AddEvent(e, easing, startTime, endTime, start, end);
             else
-                base.AddEvent(e, easing, startTime, endTime, start, end, SafeMode && sequential);
+                base.AddEvent(e, easing, startTime, endTime, start, end);
         }
 
         internal static Element Parse(string osbString, int baseLine)

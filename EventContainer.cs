@@ -30,8 +30,7 @@ namespace OSharp.Storyboard
             }
         }
 
-        internal virtual void AddEvent(EventType e, EasingType easing, float startTime, float endTime, float[] start, float[] end,
-            bool sequential = true)
+        internal virtual void AddEvent(EventType e, EasingType easing, float startTime, float endTime, float[] start, float[] end)
         {
             Event newEvent;
             if (end == null || end.Length == 0)
