@@ -29,14 +29,14 @@ namespace OSharp.Storyboard.Internal
 
         public static void AppendTrigger(this StringBuilder sb, Trigger trigger)
         {
-            var head = $"{string.Join(",", " T", trigger.TriggerName, trigger.StartTime, trigger.EndTime)}";
+            var head = string.Join(",", " T", trigger.TriggerName, trigger.StartTime, trigger.EndTime);
             sb.AppendLine(head);
             sb.AppendGroupedEvent(trigger.EventList, 2);
         }
 
         public static void AppendLoop(this StringBuilder sb, Loop loop)
         {
-            var head = $"{string.Join(",", " L", loop.StartTime, loop.LoopCount)}";
+            var head = string.Join(",", " L", loop.StartTime, loop.LoopCount);
             sb.AppendLine(head);
             sb.AppendGroupedEvent(loop.EventList, 2);
         }

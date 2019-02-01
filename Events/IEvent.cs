@@ -8,8 +8,8 @@ namespace OSharp.Storyboard.Events
         EasingType Easing { get; set; }
         float StartTime { get; }
         float EndTime { get; }
-        object RawStart { get; }
-        object RawEnd { get; }
+        float[] Start { get; }
+        float[] End { get; }
         int ParamLength { get; }
         bool IsStatic { get; }
     }

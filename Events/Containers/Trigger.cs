@@ -54,11 +54,16 @@ namespace OSharp.Storyboard.Events.Containers
             base.Adjust(offsetX, offsetY, offsetTiming);
         }
 
-        public override string ToString()
+        public string ToOsbString()
         {
             var sb = new StringBuilder();
             sb.AppendTrigger(this);
             return sb.ToString();
+        }
+
+        public override string ToString()
+        {
+            return string.Join(",", "T", TriggerName, StartTime, EndTime);
         }
 
         private static string GetTriggerString(TriggerType triggerType, bool listenSample, uint? customSampleSet)

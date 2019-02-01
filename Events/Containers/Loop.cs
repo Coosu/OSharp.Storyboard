@@ -30,11 +30,16 @@ namespace OSharp.Storyboard.Events.Containers
             base.Adjust(offsetX, offsetY, offsetTiming);
         }
 
-        public override string ToString()
+        public string ToOsbString()
         {
             var sb = new StringBuilder();
             sb.AppendLoop(this);
             return sb.ToString();
+        }
+
+        public override string ToString()
+        {
+            return string.Join(",", "L", StartTime, LoopCount);
         }
     }
 }

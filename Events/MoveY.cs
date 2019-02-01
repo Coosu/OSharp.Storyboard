@@ -29,15 +29,5 @@ namespace OSharp.Storyboard.Events
             Start[0] += y;
             End[0] += y;
         }
-
-        public override string ToString()
-        {
-            return string.Join(",",
-                EventType.ToShortString(),
-                (int)Easing,
-                Math.Round(StartTime).ToString(CultureInfo.InvariantCulture),
-                StartTime.Equals(EndTime) ? "" : Math.Round(EndTime).ToString(CultureInfo.InvariantCulture),
-                Script);
-        }
     }
 }

@@ -12,8 +12,6 @@ namespace OSharp.Storyboard.Events
         public float EndTime { get; set; }
         public float[] Start { get; }
         public float[] End { get; }
-        public object RawStart => Start;
-        public object RawEnd => End;
 
         protected virtual string Script => Start.SequenceEqual(End)
             ? string.Join(",", Start)
@@ -50,11 +48,18 @@ namespace OSharp.Storyboard.Events
 
         public override string ToString()
         {
+            return ToOsbString();
+        }
+
+        public virtual string ToOsbString()
+        {
             return string.Join(",",
                 EventType.ToShortString(),
                 (int)Easing,
                 Math.Round(StartTime).ToString(CultureInfo.InvariantCulture),
-                StartTime.Equals(EndTime) ? "" : Math.Round(EndTime).ToString(CultureInfo.InvariantCulture),
+                StartTime.Equals(EndTime)
+                    ? ""
+                    : Math.Round(EndTime).ToString(CultureInfo.InvariantCulture),
                 Script);
         }
 

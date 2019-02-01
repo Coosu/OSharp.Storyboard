@@ -88,7 +88,7 @@ namespace OSharp.Storyboard.Management
         /// <param name="defaultX">Default x-coordinate of the image.</param>
         /// <param name="defaultY">Default y-coordinate of the image.</param>
         /// <returns></returns>
-        public Element CreateSprite(LayerType layer, OriginType origin, string filePath, int defaultX, int defaultY)
+        public Element CreateSprite(LayerType layer, OriginType origin, string filePath, float defaultX, float defaultY)
         {
             var obj = new Element(ElementType.Sprite, layer, origin, filePath, defaultX, defaultY);
             AddElement(obj);
@@ -160,400 +160,373 @@ namespace OSharp.Storyboard.Management
             }
         }
 
-        public static async Task<ElementGroup> ParseAsync(string path)
+        public static async Task<ElementGroup> ParseAsync(TextReader textReader)
         {
-            return await Task.Run(() => Parse(path));
+            return await Task.Run(() => Parse(textReader));
         }
 
-        public static ElementGroup Parse(string path)
+        public static ElementGroup Parse(TextReader textReader)
         {
-            ElementGroup elementGroup = new ElementGroup(0);
-            Element obj = null;
-            //int currentLine = 1;
-            bool isLooping = false, isTriggering = false, isBlank = false;
-            using (StreamReader sr = new StreamReader(path))
+            ElementGroup group = new ElementGroup(0);
+            Element currentObj = null;
+            //0 = isLooping, 1 = isTriggering, 2 = isBlank
+            bool[] options = { false, false, false };
+
+            int rowIndex = 0;
+            string line;
+            do
             {
-                int rowIndex = 0;
-                do
+                line = textReader.ReadLine();
+                rowIndex++;
+                if (line.StartsWith("//") || line.StartsWith("[Events]"))
                 {
-                    string line = sr.ReadLine();
-                    rowIndex++;
-                    if (line.StartsWith("//") || line.StartsWith("[Events]"))
-                    {
-                        if (line.Contains("Sound Samples"))
-                            break;
-                    }
-                    else
-                    {
-                        try
-                        {
-                            ParseElement(line);
-                        }
-                        catch (Exception e)
-                        {
-                            throw new Exception($"Line: {rowIndex}: {e.Message}");
-                        }
-                    }
-
-                    //currentLine++;
-                } while (!sr.EndOfStream);
-            }
-
-            if (obj != null)
-                elementGroup.AddElement(obj);
-
-            return elementGroup;
-
-            void ParseElement(string line)
-            {
-                var pars = line.Split(',');
-
-                if (pars[0] == "Sprite" || pars[0] == "Animation" ||
-                    pars[0] == "4" || pars[0] == "6")
-                {
-                    if (obj != null)
-                    {
-                        obj.TryEndLoop();
-                        elementGroup.AddElement(obj);
-                        obj = null;
-                    }
-
-                    if (pars.Length == 6)
-                    {
-                        obj = new Element(pars[0], pars[1], pars[2], pars[3].Trim('\"'), float.Parse(pars[4]), float.Parse(pars[5]));
-                        //obj.SafeMode = false;
-                        isLooping = false;
-                        isTriggering = false;
-                        isBlank = false;
-                    }
-                    else if (pars.Length == 9)
-                        obj = new AnimatedElement(pars[0], pars[1], pars[2], pars[3].Trim('\"'), float.Parse(pars[4]), float.Parse(pars[5]),
-                            int.Parse(pars[6]), float.Parse(pars[7]), pars[8]);
-                    else
-                        throw new Exception("Sprite declared wrongly");
-                }
-                else if (line.Trim() == "")
-                {
-                    isBlank = true;
+                    if (line.Contains("Sound Samples"))
+                        break;
                 }
                 else
                 {
-                    if (obj == null)
-                        throw new Exception("Sprite need to be declared before using");
-                    if (isBlank)
-                        throw new Exception("Events shouldn't be declared after blank line");
-
-                    // 验证层次是否合法
-                    if (pars[0].Length - pars[0].TrimStart(' ').Length > 2 ||
-                        pars[0].Length - pars[0].TrimStart('_').Length > 2)
+                    try
                     {
-                        throw new Exception("Unknown relation of the event");
+                        currentObj = ParseElement(line, currentObj, group, options);
                     }
-                    else if (pars[0].StartsWith("  ") || pars[0].StartsWith("__"))
+                    catch (Exception e)
                     {
-                        if (!isLooping && !isTriggering)
-                            throw new Exception("The event should be looping or triggering");
+                        throw new Exception($"Line: {rowIndex}: {e.Message}");
                     }
-                    else if (pars[0].StartsWith(" ") || pars[0].StartsWith("_"))
-                    {
-                        if (isLooping || isTriggering)
-                        {
-                            obj.EndLoop();
-                            isLooping = false;
-                            isTriggering = false;
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception("Unknown relation of the event");
-                    }
-
-                    // 开始验证event类别
-                    pars[0] = pars[0].Trim().Trim('_');
-
-                    //if (pars.Length < 5 || pars.Length > 10)
-                    //    throw new Exception("Line :" + currentLine + " (Wrong parameter for all events)");
-
-                    string _event = pars[0];
-                    int easing = -1, startTime = -1, endTime = -1;
-                    if (_event != "T" && _event != "L")
-                    {
-                        easing = int.Parse(pars[1]);
-                        if (easing > 34 || easing < 0) throw new FormatException("Unknown easing");
-                        startTime = int.Parse(pars[2]);
-                        endTime = pars[3] == "" ? startTime : int.Parse(pars[3]);
-                    }
-
-                    ParseCommonCommand(obj, ref isLooping, ref isTriggering, pars, _event, easing, startTime, endTime);
                 }
-            }
+
+            } while (line != null);
+
+
+            return group;
         }
 
-        private static void ParseCommonCommand(Element obj, ref bool isLooping, ref bool isTriggring, string[] pars,
-            string _event, int easing, int startTime, int endTime)
+        private const char SplitChar = ',';
+        private const char QuoteChar = '\"';
+        private static readonly string[] Sprites = { "Sprite", "Animation", "4", "6" };
+        private static readonly char[] PrefixChars = { ' ', '_' };
+        private static readonly string[] Prefixes = { " ", "_" };
+        private static readonly string[] DoublePrefixes = { "  ", "__" };
+        private const string
+            F = "F", S = "S", R = "R", MX = "MX", MY = "MY",
+            M = "M", V = "V",
+            C = "C",
+            P = "P",
+            L = "L", T = "T";
+
+        private static Element ParseElement(
+            string line,
+            Element currentObj,
+            ElementGroup group,
+            bool[] options)
         {
-            switch (pars[0])
+            ref bool isLooping = ref options[0];
+            ref bool isTriggering = ref options[1];
+            ref bool isBlank = ref options[2];
+
+            //int count = line.Count(k => k == ',') + 1;
+            var @params = line.Split(SplitChar);
+            if (Sprites.Contains(@params[0]))
             {
-                // EventSingle
-                case "F":
-                case "S":
-                case "R":
-                case "MX":
-                case "MY":
-                    float p1, p2;
+                currentObj?.TryEndLoop();
 
-                    // 验证是否存在缺省
-                    if (pars.Length == 5)
-                        p1 = p2 = float.Parse(pars[4]);
-                    else if (pars.Length == 6)
-                    {
-                        p1 = float.Parse(pars[4]);
-                        p2 = float.Parse(pars[5]);
-                    }
-                    else if (pars.Length > 6)
-                    {
-                        var @params = pars.Skip(4).ToArray();
-                        var duration = endTime - startTime;
-                        for (var i = 0; i < @params.Length - 1; i++)
-                        {
-                            var param1 = @params[i];
-                            var param2 = @params[i + 1];
-                            ParseCommonCommand(obj, ref isLooping, ref isTriggring,
-                                new[] { pars[0], pars[1], pars[2], pars[3], param1, param2 }, _event, easing,
-                                startTime + duration * i, endTime + duration * i);
-                        }
+                if (@params.Length == 6)
+                {
+                    currentObj = group.CreateSprite(
+                        @params[0],
+                        @params[1],
+                        @params[2],
+                        @params[3].Trim(QuoteChar),
+                        float.Parse(@params[4]),
+                        float.Parse(@params[5])
+                    );
+                    isLooping = false;
+                    isTriggering = false;
+                    isBlank = false;
+                }
+                else if (@params.Length == 9)
+                    currentObj = new AnimatedElement(
+                        @params[0],
+                        @params[1],
+                        @params[2],
+                        @params[3].Trim(QuoteChar),
+                        float.Parse(@params[4]),
+                        float.Parse(@params[5]),
+                        int.Parse(@params[6]),
+                        float.Parse(@params[7]),
+                        @params[8]
+                    );
+                else
+                    throw new Exception("Sprite declared wrongly");
+            }
+            else if (string.IsNullOrEmpty(line.Trim()))
+            {
+                isBlank = true;
+            }
+            else
+            {
+                if (currentObj == null)
+                    throw new Exception("Sprite need to be declared before using");
+                if (isBlank)
+                    throw new Exception("Events shouldn't be declared after blank line");
 
-                        return;
-                    }
-                    else
+                // 验证层次是否合法
+                if (@params[0].Length - @params[0].TrimStart(PrefixChars).Length > 2)
+                {
+                    throw new Exception("Unknown relation of the event");
+                }
+                else if (DoublePrefixes.Any(k => @params[0].StartsWith(k)))
+                {
+                    if (!isLooping && !isTriggering)
+                        throw new Exception("The event should be looping or triggering");
+                }
+                else if (Prefixes.Any(k => @params[0].StartsWith(k)))
+                {
+                    if (isLooping || isTriggering)
                     {
-                        throw new Exception($"Wrong parameter for event: \"{_event}\"");
+                        currentObj.EndLoop();
+                        isLooping = false;
+                        isTriggering = false;
                     }
+                }
+                else
+                {
+                    throw new Exception("Unknown relation of the event");
+                }
 
-                    // 开始添加成员
-                    switch (_event)
-                    {
-                        case "F":
-                            obj.Fade((EasingType)easing, startTime, endTime, p1, p2);
-                            break;
-                        case "S":
-                            obj.Scale((EasingType)easing, startTime, endTime, p1, p2);
-                            break;
-                        case "R":
-                            obj.Rotate((EasingType)easing, startTime, endTime, p1, p2);
-                            break;
-                        case "MX":
-                            obj.MoveX((EasingType)easing, startTime, endTime, p1, p2);
-                            break;
-                        case "MY":
-                            obj.MoveY((EasingType)easing, startTime, endTime, p1, p2);
-                            break;
-                    }
+                // 开始验证event类别
+                @params[0] = @params[0].TrimStart(PrefixChars);
+
+                string _event = @params[0];
+                int easing = int.MinValue, startTime = int.MinValue, endTime = int.MinValue;
+
+                if (_event != T && _event != L)
+                {
+                    easing = int.Parse(@params[1]);
+                    if (easing > 34 || easing < 0)
+                        throw new FormatException("Unknown easing");
+                    startTime = int.Parse(@params[2]);
+                    endTime = @params[3] == ""
+                        ? startTime
+                        : int.Parse(@params[3]);
+                }
+
+                ParseEvent(currentObj, options, @params, _event, easing, startTime, endTime);
+            }
+
+            return currentObj;
+        }
+
+        private static void ParseEvent(Element currentObj, bool[] options, string[] rawParams,
+            string eventStr, int easing, int startTime, int endTime)
+        {
+            int paraLength = rawParams.Length;
+            switch (rawParams[0])
+            {
+                case F:
+                case S:
+                case R:
+                case MX:
+                case MY:
+                    AddEvent(1);
                     break;
-
-                // EventDouble
-                case "M":
-                case "V":
-                    float p11, p12, p21, p22;
-
-                    // 验证是否存在缺省
-                    if (pars.Length == 6)
-                    {
-                        p11 = p21 = float.Parse(pars[4]);
-                        p12 = p22 = float.Parse(pars[5]);
-                    }
-                    else if (pars.Length == 8)
-                    {
-                        p11 = float.Parse(pars[4]);
-                        p12 = float.Parse(pars[5]);
-                        p21 = float.Parse(pars[6]);
-                        p22 = float.Parse(pars[7]);
-                    }
-                    else if (pars.Length > 8 && (pars.Length - 4) % 2 == 0)
-                    {
-                        var @params = pars.Skip(4).ToArray();
-                        var duration = endTime - startTime;
-                        for (int i = 0, j = 0; i < @params.Length - 2; i += 2, j++)
-                        {
-                            var param11 = @params[i];
-                            var param12 = @params[i + 1];
-                            var param21 = @params[i + 2];
-                            var param22 = @params[i + 3];
-                            ParseCommonCommand(obj, ref isLooping, ref isTriggring,
-                                new[] { pars[0], pars[1], pars[2], pars[3], param11, param12, param21, param22 }, _event, easing,
-                                startTime + duration * j, endTime + duration * j);
-                        }
-
-                        return;
-                    }
-                    else
-                    {
-                        throw new Exception($"Wrong parameter for event: \"{_event}\"");
-                    }
-                    // 开始添加成员
-                    switch (_event)
-                    {
-                        case "M":
-                            obj.Move((EasingType)easing, startTime, endTime, p11, p12, p21, p22);
-                            break;
-                        case "V":
-                            obj.Vector((EasingType)easing, startTime, endTime, p11, p12, p21, p22);
-                            break;
-                    }
+                case M:
+                case V:
+                    AddEvent(2);
+                    return;
+                case C:
+                    AddEvent(3);
                     break;
-
-                // EventTriple
-                case "C":
-                    int c11, c12, c13, c21, c22, c23;
-
-                    // 验证是否存在缺省
-                    if (pars.Length == 7)
-                    {
-                        c11 = c21 = int.Parse(pars[4]);
-                        c12 = c22 = int.Parse(pars[5]);
-                        c13 = c23 = int.Parse(pars[6]);
-                    }
-                    else if (pars.Length == 10)
-                    {
-                        c11 = int.Parse(pars[4]);
-                        c12 = int.Parse(pars[5]);
-                        c13 = int.Parse(pars[6]);
-                        c21 = int.Parse(pars[7]);
-                        c22 = int.Parse(pars[8]);
-                        c23 = int.Parse(pars[9]);
-                    }
-                    else if (pars.Length > 10 && (pars.Length - 4) % 3 == 0)
-                    {
-                        var @params = pars.Skip(4).ToArray();
-                        var duration = endTime - startTime;
-                        for (int i = 0, j = 0; i < @params.Length - 3; i += 3, j++)
-                        {
-                            var param11 = @params[i];
-                            var param12 = @params[i + 1];
-                            var param13 = @params[i + 2];
-                            var param21 = @params[i + 3];
-                            var param22 = @params[i + 4];
-                            var param23 = @params[i + 5];
-                            ParseCommonCommand(obj, ref isLooping, ref isTriggring,
-                                new[] { pars[0], pars[1], pars[2], pars[3], param11, param12, param13, param21, param22, param23 }, _event, easing,
-                                startTime + duration * j, endTime + duration * j);
-                        }
-
-                        return;
-                    }
-                    else
-                    {
-                        throw new Exception($"Wrong parameter for event: \"{_event}\"");
-                    }
-                    // 开始添加成员
-                    switch (_event)
-                    {
-                        case "C":
-                            obj.Color((EasingType)easing, startTime, endTime, c11, c12, c13, c21, c22, c23);
-                            break;
-                    }
-                    break;
-
-                case "P":
-                    if (pars.Length == 5)
-                    {
-                        string type = pars[4];
-                        obj.Parameter((EasingType)easing, startTime, endTime, type.ToParameterEnum());
-                    }
-                    else
-                    {
-                        throw new Exception($"Wrong parameter for event: \"{_event}\"");
-                    }
-                    break;
-
-                case "L":
-                    if (pars.Length == 3)
-                    {
-                        startTime = int.Parse(pars[1]);
-                        int loopCount = int.Parse(pars[2]);
-                        obj.StartLoop(startTime, loopCount);
-                        isLooping = true;
-                    }
-                    else
-                    {
-                        throw new Exception($"Wrong parameter for event: \"{_event}\"");
-                    }
-                    break;
-
-                case "T":
-                    if (pars.Length == 4)
-                    {
-                        string triggerType = pars[1];
-                        startTime = int.Parse(pars[2]);
-                        endTime = int.Parse(pars[3]);
-                        obj.StartTrigger(startTime, endTime, triggerType);
-                        isTriggring = true;
-                    }
-                    else
-                    {
-                        throw new Exception($"Wrong parameter for event: \"{_event}\"");
-                    }
+                case P:
+                case L:
+                case T:
+                    AddEvent(0);
                     break;
                 default:
-                    throw new Exception($"Unknown event: \"{_event}\"");
+                    throw new Exception($"Unknown event: \"{eventStr}\"");
+            }
+
+            unsafe void AddEvent(int paramLength)
+            {
+                if (paramLength != 0)
+                {
+                    const int baseLength = 4;
+                    // 验证是否存在缺省
+                    if (paraLength == paramLength + baseLength)
+                    {
+                        int length = paramLength * 2;
+                        float* array = stackalloc float[length];
+                        float* p = array;
+                        for (int i = 0; i < paramLength; i++, p++)
+                        {
+                            *p = float.Parse(rawParams[baseLength + i]);
+                        }
+
+                        for (int i = 0; i < paramLength; i++, p++)
+                        {
+                            *p = float.Parse(rawParams[baseLength + i]);
+                        }
+
+                        InjectEvent(array);
+                    }
+                    else if (paraLength == paramLength * 2 + baseLength)
+                    {
+                        int length = paramLength * 2;
+                        float* array = stackalloc float[length];
+                        float* p = array;
+                        for (int i = 0; i < length; i++, p++)
+                        {
+                            *p = float.Parse(rawParams[baseLength + i]);
+                        }
+
+                        InjectEvent(array);
+                    }
+                    else if (paraLength > paramLength * 2 + baseLength && (paraLength - baseLength) % paramLength == 0)
+                    {
+                        var pars = rawParams.Skip(baseLength).ToArray();
+                        var duration = endTime - startTime;
+                        for (int i = 0, j = 0; i < pars.Length - paramLength; i += paramLength, j++)
+                        {
+                            ParseEvent(currentObj, options,
+                                new string[4].Concat(pars).ToArray(),
+                                eventStr,
+                                easing,
+                                startTime + duration * j,
+                                endTime + duration * j);
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception($"Wrong parameter for event: \"{eventStr}\"");
+                    }
+                }
+                else
+                {
+                    switch (eventStr)
+                    {
+                        case P:
+                            if (paraLength == 5)
+                            {
+                                currentObj.Parameter(
+                                    (EasingType)easing,
+                                    startTime,
+                                    endTime,
+                                    rawParams[4].ToParameterEnum());
+                                return;
+                            }
+
+                            break;
+                        case L:
+                            if (paraLength == 3)
+                            {
+                                startTime = int.Parse(rawParams[1]);
+                                int loopCount = int.Parse(rawParams[2]);
+                                currentObj.StartLoop(startTime, loopCount);
+
+                                options[0] = true; // isLooping
+                                return;
+                            }
+
+                            break;
+                        case T:
+                            if (paraLength == 4)
+                            {
+                                startTime = int.Parse(rawParams[2]);
+                                endTime = int.Parse(rawParams[3]);
+
+                                currentObj.StartTrigger(startTime, endTime, rawParams[1]); // rawParams[1]: triggerType
+                                options[1] = true; // isTriggering
+                                return;
+                            }
+
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(eventStr));
+                    }
+
+                    throw new Exception($"Wrong parameter for event: \"{eventStr}\"");
+                }
+
+                void InjectEvent(float* array)
+                {
+                    switch (eventStr)
+                    {
+                        case F:
+                            currentObj.Fade((EasingType)easing,
+                                startTime, endTime,
+                                array[0],
+                                array[1]
+                            );
+                            break;
+                        case S:
+                            currentObj.Scale((EasingType)easing,
+                                startTime, endTime,
+                                array[0],
+                                array[1]
+                            );
+                            break;
+                        case R:
+                            currentObj.Rotate((EasingType)easing,
+                                startTime, endTime,
+                                array[0],
+                                array[1]
+                            );
+                            break;
+                        case MX:
+                            currentObj.MoveX((EasingType)easing,
+                                startTime, endTime,
+                                array[0],
+                                array[1]
+                            );
+                            break;
+                        case MY:
+                            currentObj.MoveY((EasingType)easing,
+                                startTime, endTime,
+                                array[0],
+                                array[1]
+                            );
+                            break;
+                        case M:
+                            currentObj.Move((EasingType)easing,
+                                startTime, endTime,
+                                array[0], array[1],
+                                array[2], array[3]
+                            );
+                            break;
+                        case V:
+                            currentObj.Vector((EasingType)easing,
+                                startTime, endTime,
+                                array[0], array[1],
+                                array[2], array[3]
+                            );
+                            break;
+                        case C:
+                            currentObj.Color((EasingType)easing,
+                                startTime, endTime,
+                                array[0], array[1], array[2],
+                                array[3], array[4], array[5]
+                            );
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(eventStr));
+                    }
+                }
             }
         }
 
-        [Obsolete("Parse() is obsoleted, please use ParseFromFile() instead.")]
-        public static ElementGroup Parse(string osbString, int layerIndex)
+        private Element CreateSprite(string type, string layer, string origin, string imagePath, float defaultX, float defaultY)
         {
-            StringBuilder sb = new StringBuilder();
-            ElementGroup elementGroup = new ElementGroup(layerIndex);
-            int currentLine = 1;
-            int elmentLines = 0;
+            var obj = new Element(type, layer, origin, imagePath, defaultX, defaultY);
+            AddElement(obj);
+            return obj;
+        }
 
-            try
-            {
-                var lines = osbString.Replace("\r", "").Split('\n');
-                bool isFirst = true, startReading = false;
-
-                foreach (var line in lines)
-                {
-                    var pars = line.Split(',');
-                    if (pars[0] == "Sprite" || pars[0] == "Animation")
-                    {
-                        startReading = true;
-                        if (isFirst) isFirst = false;
-                        else ParseElement();
-                    }
-                    else if (line.StartsWith("//") || line.StartsWith("[Events]"))
-                    {
-                        if (line.Contains("Sound Samples"))
-                            break;
-                        elmentLines++;
-                        currentLine++;
-                        continue;
-                    }
-                    else if (isFirst)
-                    {
-                        throw new Exception($"Unknown script: \"{pars[0]}\" at line: {currentLine}");
-                    }
-
-                    elmentLines++;
-                    sb.AppendLine(line);
-                    currentLine++;
-                }
-
-                if (startReading) ParseElement();
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-
-            return elementGroup;
-
-            void ParseElement()
-            {
-                elementGroup.AddElement(Element.Parse(sb.ToString(), currentLine - elmentLines));
-                sb.Clear();
-                elmentLines = 0;
-            }
+        private Element CreateAnimation(string type, string layer, string origin, string imagePath, float defaultX,
+            float defaultY, int frameCount, float frameDelay, string loopType)
+        {
+            var obj = new AnimatedElement(type, layer, origin, imagePath, defaultX, defaultY, frameCount, frameDelay, loopType);
+            AddElement(obj);
+            return obj;
         }
     }
 }

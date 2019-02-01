@@ -47,15 +47,5 @@ namespace OSharp.Storyboard.Events
             float g2, float b2) : base(easing, startTime, endTime, new[] { r1, g1, b1 }, new[] { r2, g2, b2 })
         {
         }
-
-        public override string ToString()
-        {
-            return string.Join(",",
-                EventType.ToShortString(),
-                (int)Easing,
-                Math.Round(StartTime).ToString(CultureInfo.InvariantCulture),
-                StartTime.Equals(EndTime) ? "" : Math.Round(EndTime).ToString(CultureInfo.InvariantCulture),
-                Script);
-        }
     }
 }
