@@ -34,6 +34,7 @@ namespace OSharp.Storyboard.Events
         public Move(EasingType easing, float startTime, float endTime, float x1, float y1, float x2, float y2) :
             base(easing, startTime, endTime, new[] { x1, y1 }, new[] { x2, y2 })
         {
+
         }
 
         public void AdjustPosition(float x, float y)

@@ -1,15 +1,17 @@
-﻿using OSharp.Storyboard.Events;
+﻿using MGLib.Osu.Reader.Osb;
+using OSharp.Storyboard.Events;
+using OSharp.Storyboard.Management;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using EasingType = OSharp.Storyboard.Events.EasingType;
 using MGCommandType = MGLib.Osu.Model.Osb.CommandType;
 using MGEasing = MGLib.Osu.Model.Osb.EasingType;
 using MGLayer = MGLib.Osu.Model.Osb.Layer;
 using MGLoop = MGLib.Osu.Model.Osb.AnimationLoop;
 using MGOrigin = MGLib.Osu.Model.Osb.Position;
-namespace OSharp.Storyboard.Internal
+
+namespace OSharp.Storyboard.External
 {
     public static class MGLibSwap
     {
@@ -180,6 +182,70 @@ namespace OSharp.Storyboard.Internal
             }
         }
 
+
+        public static ElementGroup ParseFromFile(string path)
+        {
+            ElementGroup eg = new ElementGroup(0);
+            using (OsbElementList elements = new OsbElementList(path))
+            {
+                foreach (var mgElement in elements)
+                {
+                    Element osElement;
+                    switch (mgElement.ElementType)
+                    {
+                        case 0: // sprite
+                            osElement = eg.CreateSprite(
+                                mgElement.Layer.ToOSharp(),
+                                mgElement.Origin.ToOSharp(),
+                                mgElement.TexturePath, mgElement.Position.Item1,
+                                mgElement.Position.Item2
+                            );
+                            break;
+                        case 1: // animation
+                            osElement = eg.CreateAnimation(
+                                mgElement.Layer.ToOSharp(),
+                                mgElement.Origin.ToOSharp(),
+                                mgElement.TexturePath, mgElement.Position.Item1,
+                                mgElement.Position.Item2,
+                                mgElement.FrameCount,
+                                mgElement.FrameDelay,
+                                mgElement.LoopType.ToOSharp()
+                            );
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    AddEvent(mgElement.Commands, osElement);
+                }
+            }
+
+            return eg;
+        }
+
+        private static void AddEvent(IEnumerable<Command> mgCommands, Element osElement)
+        {
+            foreach (var cmd in mgCommands)
+            {
+                switch (cmd.CommandType)
+                {
+                    case MGLib.Osu.Model.Osb.CommandType.Loop:
+                        osElement.StartLoop(cmd.Time.Item1, cmd.LoopCount);
+                        AddEvent(cmd.SubCommands, osElement);
+                        osElement.EndLoop();
+                        break;
+                    case MGLib.Osu.Model.Osb.CommandType.Trigger:
+                        osElement.StartTrigger(cmd.Time.Item1, cmd.Time.Item2, cmd.Trigger);
+                        AddEvent(cmd.SubCommands, osElement);
+                        osElement.EndLoop();
+                        break;
+                    default:
+                        osElement.AddEvent(cmd.CommandType.ToOSharp(), cmd.EasingType.ToOSharp(), cmd.Time.Item1, cmd.Time.Item2, cmd.Params);
+                        break;
+                }
+            }
+        }
+
         public static void AddEvent(
             this Element element,
             EventType e,
@@ -222,20 +288,24 @@ namespace OSharp.Storyboard.Internal
                         break;
                     }
                 case EventType.Parameter:
+                    {
+                        maxLength = 2;
+                        fixedParams = @params is float[] floats ? floats : @params.ToArray();
+                    }
                     break;
                 case EventType.Loop:
-                    break;
+                //break;
                 case EventType.Trigger:
-                    break;
+                //break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(e), e, null);
             }
 
-            //element.AddEvent(e, easing, startTime, endTime, fixedParams.Take(maxLength / 2).ToArray(),
-            //    fixedParams.Skip(maxLength / 2).ToArray());
+            element.AddEvent(e, easing, startTime, endTime, fixedParams.Take(maxLength / 2).ToArray(),
+                fixedParams.Skip(maxLength / 2).ToArray());
         }
 
-        static void FixParameter(float[] ps, int maxL, IEnumerable<float> par)
+        private static void FixParameter(float[] ps, int maxL, IEnumerable<float> par)
         {
             int count = 0;
             foreach (var p in par)

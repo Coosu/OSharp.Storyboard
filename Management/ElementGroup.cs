@@ -95,7 +95,7 @@ namespace OSharp.Storyboard.Management
             return obj;
         }
 
-        private AnimatedElement CreateAnimation(
+        public AnimatedElement CreateAnimation(
             LayerType layer,
             OriginType origin,
             string filePath,
@@ -160,54 +160,11 @@ namespace OSharp.Storyboard.Management
             }
         }
 
-        public static ElementGroup ParseFromFile(string path)
-        {
-            ElementGroup eg = new ElementGroup(0);
-            OsbElementList elements = new OsbElementList(path);
-            foreach (var item in elements)
-            {
-                Element obj;
-                switch (item.ElementType)
-                {
-                    case 0: // sprite
-                        obj = eg.CreateSprite(
-                            item.Layer.ToOSharp(),
-                            item.Origin.ToOSharp(),
-                            item.TexturePath, item.Position.Item1,
-                            item.Position.Item2
-                        );
-                        break;
-                    case 1: // animation
-                        obj = eg.CreateAnimation(
-                            item.Layer.ToOSharp(),
-                            item.Origin.ToOSharp(),
-                            item.TexturePath, item.Position.Item1,
-                            item.Position.Item2,
-                            item.FrameCount,
-                            item.FrameDelay,
-                            item.LoopType.ToOSharp()
-                        );
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                foreach (var cmd in item.Commands)
-                {
-                    obj.AddEvent(cmd.CommandType.ToOSharp(), cmd.EasingType.ToOSharp(), cmd.Time.Item1, cmd.Time.Item2, cmd.Params);
-                }
-            }
-
-            return eg;
-        }
-
-        [Obsolete("ParseAsync() is obsoleted, please use ParseFromFile() instead.")]
         public static async Task<ElementGroup> ParseAsync(string path)
         {
             return await Task.Run(() => Parse(path));
         }
 
-        [Obsolete("Parse() is obsoleted, please use ParseFromFile() instead.")]
         public static ElementGroup Parse(string path)
         {
             ElementGroup elementGroup = new ElementGroup(0);

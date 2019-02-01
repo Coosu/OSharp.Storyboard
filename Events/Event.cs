@@ -21,10 +21,13 @@ namespace OSharp.Storyboard.Events
         public virtual bool IsStatic => Start.Equals(End);
 
         protected Event(EasingType easing, float startTime, float endTime, float[] start, float[] end)
+        //protected Event(EasingType easing, float startTime, float endTime, Span<float> start, Span<float> end)
         {
             Easing = easing;
             StartTime = startTime;
             EndTime = endTime;
+            //Start = start.ToArray();
+            //End = end.ToArray();
             Start = start;
             End = end;
         }
