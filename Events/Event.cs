@@ -12,6 +12,8 @@ namespace OSharp.Storyboard.Events
         public float EndTime { get; set; }
         public float[] Start { get; }
         public float[] End { get; }
+        public object RawStart => Start;
+        public object RawEnd => End;
 
         protected virtual string Script => Start.SequenceEqual(End)
             ? string.Join(",", Start)
@@ -21,13 +23,10 @@ namespace OSharp.Storyboard.Events
         public virtual bool IsStatic => Start.Equals(End);
 
         protected Event(EasingType easing, float startTime, float endTime, float[] start, float[] end)
-        //protected Event(EasingType easing, float startTime, float endTime, Span<float> start, Span<float> end)
         {
             Easing = easing;
             StartTime = startTime;
             EndTime = endTime;
-            //Start = start.ToArray();
-            //End = end.ToArray();
             Start = start;
             End = end;
         }

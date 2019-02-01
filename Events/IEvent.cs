@@ -1,4 +1,6 @@
-﻿namespace OSharp.Storyboard.Events
+﻿using System;
+
+namespace OSharp.Storyboard.Events
 {
     public interface IEvent
     {
@@ -6,9 +8,8 @@
         EasingType Easing { get; set; }
         float StartTime { get; }
         float EndTime { get; }
-        float[] Start { get; }
-        float[] End { get; }
-
+        object RawStart { get; }
+        object RawEnd { get; }
         int ParamLength { get; }
         bool IsStatic { get; }
     }
