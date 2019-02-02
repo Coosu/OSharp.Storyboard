@@ -160,9 +160,30 @@ namespace OSharp.Storyboard.Management
             }
         }
 
-        public static async Task<ElementGroup> ParseAsync(TextReader textReader)
+        public static async Task<ElementGroup> ParseAsyncTextAsync(string osbString)
         {
-            return await Task.Run(() => Parse(textReader));
+            return await Task.Run(() => ParseFromText(osbString));
+        }
+
+        public static async Task<ElementGroup> ParseFromFileAsync(string filePath)
+        {
+            return await Task.Run(() => ParseFromFile(filePath));
+        }
+
+        public static ElementGroup ParseFromText(string osbString)
+        {
+            using (var sr = new StringReader(osbString))
+            {
+                return Parse(sr);
+            }
+        }
+
+        public static ElementGroup ParseFromFile(string filePath)
+        {
+            using (var sr = new StreamReader(filePath))
+            {
+                return Parse(sr);
+            }
         }
 
         public static ElementGroup Parse(TextReader textReader)
