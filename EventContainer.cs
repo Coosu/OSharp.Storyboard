@@ -1,4 +1,5 @@
-﻿using OSharp.Storyboard.Events;
+﻿using OSharp.Storyboard.Common;
+using OSharp.Storyboard.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,29 @@ namespace OSharp.Storyboard
         public abstract float MaxStartTime { get; }
         public abstract float MinEndTime { get; }
 
+        public virtual int MaxTimeCount => EventList.Count(k => k.EndTime.Equals(MaxTime));
+        public virtual int MinTimeCount => EventList.Count(k => k.StartTime.Equals(MinTime));
+
+        // Extension
+        public IEnumerable<Fade> FadeList =>
+            EventList.Where(k => k.EventType == EventType.Fade).Select(k => k as Fade);
+        public IEnumerable<Color> ColorList =>
+            EventList.Where(k => k.EventType == EventType.Color).Select(k => k as Color);
+        public IEnumerable<Move> MoveList =>
+            EventList.Where(k => k.EventType == EventType.Move).Select(k => k as Move);
+        public IEnumerable<MoveX> MoveXList =>
+            EventList.Where(k => k.EventType == EventType.MoveX).Select(k => k as MoveX);
+        public IEnumerable<MoveY> MoveYList =>
+            EventList.Where(k => k.EventType == EventType.MoveY).Select(k => k as MoveY);
+        public IEnumerable<Parameter> ParameterList =>
+            EventList.Where(k => k.EventType == EventType.Parameter).Select(k => k as Parameter);
+        public IEnumerable<Rotate> RotateList =>
+            EventList.Where(k => k.EventType == EventType.Rotate).Select(k => k as Rotate);
+        public IEnumerable<Scale> ScaleList =>
+            EventList.Where(k => k.EventType == EventType.Scale).Select(k => k as Scale);
+        public IEnumerable<Vector> VectorList =>
+            EventList.Where(k => k.EventType == EventType.Vector).Select(k => k as Vector);
+
         public virtual void Adjust(float offsetX, float offsetY, int offsetTiming)
         {
             var events = EventList.GroupBy(k => k.EventType);
@@ -28,6 +52,8 @@ namespace OSharp.Storyboard
                 }
             }
         }
+
+        public TimeRange ObsoleteList { get; } = new TimeRange();
 
         internal virtual void AddEvent(EventType e, EasingType easing, float startTime, float endTime, float[] start, float[] end)
         {

@@ -76,21 +76,19 @@ namespace OSharp.Storyboard.Common
             return false;
         }
 
-        public bool ContainsTimingPoint(out bool isLast, params int[] time)
+        public bool ContainsTimingPoint( params float[] time)
         {
             int i = 0;
             foreach (var sb in TimingList)
             {
                 if (time.All(t => t >= sb.StartTime && t <= sb.EndTime))
                 {
-                    isLast = i == TimingList.Count - 1;
                     return true;
                 }
 
                 i++;
             }
-
-            isLast = false;
+            
             return false;
         }
 

@@ -18,39 +18,19 @@ namespace OSharp.Storyboard
         public LayerType Layer { get; }
         public OriginType Origin { get; }
         public string ImagePath { get; }
-        public float DefaultY { get; private set; }
-        public float DefaultX { get; private set; }
+        public float DefaultY { get; internal set; }
+        public float DefaultX { get; internal set; }
 
         // Containers
         public List<Loop> LoopList { get; } = new List<Loop>();
         public List<Trigger> TriggerList { get; } = new List<Trigger>();
 
-        // Extension
-        public IEnumerable<Fade> FadeList =>
-            EventList.Where(k => k.EventType == EventType.Fade).Select(k => k as Fade);
-        public IEnumerable<Color> ColorList =>
-            EventList.Where(k => k.EventType == EventType.Color).Select(k => k as Color);
-        public IEnumerable<Move> MoveList =>
-            EventList.Where(k => k.EventType == EventType.Move).Select(k => k as Move);
-        public IEnumerable<MoveX> MoveXList =>
-            EventList.Where(k => k.EventType == EventType.MoveX).Select(k => k as MoveX);
-        public IEnumerable<MoveY> MoveYList =>
-            EventList.Where(k => k.EventType == EventType.MoveY).Select(k => k as MoveY);
-        public IEnumerable<Parameter> ParameterList =>
-            EventList.Where(k => k.EventType == EventType.Parameter).Select(k => k as Parameter);
-        public IEnumerable<Rotate> RotateList =>
-            EventList.Where(k => k.EventType == EventType.Rotate).Select(k => k as Rotate);
-        public IEnumerable<Scale> ScaleList =>
-            EventList.Where(k => k.EventType == EventType.Scale).Select(k => k as Scale);
-        public IEnumerable<Vector> VectorList =>
-            EventList.Where(k => k.EventType == EventType.Vector).Select(k => k as Vector);
-
         public override float MaxTime =>
-            NumericUtility.GetMaxValue(
-                EventList.Select(k => k.EndTime),
-                LoopList.Select(k => k.OuterMaxTime),
-                TriggerList.Select(k => k.MaxTime)
-            );
+             NumericUtility.GetMaxValue(
+                 EventList.Select(k => k.EndTime),
+                 LoopList.Select(k => k.OuterMaxTime),
+                 TriggerList.Select(k => k.MaxTime)
+             );
 
         public override float MinTime =>
             NumericUtility.GetMinValue(
@@ -96,8 +76,6 @@ namespace OSharp.Storyboard
                        TriggerList.Count(k => k.MinTime.Equals(minTime));
             }
         }
-
-        public TimeRange ObsoleteList { get; } = new TimeRange();
 
         // Loop control
         private bool _isTriggering, _isLooping;

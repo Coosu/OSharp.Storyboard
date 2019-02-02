@@ -1,4 +1,5 @@
 ﻿using OSharp.Storyboard.Events;
+using OSharp.Storyboard.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,37 +28,29 @@ namespace OSharp.Storyboard.Management
         {
             if (container is Element ele)
             {
-                bool flag = true;
                 foreach (var item in ele.LoopList)
                 {
-                    if (item.HasFade)
-                    {
-                        flag = false;
-                        break;
-                    }
                     PreOptimize(item);
                 }
+
                 foreach (var item in ele.TriggerList)
                 {
-                    if (item.HasFade)
-                    {
-                        flag = false;
-                        break;
-                    }
                     PreOptimize(item);
                 }
-                if (!flag) return;
             }
 
-            if (container.ScaleList.Count != 0) FixAll(container, container.ScaleList);
-            if (container.RotateList.Count != 0) FixAll(container, container.RotateList);
-            if (container.MoveXList.Count != 0) FixAll(container, container.MoveXList);
-            if (container.MoveYList.Count != 0) FixAll(container, container.MoveYList);
-            if (container.FadeList.Count != 0) FixAll(container, container.FadeList);
-            if (container.MoveList.Count != 0) FixAll(container, container.MoveList);
-            if (container.VectorList.Count != 0) FixAll(container, container.VectorList);
-            if (container.ColorList.Count != 0) FixAll(container, container.ColorList);
-            if (container.ParameterList.Count != 0) FixAll(container, container.ParameterList);
+            if (container.EventList.Any())
+                RemoveObsoletedEvents(container, container.EventList.ToList());
+
+            //if (container.ScaleList.Count != 0) FixAll(container, container.ScaleList);
+            //if (container.RotateList.Count != 0) FixAll(container, container.RotateList);
+            //if (container.MoveXList.Count != 0) FixAll(container, container.MoveXList);
+            //if (container.MoveYList.Count != 0) FixAll(container, container.MoveYList);
+            //if (container.FadeList.Count != 0) FixAll(container, container.FadeList);
+            //if (container.MoveList.Count != 0) FixAll(container, container.MoveList);
+            //if (container.VectorList.Count != 0) FixAll(container, container.VectorList);
+            //if (container.ColorList.Count != 0) FixAll(container, container.ColorList);
+            //if (container.ParameterList.Count != 0) FixAll(container, container.ParameterList);
             //if (_FadeoutList.Count > 0 && _FadeoutList.LastEndTime == MaxTime) InnerMaxTime = _FadeoutList.LastStartTime;
 
             //foreach (var item in LoopList) item.PreOptimize();
@@ -65,63 +58,226 @@ namespace OSharp.Storyboard.Management
         }
 
         /// <summary>
-        /// 正常压缩
-        /// </summary>
-        private static void NormalOptimize(Element element)
-        {
-            if (element.ScaleList.Count != 0) FixSingle(element, element.ScaleList);
-            if (element.RotateList.Count != 0) FixSingle(element, element.RotateList);
-            if (element.MoveXList.Count != 0) FixSingle(element, element.MoveXList);
-            if (element.MoveYList.Count != 0) FixSingle(element, element.MoveYList);
-            if (element.FadeList.Count != 0) FixSingle(element, element.FadeList);
-            if (element.MoveList.Count != 0) FixDouble(element, element.MoveList);
-            if (element.VectorList.Count != 0) FixDouble(element, element.VectorList);
-            if (element.ColorList.Count != 0) FixTriple(element, element.ColorList);
-
-            foreach (var item in element.LoopList) NormalOptimize(item);
-            foreach (var item in element.TriggerList) NormalOptimize(item);
-        }
-
-
-
-        /// <summary>
         /// 预压缩
         /// </summary>
-        private static void FixAll<T>(Element element, List<T> list)
+        private static void RemoveObsoletedEvents(EventContainer container, List<Event> eventList)
         {
-            var tType = typeof(T);
-
             #region 预压缩部分，待检验
-            if (tType != typeof(Fade))
+
+            var groups = eventList.GroupBy(k => k.EventType).Where(k => k.Key != EventType.Fade);
+            foreach (var group in groups)
             {
-                //int max_i = _list.Count - 1;
+                var list = group.ToList();
                 for (int i = 0; i < list.Count; i++)
                 {
-                    dynamic e = list[i];
-                    dynamic e2 = null;
-                    if (i != list.Count - 1) e2 = list[i + 1];
+                    Event nowE = list[i];
+                    Event nextE =
+                        i == list.Count
+                            ? null
+                            : list[i + 1];
                     // 判断当前种类动作是否在某一透明范围内，并且下一个动作的startTime也须在此范围内
-                    if (i < list.Count - 1 && element.FadeoutList.InRange(out bool _, e.StartTime, e.EndTime, e2.StartTime))
-                    {
-                        list.RemoveAt(i);  // 待修改，封装一个方法控制min max的增减
-                        i--;
-                    }
+                    var b = nextE == null
+                        ? container.ObsoleteList.ContainsTimingPoint(nowE.StartTime, nowE.EndTime)
+                        : container.ObsoleteList.ContainsTimingPoint(nowE.StartTime, nowE.EndTime, nextE.StartTime);
 
-                    if (i != list.Count - 1) continue;
+                    if (!b) continue;
+                    container.EventList.Remove(nowE);
+                    list.Remove(nowE);
+                    i--;
+
                     // 判断当前种类最后一个动作是否正处于物件透明状态，而且此状态最大时间即是obj最大时间
-                    if (element.FadeoutList.InRange(out bool isLast, e.StartTime, e.EndTime) &&
-                       isLast && element.FadeoutList.LastEndTime == element.MaxTime)
-                    {
-                        RemoveEvent(element, list, i);
-                        i--;
-                    }
                 }
             }
+
             #endregion
 
             // if (tType == typeof(Scale))
             // FixSingle(ref _list);
             // todo
+        }
+
+        /// <summary>
+        /// 正常压缩
+        /// </summary>
+        private static void NormalOptimize(EventContainer container)
+        {
+            if (container is Element ele)
+            {
+                foreach (var item in ele.LoopList)
+                {
+                    Fix(item, container.EventList.ToList());
+                }
+
+                foreach (var item in ele.TriggerList)
+                {
+                    Fix(item, container.EventList.ToList());
+                }
+            }
+
+            if (container.EventList.Any())
+            {
+                Fix(container, container.EventList.ToList());
+            }
+
+            //if (container.ScaleList.Count() != 0) FixSingle(container, container.ScaleList);
+            //if (container.RotateList.Count() != 0) FixSingle(container, container.RotateList);
+            //if (container.MoveXList.Count() != 0) FixSingle(container, container.MoveXList);
+            //if (container.MoveYList.Count() != 0) FixSingle(container, container.MoveYList);
+            //if (container.FadeList.Count() != 0) FixSingle(container, container.FadeList);
+            //if (container.MoveList.Count() != 0) FixDouble(container, container.MoveList);
+            //if (container.VectorList.Count() != 0) FixDouble(container, container.VectorList);
+            //if (container.ColorList.Count() != 0) FixTriple(container, container.ColorList);
+
+            //foreach (var item in container.LoopList) NormalOptimize(item);
+            //foreach (var item in container.TriggerList) NormalOptimize(item);
+        }
+
+        private static void Fix(EventContainer container, List<Event> eventList)
+        {
+            //float defaultParam = -1;
+            //var tType = typeof(T);
+            //if (tType == typeof(Scale))
+            //    defaultParam = 1;
+            //else if (tType == typeof(Rotate))
+            //    defaultParam = 0;
+            //else if (!element.IsLorT && tType == typeof(MoveX))
+            //    defaultParam = (int)element.DefaultX;
+            //else if (!element.IsLorT && tType == typeof(MoveY))
+            //    defaultParam = (int)element.DefaultY;
+            //else if (tType == typeof(Fade))
+            //    defaultParam = 1;
+            var groups = eventList.GroupBy(k => k.EventType);
+            foreach (var group in groups)
+            {
+                EventType type = group.Key;
+                var list = group.ToList();
+
+                int index = list.Count - 1;
+                while (index >= 0)
+                {
+                    Event nowE = list[index];
+
+                    Event preE;
+                    if (index >= 1)
+                    {
+                        preE = list[index - 1];
+                    }
+
+                    float nowStartT = nowE.StartTime, nowEndT = nowE.EndTime;
+                    float preStartT = float.MinValue, preEndT = float.MinValue;
+                    if (preE != null)
+                    {
+                        preStartT = preE.StartTime;
+                        preEndT = preE.EndTime;
+                    }
+
+                    float[] nowStartP = nowE.Start, nowEndP = nowE.End;
+                    float[] preStartP, preEndP;
+                    if (preE != null)
+                    {
+                        preStartP = preE.Start;
+                        preEndP = preE.End;
+                    }
+
+                    // 首个event     
+                    if (index == 0)
+                    {
+                        //S,0,300,,1
+                        //S,0,400,500,0.5
+                        /* 当 此event唯一 *unnecessary
+                         * 且 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
+                         * 且 此event开始时间 > obj最小时间 (或包括此event有两个以上的最小时间)
+                         * 且 此event的param固定
+                         * 且 此event.param=default
+                         */
+                        if (/*list.Count == 1
+                            && */(nowEndT < container.MaxTime ||
+                                nowEndT == container.MaxTime && container.MaxTimeCount > 1
+                            )
+                            && (nowStartT > container.MinTime ||
+                                nowStartT == container.MinTime && container.MinTimeCount > 1
+                            )
+                            && nowStartP.SequenceEqual(nowEndP)
+                            && nowStartP.SequenceEqual(EventExtension.UnworthyDictionary[type]))
+                        {
+                            // Move特有
+                            if (type == EventType.Move && container is Element element)
+                            {
+                                //var @event = (Move)nowE;
+                                if (nowStartP.SequenceEqual(nowStartP.Select(k => (float)(int)k))) //若为小数，不归并
+                                {
+                                    element.DefaultX = nowE.Start[0];
+                                    element.DefaultY = nowE.Start[1];
+                                    RemoveEvent(element, list, 0);
+                                }
+                                else if (nowP11.Equals(element.DefaultX) && nowP12.Equals(element.DefaultY))
+                                {
+                                    RemoveEvent(element, list, 0);
+                                }
+                            }
+                            else
+                            {
+                                // Remove
+                                container.EventList.Remove(nowE);
+                                list.Remove(nowE);
+                            }
+
+                        }
+
+
+
+                        break;
+                    }
+                    else
+                    {
+                        // 优先进行合并，若不符合再进行删除。
+                        /*
+                         * 当 此event与前event一致，且前后param皆固定
+                        */
+                        if (nowStartP.SequenceEqual(nowEndP)
+                            && preStartP.SequenceEqual(preEndP)
+                            && preStartP.SequenceEqual(nowStartP))
+                        {
+
+                            preE.EndTime = nowE.EndTime;  // 整合至前面: 前一个命令的结束时间延伸
+
+                            //if (preStartT == container.MinTime && container.MinTimeCount > 1) // todo: optimize: ?
+                            //{
+                            //    //preE.StartTime = preE.EndTime; // old
+                            //    preE.EndTime = preE.StartTime;
+                            //}
+
+                            // Remove
+                            container.EventList.Remove(nowE);
+                            list.Remove(nowE);
+                            //index = list.Count - 1; // todo: optimize: ?
+                            index--;
+                        }
+                        /*
+                         * 当 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
+                         * 且 此event的param固定
+                         * 且 此event当前动作 = 此event上个动作
+                         * (包含一个F的特例) todo: optimize: ?
+                        */
+                        else if ((nowEndT < container.MaxTime ||
+                                  nowEndT == container.MaxTime && container.MaxTimeCount > 1 /*||
+                         type == EventType.Fade && nowStartP.SequenceEqual(EventExtension.UnworthyDictionary[EventType.Fade]) */
+                                 )
+                                 && nowStartP.SequenceEqual(nowEndP)
+                                 && nowStartP.SequenceEqual(preEndP))
+                        {
+                            // Remove
+                            container.EventList.Remove(nowE);
+                            list.Remove(nowE);
+                            //index = list.Count - 1; // todo: optimize: ?
+                            index--;
+                        }
+                        else index--;
+                    }
+                }
+            }
+
+
         }
 
         /// <summary>
@@ -445,13 +601,15 @@ namespace OSharp.Storyboard.Management
 
         }
 
-        private static void RemoveEvent<T>(Element element, IList<T> list, int index)
+        private static void RemoveEvent(Element element, IList<T> list, int index)
         {
-            dynamic evt = list[index];
+            var evt = list[index];
             if (evt.StartTime == element.MinTime)
             {
                 if (element.MinTimeCount > 1)
-                    element.MinTimeCount--;
+                {
+                    //element.MinTimeCount--;
+                }
                 else throw new NotImplementedException();
             }
             if (evt.EndTime == element.MaxTime)
