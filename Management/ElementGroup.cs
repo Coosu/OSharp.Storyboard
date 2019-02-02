@@ -1,14 +1,10 @@
-﻿using MGLib.Osu.Reader.Osb;
-using OSharp.Storyboard.Events;
-using OSharp.Storyboard.Internal;
+﻿using OSharp.Storyboard.Events;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-//using StorybrewCommon.Storyboarding;
 
 namespace OSharp.Storyboard.Management
 {
@@ -266,6 +262,7 @@ namespace OSharp.Storyboard.Management
                     isBlank = false;
                 }
                 else if (@params.Length == 9)
+                {
                     currentObj = new AnimatedElement(
                         @params[0],
                         @params[1],
@@ -277,6 +274,10 @@ namespace OSharp.Storyboard.Management
                         float.Parse(@params[7]),
                         @params[8]
                     );
+                    isLooping = false;
+                    isTriggering = false;
+                    isBlank = false;
+                }
                 else
                     throw new Exception("Sprite declared wrongly");
             }
@@ -341,7 +342,7 @@ namespace OSharp.Storyboard.Management
         private static void ParseEvent(Element currentObj, bool[] options, string[] rawParams,
             string eventStr, int easing, int startTime, int endTime)
         {
-            int paraLength = rawParams.Length;
+            int rawLength = rawParams.Length;
             switch (rawParams[0])
             {
                 case F:
@@ -373,7 +374,7 @@ namespace OSharp.Storyboard.Management
                 {
                     const int baseLength = 4;
                     // 验证是否存在缺省
-                    if (paraLength == paramLength + baseLength)
+                    if (rawLength == paramLength + baseLength)
                     {
                         int length = paramLength * 2;
                         float* array = stackalloc float[length];
@@ -390,7 +391,7 @@ namespace OSharp.Storyboard.Management
 
                         InjectEvent(array);
                     }
-                    else if (paraLength == paramLength * 2 + baseLength)
+                    else if (rawLength == paramLength * 2 + baseLength)
                     {
                         int length = paramLength * 2;
                         float* array = stackalloc float[length];
@@ -402,14 +403,19 @@ namespace OSharp.Storyboard.Management
 
                         InjectEvent(array);
                     }
-                    else if (paraLength > paramLength * 2 + baseLength && (paraLength - baseLength) % paramLength == 0)
+                    else if (rawLength > paramLength * 2 + baseLength && (rawLength - baseLength) % paramLength == 0)
                     {
-                        var pars = rawParams.Skip(baseLength).ToArray();
                         var duration = endTime - startTime;
-                        for (int i = 0, j = 0; i < pars.Length - paramLength; i += paramLength, j++)
+                        for (int i = baseLength, j = 0; i < rawParams.Length - paramLength; i += paramLength, j++)
                         {
                             ParseEvent(currentObj, options,
-                                new string[4].Concat(pars).ToArray(),
+                                new[] { rawParams[0], null, null, null }
+                                    .Concat(
+                                        rawParams
+                                            .Skip(i)
+                                            .Take(paramLength * 2)
+                                    )
+                                    .ToArray(),
                                 eventStr,
                                 easing,
                                 startTime + duration * j,
@@ -426,7 +432,7 @@ namespace OSharp.Storyboard.Management
                     switch (eventStr)
                     {
                         case P:
-                            if (paraLength == 5)
+                            if (rawLength == 5)
                             {
                                 currentObj.Parameter(
                                     (EasingType)easing,
@@ -438,7 +444,7 @@ namespace OSharp.Storyboard.Management
 
                             break;
                         case L:
-                            if (paraLength == 3)
+                            if (rawLength == 3)
                             {
                                 startTime = int.Parse(rawParams[1]);
                                 int loopCount = int.Parse(rawParams[2]);
@@ -450,7 +456,7 @@ namespace OSharp.Storyboard.Management
 
                             break;
                         case T:
-                            if (paraLength == 4)
+                            if (rawLength == 4)
                             {
                                 startTime = int.Parse(rawParams[2]);
                                 endTime = int.Parse(rawParams[3]);
