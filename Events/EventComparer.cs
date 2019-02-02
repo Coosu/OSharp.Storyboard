@@ -25,7 +25,8 @@ namespace OSharp.Storyboard.Events
                 return 1;
             if (x.EventType < y.EventType)
                 return -1;
-            return 0;
+            return 1; // ensure object can be insert in order.
+            //return 0;
         }
     }
 }

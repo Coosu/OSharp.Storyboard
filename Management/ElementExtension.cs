@@ -1,5 +1,6 @@
 ﻿using OSharp.Storyboard.Events;
 using OSharp.Storyboard.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,17 +27,6 @@ namespace OSharp.Storyboard.Management
         public static void FillObsoleteList(this ElementGroup eleG)
         {
             eleG.InnerFix(false, true);
-        }
-
-        private static void InnerFix(this ElementGroup eleG, bool expand, bool fillFadeout)
-        {
-            if (!expand && !fillFadeout)
-                return;
-            foreach (var ele in eleG.ElementList)
-            {
-                if (expand) ele.Expand();
-                if (fillFadeout) ele.FillObsoleteList();
-            }
         }
 
         public static void Expand(this EventContainer container)
@@ -99,7 +89,7 @@ namespace OSharp.Storyboard.Management
                 }
             }
         }
-        
+
         public static void FillObsoleteList(this Element element)
         {
             var possibleList = element.EventList
@@ -152,6 +142,61 @@ namespace OSharp.Storyboard.Management
                     element.ObsoleteList.Add(pair.Value.StartTime, element.MaxTime);
                     break;
                 }
+            }
+        }
+
+        /// <summary>
+        /// 检查timing是否合法.
+        /// </summary>
+        public static void Examine(this EventContainer container)
+        {
+            var events = container.EventList.GroupBy(k => k.EventType);
+            foreach (var kv in events)
+            {
+                var list = kv.ToArray();
+                for (var i = 0; i < list.Length - 1; i++)
+                {
+                    Event objNext = list[i + 1];
+                    Event objNow = list[i];
+                    if (objNow.StartTime > objNow.EndTime)
+                    {
+                        throw new ArgumentException(
+                            $"{{{objNow}}}:\r\n" +
+                            $"Start time should not be larger than end time."
+                        );
+                    }
+                    if (objNext.StartTime < objNow.EndTime)
+                    {
+                        throw new ArgumentException(
+                            $"{{{objNow}}} to {{{objNext}}}:\r\n" +
+                            $"The previous object's end time should be larger than the next object's start time."
+                        );
+                    }
+                }
+            }
+
+            if (!(container is Element e))
+                return;
+
+            foreach (var item in e.LoopList)
+            {
+                Examine(item);
+            }
+
+            foreach (var item in e.TriggerList)
+            {
+                Examine(item);
+            }
+        }
+
+        private static void InnerFix(this ElementGroup eleG, bool expand, bool fillFadeout)
+        {
+            if (!expand && !fillFadeout)
+                return;
+            foreach (var ele in eleG.ElementList)
+            {
+                if (expand) ele.Expand();
+                if (fillFadeout) ele.FillObsoleteList();
             }
         }
 

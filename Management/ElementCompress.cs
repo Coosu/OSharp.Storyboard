@@ -1,9 +1,7 @@
-﻿#if false
+﻿using OSharp.Storyboard.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using OSharp.Storyboard;
-using OSharp.Storyboard.Events;
 
 namespace OSharp.Storyboard.Management
 {
@@ -11,59 +9,16 @@ namespace OSharp.Storyboard.Management
     {
         public static void Compress(this Element element)
         {
-            Sort(element);
-            Examine(element);
-            FillFadeoutList(element);
+            element.Examine();
+            element.FillObsoleteList();
             // 每个类型压缩从后往前
             // 1.删除没用的
             // 2.整合能整合的
             // 3.考虑单event情况
             // 4.排除第一行误加的情况（defaultParams）
-
             PreOptimize(element);
             NormalOptimize(element);
         }
-
-        /// <summary>
-        /// 检查timing是否合法，以及计算透明时间段
-        /// </summary>
-        public static void Examine(this EventContainer sbObj)
-        {
-            var events = sbObj.EventList.GroupBy(k => k.EventType);
-            foreach (var kv in events)
-            {
-                var list = kv.ToArray();
-                for (var i = 0; i < list.Length - 1; i++)
-                {
-                    Event objNext = list[i + 1];
-                    Event objNow = list[i];
-                    if (objNow.StartTime > objNow.EndTime)
-                    {
-                        //throw new ArgumentException("Start time should not be larger than end time.");
-                    }
-                    if (objNext.StartTime < objNow.EndTime)
-                    {
-                        //throw new Exception(obj_previous.ToString() + Environment.NewLine + obj_next.ToString());
-                    }
-                }
-            }
-
-            if (!(sbObj is Element e))
-                return;
-            foreach (var item in e.LoopList) Examine(item);
-            foreach (var item in e.TriggerList) Examine(item);
-        }
-
-        private static void Sort(EventContainer container)
-        {
-            container.EventList.Sort(new EventSort<Event>());
-            if (!(container is Element e))
-                return;
-            foreach (var item in e.LoopList) Sort(item);
-            foreach (var item in e.TriggerList) Sort(item);
-        }
-
-       
 
         /// <summary>
         /// 预压缩
@@ -136,7 +91,7 @@ namespace OSharp.Storyboard.Management
         {
             var tType = typeof(T);
 
-#region 预压缩部分，待检验
+            #region 预压缩部分，待检验
             if (tType != typeof(Fade))
             {
                 //int max_i = _list.Count - 1;
@@ -162,7 +117,7 @@ namespace OSharp.Storyboard.Management
                     }
                 }
             }
-#endregion
+            #endregion
 
             // if (tType == typeof(Scale))
             // FixSingle(ref _list);
@@ -507,21 +462,5 @@ namespace OSharp.Storyboard.Management
             }
             list.RemoveAt(index);
         }
-        /// <inheritdoc />
-        /// <summary>
-        /// 以timing排序event
-        /// </summary>
-        private class EventSort<T> : IComparer<T> where T : Event
-        {
-            public int Compare(T e1, T e2)
-            {
-                if (e1 == null || e2 == null)
-                    throw new NullReferenceException();
-
-                if (e1.StartTime >= e2.StartTime) return 1;
-                return -1;
-            }
-        }
     }
 }
-#endif

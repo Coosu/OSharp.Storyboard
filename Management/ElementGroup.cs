@@ -214,7 +214,6 @@ namespace OSharp.Storyboard.Management
 
             } while (line != null);
 
-
             return group;
         }
 
