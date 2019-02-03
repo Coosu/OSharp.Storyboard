@@ -21,6 +21,7 @@ namespace OSharp.Storyboard.Common
 
         public void Add(float startTime, float endTime)
         {
+            if (startTime == endTime) return;
             _timingPoints.Add(new TimingPoint(startTime, true));
             _timingPoints.Add(new TimingPoint(endTime, false));
             _timingList = null;
