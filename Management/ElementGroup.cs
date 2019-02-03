@@ -1,6 +1,7 @@
 ﻿using OSharp.Storyboard.Events;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -134,11 +135,15 @@ namespace OSharp.Storyboard.Management
 
         public void Compress()
         {
-            throw new NotImplementedException();
-            //foreach (var obj in ElementList)
-            //{
-            //    obj.Compress();
-            //}
+            float progress = 0;
+            for (var i = 0; i < ElementList.Count; i++)
+            {
+                var obj = ElementList[i];
+                progress = (float)(i + 1) / (ElementList.Count);
+                Console.WriteLine($"{progress.ToString("P", CultureInfo.InvariantCulture)}... {obj}");
+
+                obj.Compress();
+            }
         }
 
         public string ToOsbString()
@@ -190,10 +195,9 @@ namespace OSharp.Storyboard.Management
             bool[] options = { false, false, false };
 
             int rowIndex = 0;
-            string line;
-            do
+            string line = textReader.ReadLine();
+            while (line != null)
             {
-                line = textReader.ReadLine();
                 rowIndex++;
                 if (line.StartsWith("//") || line.StartsWith("[Events]"))
                 {
@@ -212,7 +216,8 @@ namespace OSharp.Storyboard.Management
                     }
                 }
 
-            } while (line != null);
+                line = textReader.ReadLine();
+            }
 
             return group;
         }
@@ -262,7 +267,7 @@ namespace OSharp.Storyboard.Management
                 }
                 else if (@params.Length == 9)
                 {
-                    currentObj = new AnimatedElement(
+                    currentObj = group.CreateAnimation(
                         @params[0],
                         @params[1],
                         @params[2],
@@ -553,6 +558,20 @@ namespace OSharp.Storyboard.Management
             var obj = new AnimatedElement(type, layer, origin, imagePath, defaultX, defaultY, frameCount, frameDelay, loopType);
             AddElement(obj);
             return obj;
+        }
+
+        public void SaveOsbFile(string path)
+        {
+            string o = string.Join(Environment.NewLine,
+                "[Events]",
+                "//Background and Video events",
+                "//Storyboard Layer 0 (Background)",
+                "//Storyboard Layer 1 (Fail)",
+                "//Storyboard Layer 2 (Pass)",
+                "//Storyboard Layer 3 (Foreground)",
+                ToOsbString().TrimEnd('\r', '\n'),
+                "//Storyboard Sound Samples");
+            File.WriteAllText(path, o);
         }
     }
 }

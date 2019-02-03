@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace OSharp.Storyboard.Events
 {
@@ -25,6 +25,9 @@ namespace OSharp.Storyboard.Events
                 return 1;
             if (x.EventType < y.EventType)
                 return -1;
+            if (x.Start.SequenceEqual(y.Start) &&
+                x.End.SequenceEqual(y.End))
+                return 0;
             return 1; // ensure object can be insert in order.
             //return 0;
         }

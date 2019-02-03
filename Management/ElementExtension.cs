@@ -105,32 +105,37 @@ namespace OSharp.Storyboard.Management
                     [EventType.Scale] = new EventSettings(),
                     [EventType.Vector] = new EventSettings()
                 };
-                foreach (var @event in possibleList)
+                foreach (var e in possibleList)
                 {
-                    dic[@event.EventType].Count++;
-                    // 最早的event晚于最小开始时间，默认加这一段
-                    if (dic[@event.EventType].Count == 0 &&
-                        @event.Start.SequenceEqual(@event.GetUnworthyValue()) &&
-                        @event.StartTime > element.MinTime)
+                    if (e.EventType == EventType.Fade)
                     {
-                        dic[@event.EventType].StartTime = element.MinTime;
-                        dic[@event.EventType].IsFadingOut = true;
+
+                    }
+                    dic[e.EventType].Count++;
+                    // 最早的event晚于最小开始时间，默认加这一段
+                    if (dic[e.EventType].Count == 1 &&
+                        e.Start.SequenceEqual(e.GetUnworthyValue()) &&
+                        e.StartTime > element.MinTime)
+                    {
+                        dic[e.EventType].StartTime = element.MinTime;
+                        dic[e.EventType].IsFadingOut = true;
                     }
 
                     // event.End为无用值时，开始计时
-                    if (@event.End.SequenceEqual(@event.GetUnworthyValue()) &&
-                        dic[@event.EventType].IsFadingOut == false)
+                    if (e.End.SequenceEqual(e.GetUnworthyValue()) &&
+                        dic[e.EventType].IsFadingOut == false)
                     {
-                        dic[@event.EventType].StartTime = @event.EndTime;
-                        dic[@event.EventType].IsFadingOut = true;
+                        dic[e.EventType].StartTime = e.EndTime;
+                        dic[e.EventType].IsFadingOut = true;
                     }
-                    else if (dic[@event.EventType].IsFadingOut)
+                    else if (dic[e.EventType].IsFadingOut)
                     {
-                        if (@event.Start.SequenceEqual(@event.GetUnworthyValue()) &&
-                            @event.End.SequenceEqual(@event.GetUnworthyValue()))
+                        if (e.Start.SequenceEqual(e.GetUnworthyValue()) &&
+                            e.End.SequenceEqual(e.GetUnworthyValue()))
                             continue;
-                        element.ObsoleteList.Add(dic[@event.EventType].StartTime, @event.StartTime);
-                        dic[@event.EventType].IsFadingOut = false;
+                        element.ObsoleteList.Add(dic[e.EventType].StartTime, e.StartTime);
+                        dic[e.EventType].IsFadingOut = false;
+                        dic[e.EventType].StartTime = float.MinValue;
                     }
                 }
 
@@ -202,7 +207,7 @@ namespace OSharp.Storyboard.Management
 
         public class EventSettings
         {
-            public int Count { get; set; } = -1;
+            public int Count { get; set; } = 0;
             public bool IsFadingOut { get; set; } = false;
             public float StartTime { get; set; } = float.MinValue;
         }

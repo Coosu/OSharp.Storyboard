@@ -4,7 +4,7 @@ namespace OSharp.Storyboard.Events
 {
     public enum EventType
     {
-        Fade, Move, MoveX, MoveY, Scale, Vector, Rotate, Color, Parameter, Loop, Trigger
+        Move, Fade, Scale, Rotate, Color, MoveX, MoveY, Vector, Parameter, Loop, Trigger
     }
 
     public static class EventEnumExtension

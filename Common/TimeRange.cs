@@ -61,7 +61,7 @@ namespace OSharp.Storyboard.Common
             return list;
         }
 
-        public bool ContainsTimingPoint(float time, out RangeValue<float>? patterned,
+        public bool ContainsTimingPoint(float time, out RangeValue<float> patterned,
             float offsetStart = 0,
             float offsetEnd = 0)
         {
@@ -72,23 +72,43 @@ namespace OSharp.Storyboard.Common
                     return true;
                 }
 
-            patterned = null;
+            patterned = default;
             return false;
         }
 
-        public bool ContainsTimingPoint( params float[] time)
+        public bool OnTimingRange(out RangeValue<float> patterned, float timingPoint)
         {
             int i = 0;
-            foreach (var sb in TimingList)
+            foreach (var range in TimingList)
             {
-                if (time.All(t => t >= sb.StartTime && t <= sb.EndTime))
+                if (timingPoint == range.StartTime || timingPoint == range.EndTime)
                 {
+                    patterned = range;
                     return true;
                 }
 
                 i++;
             }
-            
+
+            patterned = default;
+            return false;
+        }
+
+        public bool ContainsTimingPoint(out RangeValue<float> patterned, params float[] time)
+        {
+            int i = 0;
+            foreach (var range in TimingList)
+            {
+                if (time.All(t => t >= range.StartTime && t <= range.EndTime))
+                {
+                    patterned = range;
+                    return true;
+                }
+
+                i++;
+            }
+
+            patterned = default;
             return false;
         }
 

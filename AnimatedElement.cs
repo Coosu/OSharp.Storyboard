@@ -50,15 +50,21 @@ namespace OSharp.Storyboard
             LoopType = (LoopType)Enum.Parse(typeof(LoopType), loopType);
         }
 
-        public override string ToOsbString()
+        public override string ToString()
         {
-            if (!IsWorthy) return "";
+            var head =
+                $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY, FrameCount, FrameDelay, LoopType)}";
+            return head;
+        }
+
+        public override void AppendOsbString(StringBuilder sb)
+        {
+            if (!IsWorthy) return;
             var head =
                 $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY, FrameCount, FrameDelay, LoopType)}" +
                 Environment.NewLine;
-            var sb = new StringBuilder(head);
+            sb.Append(head);
             sb.AppendElementEvents(this);
-            return sb.ToString();
         }
     }
 }
