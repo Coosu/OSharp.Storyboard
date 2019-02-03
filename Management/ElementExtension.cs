@@ -165,17 +165,19 @@ namespace OSharp.Storyboard.Management
                     Event objNow = list[i];
                     if (objNow.StartTime > objNow.EndTime)
                     {
-                        throw new ArgumentException(
-                            $"{{{objNow}}}:\r\n" +
-                            $"Start time should not be larger than end time."
-                        );
+                        var info = $"{{{objNow}}}:\r\n" +
+                                   $"Start time should not be larger than end time.";
+                        container.Problem = info;
+                        return;
+                        //throw new ArgumentException(info);
                     }
                     if (objNext.StartTime < objNow.EndTime)
                     {
-                        throw new ArgumentException(
-                            $"{{{objNow}}} to {{{objNext}}}:\r\n" +
-                            $"The previous object's end time should be larger than the next object's start time."
-                        );
+                        var info = $"{{{objNow}}} to {{{objNext}}}:\r\n" +
+                                   $"The previous object's end time should be larger than the next object's start time.";
+                        container.Problem = info;
+                        return;
+                        //throw new ArgumentException(info);
                     }
                 }
             }

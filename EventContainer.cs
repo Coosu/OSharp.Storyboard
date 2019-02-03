@@ -54,6 +54,7 @@ namespace OSharp.Storyboard
         }
 
         public TimeRange ObsoleteList { get; } = new TimeRange();
+        public string Problem { get; set; }
 
         internal virtual void AddEvent(EventType e, EasingType easing, float startTime, float endTime, float[] start, float[] end)
         {

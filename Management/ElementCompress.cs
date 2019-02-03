@@ -11,6 +11,11 @@ namespace OSharp.Storyboard.Management
         public static void Compress(this Element element)
         {
             element.Examine();
+            if (element.Problem != null)
+            {
+                Console.WriteLine(element.Problem);
+                return;
+            }
             element.FillObsoleteList();
             // 每个类型压缩从后往前
             // 1.删除没用的
@@ -144,6 +149,7 @@ namespace OSharp.Storyboard.Management
                     // 首个event     
                     if (index == 0)
                     {
+                        if (eventList.Count <= 1) return;
                         //S,0,300,,1
                         //S,0,400,500,0.5
                         /* 
@@ -153,8 +159,7 @@ namespace OSharp.Storyboard.Management
                          * 且 此event.param=default
                          * 且 唯一
                          */
-                        if (nowE.IsTimeInRange(container) && nowE.IsStaticAndDefault() &&
-                            list.Count == 1)
+                        if (nowE.IsTimeInRange(container) && nowE.IsStaticAndDefault())
                         {
                             // Remove
                             RemoveEvent(container, list, nowE);
@@ -165,7 +170,9 @@ namespace OSharp.Storyboard.Management
                         else if (type == EventType.Move
                                  && container is Element element)
                         {
-                            if (list.Count == 1 && nowE.IsStatic())
+                            if (list.Count == 1 && nowE.IsStatic()
+                                                && nowE.IsTimeInRange(container)
+                                                && eventList.Count > 1)
                             {
                                 var move = (Move)nowE;
                                 if (nowE.Start.All(k => k == (int)k)) //若为小数，不归并

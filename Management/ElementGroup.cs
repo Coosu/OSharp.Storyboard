@@ -139,8 +139,8 @@ namespace OSharp.Storyboard.Management
             for (var i = 0; i < ElementList.Count; i++)
             {
                 var obj = ElementList[i];
-                progress = (float)(i + 1) / (ElementList.Count);
-                Console.WriteLine($"{progress.ToString("P", CultureInfo.InvariantCulture)}... {obj}");
+                //progress = (float)(i + 1) / (ElementList.Count);
+                //Console.WriteLine($"{progress.ToString("P", CultureInfo.InvariantCulture)}... {obj}");
 
                 obj.Compress();
             }
