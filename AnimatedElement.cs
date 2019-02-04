@@ -1,11 +1,15 @@
 ﻿using OSharp.Storyboard.Internal;
 using System;
+using System.IO;
 using System.Text;
 
 namespace OSharp.Storyboard
 {
     public sealed class AnimatedElement : Element
     {
+        protected override string Head =>
+            $"{Type},{Layer},{Origin},\"{ImagePath}\",{DefaultX},{DefaultY},{FrameCount},{FrameDelay},{LoopType}";
+
         public int FrameCount { get; set; }
         public float FrameDelay { get; set; }
         public LoopType LoopType { get; set; }
@@ -50,21 +54,13 @@ namespace OSharp.Storyboard
             LoopType = (LoopType)Enum.Parse(typeof(LoopType), loopType);
         }
 
-        public override string ToString()
-        {
-            var head =
-                $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY, FrameCount, FrameDelay, LoopType)}";
-            return head;
-        }
+        public override string ToString() => Head;
 
-        public override void AppendOsbString(StringBuilder sb, bool group = false)
+        public override void WriteOsbString(TextWriter sw, bool group = false)
         {
             if (!IsWorthy) return;
-            var head =
-                $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY, FrameCount, FrameDelay, LoopType)}" +
-                Environment.NewLine;
-            sb.Append(head);
-            sb.AppendElementEvents(this, group);
+            sw.WriteLine(Head);
+            sw.WriteElementEvents(this, group);
         }
     }
 }

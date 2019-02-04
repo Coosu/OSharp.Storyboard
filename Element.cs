@@ -4,6 +4,7 @@ using OSharp.Storyboard.Events.Containers;
 using OSharp.Storyboard.Internal;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -14,6 +15,8 @@ namespace OSharp.Storyboard
     /// </summary>
     public class Element : EventContainer
     {
+        protected override string Head =>
+            $"{Type},{Layer},{Origin},\"{ImagePath}\",{DefaultX},{DefaultY}";
         public ElementType Type { get; }
         public LayerType Layer { get; }
         public OriginType Origin { get; }
@@ -53,7 +56,7 @@ namespace OSharp.Storyboard
                 TriggerList.Select(k => k.MaxTime)
             );
 
-        public bool IsWorthy => !MinTime.Equals(MaxTime);
+        public bool IsWorthy => !MinTime.Equals(MaxTime) || IsBackground;
 
         public override int MaxTimeCount
         {
@@ -76,6 +79,8 @@ namespace OSharp.Storyboard
                        TriggerList.Count(k => k.MinTime.Equals(minTime));
             }
         }
+
+        public bool IsBackground { get; internal set; }
 
         // Loop control
         private bool _isTriggering, _isLooping;
@@ -297,19 +302,13 @@ namespace OSharp.Storyboard
 
         #endregion
 
-        public override string ToString()
-        {
-            var head = $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY)}";
-            return head;
-        }
+        public override string ToString() => Head;
 
-        public override void AppendOsbString(StringBuilder sb, bool group = false)
+        public override void WriteOsbString(TextWriter sw, bool group = false)
         {
             if (!IsWorthy) return;
-            var head = $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY)}" +
-                       Environment.NewLine;
-            sb.Append(head);
-            sb.AppendElementEvents(this, group);
+            sw.WriteLine(Head);
+            sw.WriteElementEvents(this, group);
         }
 
         public Element Clone() => (Element)MemberwiseClone();

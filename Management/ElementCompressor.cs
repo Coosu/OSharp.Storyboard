@@ -1,14 +1,19 @@
 ﻿using OSharp.Storyboard.Events;
 using OSharp.Storyboard.Internal;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OSharp.Storyboard.Management
 {
     public class ElementCompressor
     {
-        private IEnumerable<Element> _elements;
+        private readonly IEnumerable<Element> _elements;
+        public EventHandler<ErrorEventArgs> OnErrorOccured;
+        private int _threadCount = 1;
 
         public ElementCompressor(IEnumerable<Element> elements)
         {
@@ -20,25 +25,113 @@ namespace OSharp.Storyboard.Management
             _elements = elementGroup.ElementList;
         }
 
-        public void Compress()
+        public string BackgroundPath { get; set; }
+
+        public int ThreadCount
         {
-            foreach (var element in _elements)
+            get => _threadCount;
+            set => _threadCount =
+                value < 1
+                    ? 1
+                    : value > 4
+                        ? 4
+                        : value;
+        }
+
+        public bool IsRunning { get; private set; }
+
+        public async Task CompressAsync()
+        {
+            IsRunning = true;
+            var tasks = new Task[ThreadCount];
+            object lockObj = new object();
+            ConcurrentQueue<Element> queue = new ConcurrentQueue<Element>();
+            var cts = new CancellationTokenSource();
+            for (var i = 0; i < tasks.Length; i++)
             {
-                element.Examine();
-                if (element.Problem != null)
+                tasks[i] = Task.Run(() =>
                 {
-                    Console.WriteLine(element.Problem);
-                    return;
-                }
-                element.FillObsoleteList();
-                // 每个类型压缩从后往前
-                // 1.删除没用的
-                // 2.整合能整合的
-                // 3.考虑单event情况
-                // 4.排除第一行误加的情况（defaultParams）
-                PreOptimize(element);
-                NormalOptimize(element);
+                    while (!cts.IsCancellationRequested)
+                    {
+                        Element element;
+                        //lock (lockObj)
+                        {
+                            if (!queue.IsEmpty)
+                            {
+                                if (!queue.TryDequeue(out element))
+                                {
+                                    continue;
+                                }
+                            }
+                            else
+                                continue;
+                        }
+
+                        InnerCompress(element);
+                    }
+                }, cts.Token);
             }
+
+            var enqueueTask = new Task(() =>
+            {
+                foreach (var element in _elements)
+                {
+                    //lock (lockObj)
+                    {
+                        queue.Enqueue(element);
+                    }
+                }
+
+                while (!queue.IsEmpty)
+                {
+                    Thread.Sleep(1);
+                }
+
+                cts.Cancel();
+            }, cts.Token);
+
+            enqueueTask.Start();
+
+            await Task.WhenAll(tasks);
+            IsRunning = false;
+        }
+
+        private void InnerCompress(Element element)
+        {
+            if (element.ImagePath == BackgroundPath &&
+                element.Layer == LayerType.Background)
+            {
+                element.IsBackground = true;
+            }
+
+            // 每个类型压缩从后往前
+            // 1.删除没用的
+            // 2.整合能整合的
+            // 3.考虑单event情况
+            // 4.排除第一行误加的情况 (defaultParams)
+            int b = 0;
+            element.OnErrorOccured += (sender, args) =>
+            {
+                OnErrorOccured?.Invoke(sender, args);
+                b++;
+            };
+            element.Examine();
+            element.OnErrorOccured = null;
+
+            if (b > 0)
+            {
+                var arg = new ErrorEventArgs
+                {
+                    Message = $"Examine failed. Found {b} error(s)."
+                };
+                OnErrorOccured?.Invoke(this, arg);
+                //if (!arg.TryToContinue)
+                //    continue;
+            }
+
+            element.FillObsoleteList();
+            PreOptimize(element);
+            NormalOptimize(element);
         }
 
         /// <summary>
@@ -61,6 +154,30 @@ namespace OSharp.Storyboard.Management
 
             if (container.EventList.Any())
                 RemoveByObsoletedList(container, container.EventList.ToList());
+        }
+
+        /// <summary>
+        /// 正常压缩
+        /// </summary>
+        private static void NormalOptimize(EventContainer container)
+        {
+            if (container is Element ele)
+            {
+                foreach (var item in ele.LoopList)
+                {
+                    NormalOptimize(item);
+                }
+
+                foreach (var item in ele.TriggerList)
+                {
+                    NormalOptimize(item);
+                }
+            }
+
+            if (container.EventList.Any())
+            {
+                RemoveByLogic(container, container.EventList.ToList());
+            }
         }
 
         /// <summary>
@@ -116,30 +233,6 @@ namespace OSharp.Storyboard.Management
 
                     // 判断当前种类最后一个动作是否正处于物件透明状态，而且此状态最大时间即是obj最大时间
                 }
-            }
-        }
-
-        /// <summary>
-        /// 正常压缩
-        /// </summary>
-        private static void NormalOptimize(EventContainer container)
-        {
-            if (container is Element ele)
-            {
-                foreach (var item in ele.LoopList)
-                {
-                    NormalOptimize(item);
-                }
-
-                foreach (var item in ele.TriggerList)
-                {
-                    NormalOptimize(item);
-                }
-            }
-
-            if (container.EventList.Any())
-            {
-                RemoveByLogic(container, container.EventList.ToList());
             }
         }
 

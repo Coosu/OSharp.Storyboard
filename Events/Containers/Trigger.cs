@@ -1,6 +1,7 @@
 ﻿using OSharp.Storyboard.Internal;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -8,6 +9,7 @@ namespace OSharp.Storyboard.Events.Containers
 {
     public sealed class Trigger : EventContainer, IEvent
     {
+        protected override string Head => $"T,{TriggerName},{StartTime},{EndTime}";
         private const string HitSound = "HitSound";
 
         public float StartTime { get; set; }
@@ -54,15 +56,12 @@ namespace OSharp.Storyboard.Events.Containers
             base.Adjust(offsetX, offsetY, offsetTiming);
         }
 
-        public override void AppendOsbString(StringBuilder sb, bool @group = false)
+        public override void WriteOsbString(TextWriter sb, bool @group = false)
         {
-            sb.AppendTrigger(this, group);
+            sb.WriteTrigger(this, group);
         }
 
-        public override string ToString()
-        {
-            return string.Join(",", "T", TriggerName, StartTime, EndTime);
-        }
+        public override string ToString() => Head;
 
         private static string GetTriggerString(TriggerType triggerType, bool listenSample, uint? customSampleSet)
         {

@@ -13,9 +13,55 @@ namespace OSharp.Storyboard.Events
         public float[] Start { get; }
         public float[] End { get; }
 
-        protected virtual string Script => Start.SequenceEqual(End)
-            ? string.Join(",", Start)
-            : $"{string.Join(",", Start)},{string.Join(",", End)}";
+        protected virtual string Script
+        {
+            get
+            {
+                bool sequenceEqual = true;
+                int count = Start.Length;
+                for (int i = 0; i < count; i++)
+                {
+                    if (Start[i] != End[i])
+                    {
+                        sequenceEqual = false;
+                        break;
+                    }
+                }
+
+                if (sequenceEqual)
+                {
+                    if (count == 1)
+                        return Start[0].ToString(CultureInfo.InvariantCulture);
+                    if (count == 2)
+                        return Start[0].ToString(CultureInfo.InvariantCulture) + "," +
+                               Start[1].ToString(CultureInfo.InvariantCulture);
+                    if (count == 3)
+                        return Start[0].ToString(CultureInfo.InvariantCulture) + "," +
+                               Start[1].ToString(CultureInfo.InvariantCulture) + "," +
+                               Start[2].ToString(CultureInfo.InvariantCulture);
+                    return string.Join(",", Start);
+                }
+                else
+                {
+                    if (count == 1)
+                        return Start[0].ToString(CultureInfo.InvariantCulture) + "," +
+                               End[0].ToString(CultureInfo.InvariantCulture);
+                    if (count == 2)
+                        return Start[0].ToString(CultureInfo.InvariantCulture) + "," +
+                               Start[1].ToString(CultureInfo.InvariantCulture) + "," +
+                               End[0].ToString(CultureInfo.InvariantCulture) + "," +
+                               End[1].ToString(CultureInfo.InvariantCulture);
+                    if (count == 3)
+                        return Start[0].ToString(CultureInfo.InvariantCulture) + "," +
+                               Start[1].ToString(CultureInfo.InvariantCulture) + "," +
+                               Start[2].ToString(CultureInfo.InvariantCulture) + "," +
+                               End[0].ToString(CultureInfo.InvariantCulture) + "," +
+                               End[1].ToString(CultureInfo.InvariantCulture) + "," +
+                               End[2].ToString(CultureInfo.InvariantCulture);
+                    return $"{string.Join(",", Start)},{string.Join(",", End)}";
+                }
+            }
+        }
 
         public virtual int ParamLength => Start.Length;
         public virtual bool IsStatic => Start.Equals(End);
@@ -53,14 +99,13 @@ namespace OSharp.Storyboard.Events
 
         public virtual string ToOsbString()
         {
-            return string.Join(",",
-                EventType.ToShortString(),
-                (int)Easing,
-                Math.Round(StartTime).ToString(CultureInfo.InvariantCulture),
-                StartTime.Equals(EndTime)
-                    ? ""
-                    : Math.Round(EndTime).ToString(CultureInfo.InvariantCulture),
-                Script);
+            string e = EventType.ToShortString();
+            string easing = ((int)Easing).ToString();
+            string startT = Math.Round(StartTime).ToString(CultureInfo.InvariantCulture);
+            string endT = StartTime.Equals(EndTime)
+                ? ""
+                : Math.Round(EndTime).ToString(CultureInfo.InvariantCulture);
+            return $"{e},{easing},{startT},{endT},{Script}";
         }
 
         public void AdjustTiming(float time)

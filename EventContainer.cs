@@ -1,7 +1,9 @@
 ﻿using OSharp.Storyboard.Common;
 using OSharp.Storyboard.Events;
+using OSharp.Storyboard.Management;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -9,6 +11,8 @@ namespace OSharp.Storyboard
 {
     public abstract class EventContainer
     {
+        public EventHandler<ErrorEventArgs> OnErrorOccured;
+        protected abstract string Head { get; }
         public SortedSet<CommonEvent> EventList { get; } = new SortedSet<CommonEvent>(new EventComparer());
         //public List<Event> EventList { get; } = new List<Event>();
         public abstract float MaxTime { get; }
@@ -55,7 +59,6 @@ namespace OSharp.Storyboard
         }
 
         public TimeRange ObsoleteList { get; } = new TimeRange();
-        public string Problem { get; set; }
 
         internal virtual void AddEvent(EventType e, EasingType easing, float startTime, float endTime, float[] start, float[] end)
         {
@@ -108,11 +111,13 @@ namespace OSharp.Storyboard
 
         public virtual string ToOsbString(bool group = false)
         {
-            var sb = new StringBuilder();
-            AppendOsbString(sb, group);
-            return sb.ToString();
+            using (var sw = new StringWriter())
+            {
+                WriteOsbString(sw, group);
+                return sw.ToString();
+            }
         }
 
-        public abstract void AppendOsbString(StringBuilder sb, bool group = false);
+        public abstract void WriteOsbString(TextWriter sw, bool group = false);
     }
 }

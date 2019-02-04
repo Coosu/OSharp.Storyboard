@@ -1,5 +1,6 @@
 ﻿using OSharp.Storyboard.Internal;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -7,6 +8,8 @@ namespace OSharp.Storyboard.Events.Containers
 {
     public sealed class Loop : EventContainer, IEvent
     {
+        protected override string Head => $"L,{StartTime},{LoopCount}";
+
         public float StartTime { get; set; }
         public float EndTime => OuterMaxTime;
 
@@ -30,15 +33,12 @@ namespace OSharp.Storyboard.Events.Containers
             StartTime += offsetTiming;
             base.Adjust(offsetX, offsetY, offsetTiming);
         }
-        
-        public override void AppendOsbString(StringBuilder sb, bool group = false)
+
+        public override void WriteOsbString(TextWriter sb, bool group = false)
         {
-            sb.AppendLoop(this, group);
+            sb.WriteLoop(this, group);
         }
 
-        public override string ToString()
-        {
-            return string.Join(",", "L", StartTime, LoopCount);
-        }
+        public override string ToString() => Head;
     }
 }

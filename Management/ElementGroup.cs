@@ -132,19 +132,22 @@ namespace OSharp.Storyboard.Management
         //        lib.ExecuteBrew(layParsed);
         //    }
         //}
-        
+
         public string ToOsbString(bool group = false)
         {
-            StringBuilder sb = new StringBuilder();
-            AppendOsbString(sb, group);
-            return sb.ToString();
+            using (var sw = new StringWriter())
+            {
+                WriteOsbString(sw, group);
+                return sw.ToString();
+            }
+
         }
 
-        public void AppendOsbString(StringBuilder sb, bool group = false)
+        public void WriteOsbString(TextWriter sw, bool group = false)
         {
             foreach (var obj in ElementList)
             {
-                obj.AppendOsbString(sb, group);
+                obj.WriteOsbString(sw, group);
             }
         }
 
@@ -549,16 +552,17 @@ namespace OSharp.Storyboard.Management
 
         public void SaveOsbFile(string path)
         {
-            string o = string.Join(Environment.NewLine,
-                "[Events]",
-                "//Background and Video events",
-                "//Storyboard Layer 0 (Background)",
-                "//Storyboard Layer 1 (Fail)",
-                "//Storyboard Layer 2 (Pass)",
-                "//Storyboard Layer 3 (Foreground)",
-                ToOsbString(false).TrimEnd('\r', '\n'),
-                "//Storyboard Sound Samples");
-            File.WriteAllText(path, o);
+            using (StreamWriter sw = new StreamWriter(path, false))
+            {
+                sw.WriteLine("[Events]");
+                sw.WriteLine("//Background and Video events");
+                sw.WriteLine("//Storyboard Layer 0 (Background)");
+                sw.WriteLine("//Storyboard Layer 0 (Background)");
+                sw.WriteLine("//Storyboard Layer 1 (Fail)");
+                sw.WriteLine("//Storyboard Layer 3 (Foreground)");
+                WriteOsbString(sw);
+                sw.WriteLine("//Storyboard Sound Samples");
+            }
         }
     }
 }
