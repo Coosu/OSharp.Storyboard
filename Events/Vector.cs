@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace OSharp.Storyboard.Events
 {
-    public sealed class Vector : Event
+    public sealed class Vector : CommonEvent
     {
         public override EventType EventType => EventType.Vector;
 

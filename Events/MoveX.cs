@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace OSharp.Storyboard.Events
 {
-    public sealed class MoveX : Event, IAdjustablePositionEvent
+    public sealed class MoveX : CommonEvent, IAdjustablePositionEvent
     {
         public override EventType EventType => EventType.MoveX;
 

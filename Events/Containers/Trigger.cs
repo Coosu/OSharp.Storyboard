@@ -6,33 +6,33 @@ using System.Text;
 
 namespace OSharp.Storyboard.Events.Containers
 {
-    public sealed class Trigger : EventContainer
+    public sealed class Trigger : EventContainer, IEvent
     {
         private const string HitSound = "HitSound";
 
-        public int StartTime { get; set; }
-        public int EndTime { get; set; }
+        public float StartTime { get; set; }
+        public float EndTime { get; set; }
         public string TriggerName { get; set; }
 
         public override float MaxTime =>
             EndTime +
-            EventList.Count > 0
+            (EventList.Count > 0
                 ? EventList.Max(k => k.EndTime)
-                : 0;
+                : 0);
 
         public override float MinTime => StartTime;
 
         public override float MaxStartTime =>
             EndTime +
-            EventList.Count > 0
+            (EventList.Count > 0
                 ? EventList.Max(k => k.StartTime)
-                : 0; //if hitsound played at end time
+                : 0); //if hitsound played at end time
 
         public override float MinEndTime => StartTime; // if no hitsound here
 
         //public bool HasFade => EventList.Any(k => k.EventType == EventType.Fade);
 
-        public Trigger(int startTime, int endTime, TriggerType triggerType, bool listenSample = false, uint? customSampleSet = null)
+        public Trigger(float startTime, float endTime, TriggerType triggerType, bool listenSample = false, uint? customSampleSet = null)
         {
             StartTime = startTime;
             EndTime = endTime;
@@ -40,7 +40,7 @@ namespace OSharp.Storyboard.Events.Containers
             TriggerName = GetTriggerString(triggerType, listenSample, customSampleSet);
         }
 
-        public Trigger(int startTime, int endTime, string triggerName)
+        public Trigger(float startTime, float endTime, string triggerName)
         {
             StartTime = startTime;
             EndTime = endTime;
@@ -54,11 +54,9 @@ namespace OSharp.Storyboard.Events.Containers
             base.Adjust(offsetX, offsetY, offsetTiming);
         }
 
-        public string ToOsbString()
+        public override void AppendOsbString(StringBuilder sb, bool @group = false)
         {
-            var sb = new StringBuilder();
-            sb.AppendTrigger(this);
-            return sb.ToString();
+            sb.AppendTrigger(this, group);
         }
 
         public override string ToString()

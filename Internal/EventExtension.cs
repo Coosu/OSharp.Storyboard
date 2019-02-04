@@ -29,14 +29,14 @@ namespace OSharp.Storyboard.Internal
                 }
             );
 
-        public static float[] GetDefaultValue(this Event e)
+        public static float[] GetDefaultValue(this CommonEvent e)
         {
             return DefaultDictionary.ContainsKey(e.EventType)
                 ? DefaultDictionary[e.EventType]
                 : null;
         }
 
-        public static float[] GetUnworthyValue(this Event e)
+        public static float[] GetUnworthyValue(this CommonEvent e)
         {
             return UnworthyDictionary.ContainsKey(e.EventType)
                 ? UnworthyDictionary[e.EventType]

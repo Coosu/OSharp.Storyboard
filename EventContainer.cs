@@ -3,12 +3,13 @@ using OSharp.Storyboard.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace OSharp.Storyboard
 {
     public abstract class EventContainer
     {
-        public SortedSet<Event> EventList { get; } = new SortedSet<Event>(new EventComparer());
+        public SortedSet<CommonEvent> EventList { get; } = new SortedSet<CommonEvent>(new EventComparer());
         //public List<Event> EventList { get; } = new List<Event>();
         public abstract float MaxTime { get; }
         public abstract float MinTime { get; }
@@ -58,38 +59,38 @@ namespace OSharp.Storyboard
 
         internal virtual void AddEvent(EventType e, EasingType easing, float startTime, float endTime, float[] start, float[] end)
         {
-            Event newEvent;
+            CommonEvent newCommonEvent;
             if (end == null || end.Length == 0)
                 end = start;
 
             switch (e)
             {
                 case EventType.Fade:
-                    newEvent = new Fade(easing, startTime, endTime, start[0], end[0]);
+                    newCommonEvent = new Fade(easing, startTime, endTime, start[0], end[0]);
                     break;
                 case EventType.Move:
-                    newEvent = new Move(easing, startTime, endTime, start[0], start[1], end[0], end[1]);
+                    newCommonEvent = new Move(easing, startTime, endTime, start[0], start[1], end[0], end[1]);
                     break;
                 case EventType.MoveX:
-                    newEvent = new MoveX(easing, startTime, endTime, start[0], end[0]);
+                    newCommonEvent = new MoveX(easing, startTime, endTime, start[0], end[0]);
                     break;
                 case EventType.MoveY:
-                    newEvent = new MoveY(easing, startTime, endTime, start[0], end[0]);
+                    newCommonEvent = new MoveY(easing, startTime, endTime, start[0], end[0]);
                     break;
                 case EventType.Scale:
-                    newEvent = new Scale(easing, startTime, endTime, start[0], end[0]);
+                    newCommonEvent = new Scale(easing, startTime, endTime, start[0], end[0]);
                     break;
                 case EventType.Vector:
-                    newEvent = new Vector(easing, startTime, endTime, start[0], start[1], end[0], end[1]);
+                    newCommonEvent = new Vector(easing, startTime, endTime, start[0], start[1], end[0], end[1]);
                     break;
                 case EventType.Rotate:
-                    newEvent = new Rotate(easing, startTime, endTime, start[0], end[0]);
+                    newCommonEvent = new Rotate(easing, startTime, endTime, start[0], end[0]);
                     break;
                 case EventType.Color:
-                    newEvent = new Color(easing, startTime, endTime, start[0], start[1], start[2], end[0], end[1], end[2]);
+                    newCommonEvent = new Color(easing, startTime, endTime, start[0], start[1], start[2], end[0], end[1], end[2]);
                     break;
                 case EventType.Parameter:
-                    newEvent = new Parameter(easing, startTime, endTime, (ParameterType)(int)start[0]);
+                    newCommonEvent = new Parameter(easing, startTime, endTime, (ParameterType)(int)start[0]);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(e), e, null);
@@ -102,7 +103,16 @@ namespace OSharp.Storyboard
             //    EventList.Add(newEvent);
 
             //SortedSet
-            EventList.Add(newEvent);
+            EventList.Add(newCommonEvent);
         }
+
+        public virtual string ToOsbString(bool group = false)
+        {
+            var sb = new StringBuilder();
+            AppendOsbString(sb, group);
+            return sb.ToString();
+        }
+
+        public abstract void AppendOsbString(StringBuilder sb, bool group = false);
     }
 }

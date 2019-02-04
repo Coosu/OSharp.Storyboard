@@ -132,32 +132,19 @@ namespace OSharp.Storyboard.Management
         //        lib.ExecuteBrew(layParsed);
         //    }
         //}
-
-        public void Compress()
-        {
-            float progress = 0;
-            for (var i = 0; i < ElementList.Count; i++)
-            {
-                var obj = ElementList[i];
-                //progress = (float)(i + 1) / (ElementList.Count);
-                //Console.WriteLine($"{progress.ToString("P", CultureInfo.InvariantCulture)}... {obj}");
-
-                obj.Compress();
-            }
-        }
-
-        public string ToOsbString()
+        
+        public string ToOsbString(bool group = false)
         {
             StringBuilder sb = new StringBuilder();
-            AppendOsbString(sb);
+            AppendOsbString(sb, group);
             return sb.ToString();
         }
 
-        public void AppendOsbString(StringBuilder sb)
+        public void AppendOsbString(StringBuilder sb, bool group = false)
         {
             foreach (var obj in ElementList)
             {
-                obj.AppendOsbString(sb);
+                obj.AppendOsbString(sb, group);
             }
         }
 
@@ -569,7 +556,7 @@ namespace OSharp.Storyboard.Management
                 "//Storyboard Layer 1 (Fail)",
                 "//Storyboard Layer 2 (Pass)",
                 "//Storyboard Layer 3 (Foreground)",
-                ToOsbString().TrimEnd('\r', '\n'),
+                ToOsbString(false).TrimEnd('\r', '\n'),
                 "//Storyboard Sound Samples");
             File.WriteAllText(path, o);
         }

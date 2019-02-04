@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace OSharp.Storyboard.Events
 {
-    public sealed class Scale : Event
+    public sealed class Scale : CommonEvent
     {
         public override EventType EventType => EventType.Scale; 
        

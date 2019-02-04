@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace OSharp.Storyboard.Events
 {
-    public abstract class Event : IEvent, IAdjustableTimingEvent, IComparable<Event>
+    public abstract class CommonEvent : ICommonEvent, IAdjustableTimingEvent, IComparable<CommonEvent>
     {
         public abstract EventType EventType { get; }
         public EasingType Easing { get; set; }
@@ -20,7 +20,7 @@ namespace OSharp.Storyboard.Events
         public virtual int ParamLength => Start.Length;
         public virtual bool IsStatic => Start.Equals(End);
 
-        protected Event(EasingType easing, float startTime, float endTime, float[] start, float[] end)
+        protected CommonEvent(EasingType easing, float startTime, float endTime, float[] start, float[] end)
         {
             Easing = easing;
             StartTime = startTime;
@@ -29,7 +29,7 @@ namespace OSharp.Storyboard.Events
             End = end;
         }
 
-        public int CompareTo(Event other)
+        public int CompareTo(CommonEvent other)
         {
             if (other == null)
                 return 1;

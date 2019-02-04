@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace OSharp.Storyboard.Events
 {
-    public class EventComparer : IComparer<Event>
+    public class EventComparer : IComparer<CommonEvent>
     {
-        public int Compare(Event x, Event y)
+        public int Compare(CommonEvent x, CommonEvent y)
         {
             if (y == null && x == null)
                 return 0;

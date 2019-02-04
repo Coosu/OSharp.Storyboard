@@ -55,7 +55,7 @@ namespace OSharp.Storyboard
 
         public bool IsWorthy => !MinTime.Equals(MaxTime);
 
-        public int MaxTimeCount
+        public override int MaxTimeCount
         {
             get
             {
@@ -66,7 +66,7 @@ namespace OSharp.Storyboard
             }
         }
 
-        public int MinTimeCount
+        public override int MinTimeCount
         {
             get
             {
@@ -303,20 +303,13 @@ namespace OSharp.Storyboard
             return head;
         }
 
-        public virtual string ToOsbString()
-        {
-            var sb = new StringBuilder();
-            AppendOsbString(sb);
-            return sb.ToString();
-        }
-
-        public virtual void AppendOsbString(StringBuilder sb)
+        public override void AppendOsbString(StringBuilder sb, bool group = false)
         {
             if (!IsWorthy) return;
             var head = $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY)}" +
                        Environment.NewLine;
             sb.Append(head);
-            sb.AppendElementEvents(this);
+            sb.AppendElementEvents(this, group);
         }
 
         public Element Clone() => (Element)MemberwiseClone();

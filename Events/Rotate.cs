@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace OSharp.Storyboard.Events
 {
-    public class Rotate : Event
+    public class Rotate : CommonEvent
     {
         public override EventType EventType => EventType.Rotate;
 

@@ -5,11 +5,12 @@ using System.Text;
 
 namespace OSharp.Storyboard.Events.Containers
 {
-    public sealed class Loop : EventContainer
+    public sealed class Loop : EventContainer, IEvent
     {
-        public int StartTime { get; set; }
-        public int LoopCount { get; set; }
+        public float StartTime { get; set; }
+        public float EndTime => OuterMaxTime;
 
+        public int LoopCount { get; set; }
         public float OuterMaxTime => StartTime + MaxTime * LoopCount;
         public float OuterMinTime => StartTime + MinTime;
         public override float MaxTime => EventList.Count > 0 ? EventList.Max(k => k.EndTime) : 0;
@@ -18,7 +19,7 @@ namespace OSharp.Storyboard.Events.Containers
         public override float MinEndTime => EventList.Count > 0 ? EventList.Min(k => k.EndTime) : 0;
         //public bool HasFade => EventList.Any(k => k.EventType == EventType.Fade);
 
-        public Loop(int startTime, int loopCount)
+        public Loop(float startTime, int loopCount)
         {
             StartTime = startTime;
             LoopCount = loopCount;
@@ -29,12 +30,10 @@ namespace OSharp.Storyboard.Events.Containers
             StartTime += offsetTiming;
             base.Adjust(offsetX, offsetY, offsetTiming);
         }
-
-        public string ToOsbString()
+        
+        public override void AppendOsbString(StringBuilder sb, bool group = false)
         {
-            var sb = new StringBuilder();
-            sb.AppendLoop(this);
-            return sb.ToString();
+            sb.AppendLoop(this, group);
         }
 
         public override string ToString()

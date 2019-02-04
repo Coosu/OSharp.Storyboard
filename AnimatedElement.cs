@@ -57,14 +57,14 @@ namespace OSharp.Storyboard
             return head;
         }
 
-        public override void AppendOsbString(StringBuilder sb)
+        public override void AppendOsbString(StringBuilder sb, bool group = false)
         {
             if (!IsWorthy) return;
             var head =
                 $"{string.Join(",", Type, Layer, Origin, $"\"{ImagePath}\"", DefaultX, DefaultY, FrameCount, FrameDelay, LoopType)}" +
                 Environment.NewLine;
             sb.Append(head);
-            sb.AppendElementEvents(this);
+            sb.AppendElementEvents(this, group);
         }
     }
 }

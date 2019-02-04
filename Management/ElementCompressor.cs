@@ -6,24 +6,39 @@ using System.Linq;
 
 namespace OSharp.Storyboard.Management
 {
-    public static class ElementCompress
+    public class ElementCompressor
     {
-        public static void Compress(this Element element)
+        private IEnumerable<Element> _elements;
+
+        public ElementCompressor(IEnumerable<Element> elements)
         {
-            element.Examine();
-            if (element.Problem != null)
+            this._elements = elements;
+        }
+
+        public ElementCompressor(ElementGroup elementGroup)
+        {
+            _elements = elementGroup.ElementList;
+        }
+
+        public void Compress()
+        {
+            foreach (var element in _elements)
             {
-                Console.WriteLine(element.Problem);
-                return;
+                element.Examine();
+                if (element.Problem != null)
+                {
+                    Console.WriteLine(element.Problem);
+                    return;
+                }
+                element.FillObsoleteList();
+                // 每个类型压缩从后往前
+                // 1.删除没用的
+                // 2.整合能整合的
+                // 3.考虑单event情况
+                // 4.排除第一行误加的情况（defaultParams）
+                PreOptimize(element);
+                NormalOptimize(element);
             }
-            element.FillObsoleteList();
-            // 每个类型压缩从后往前
-            // 1.删除没用的
-            // 2.整合能整合的
-            // 3.考虑单event情况
-            // 4.排除第一行误加的情况（defaultParams）
-            PreOptimize(element);
-            NormalOptimize(element);
         }
 
         /// <summary>
@@ -51,7 +66,7 @@ namespace OSharp.Storyboard.Management
         /// <summary>
         /// 根据ObsoletedList，移除不必要的命令。
         /// </summary>
-        private static void RemoveByObsoletedList(EventContainer container, List<Event> eventList)
+        private static void RemoveByObsoletedList(EventContainer container, List<CommonEvent> eventList)
         {
             if (container.ObsoleteList.TimingList.Count == 0) return;
             var groups = eventList.GroupBy(k => k.EventType).Where(k => k.Key != EventType.Fade);
@@ -60,8 +75,8 @@ namespace OSharp.Storyboard.Management
                 var list = group.ToList();
                 for (int i = 0; i < list.Count; i++)
                 {
-                    Event nowE = list[i];
-                    Event nextE =
+                    CommonEvent nowE = list[i];
+                    CommonEvent nextE =
                         i == list.Count - 1
                             ? null
                             : list[i + 1];
@@ -113,12 +128,12 @@ namespace OSharp.Storyboard.Management
             {
                 foreach (var item in ele.LoopList)
                 {
-                    RemoveByLogic(item, container.EventList.ToList());
+                    NormalOptimize(item);
                 }
 
                 foreach (var item in ele.TriggerList)
                 {
-                    RemoveByLogic(item, container.EventList.ToList());
+                    NormalOptimize(item);
                 }
             }
 
@@ -133,7 +148,7 @@ namespace OSharp.Storyboard.Management
         /// </summary>
         /// <param name="container"></param>
         /// <param name="eventList"></param>
-        private static void RemoveByLogic(EventContainer container, List<Event> eventList)
+        private static void RemoveByLogic(EventContainer container, List<CommonEvent> eventList)
         {
             var groups = eventList.GroupBy(k => k.EventType);
             foreach (var group in groups)
@@ -144,8 +159,15 @@ namespace OSharp.Storyboard.Management
                 int index = list.Count - 1;
                 while (index >= 0)
                 {
-                    Event nowE = list[index];
+                    CommonEvent nowE = list[index];
 
+                    if (container is Element ele &&
+                        ele.TriggerList.Any(k => nowE.EndTime >= k.StartTime || nowE.StartTime <= k.EndTime) &&
+                        ele.LoopList.Any(k => nowE.EndTime >= k.StartTime || nowE.StartTime <= k.EndTime))
+                    {
+                        index--;
+                        continue;
+                    }
                     // 首个event     
                     if (index == 0)
                     {
@@ -204,7 +226,14 @@ namespace OSharp.Storyboard.Management
                     }
                     else
                     {
-                        Event preE = list[index - 1];
+                        CommonEvent preE = list[index - 1];
+                        //if (container is Element ele2 &&
+                        //    ele2.TriggerList.Any(k => nowE.EndTime >= k.StartTime && nowE.StartTime <= k.EndTime) &&
+                        //    ele2.LoopList.Any(k => nowE.EndTime >= k.StartTime && nowE.StartTime <= k.EndTime))
+                        //{
+                        //    index--;
+                        //    continue;
+                        //}
                         // 优先进行合并，若不符合再进行删除。
                         /*
                          * 当 此event与前event一致，且前后param皆固定
@@ -215,22 +244,14 @@ namespace OSharp.Storyboard.Management
                         {
                             preE.EndTime = nowE.EndTime;  // 整合至前面: 前一个命令的结束时间延伸
 
-                            //if (preStartT == container.MinTime && container.MinTimeCount > 1) // todo: optimize: ?
-                            //{
-                            //    //preE.StartTime = preE.EndTime; // old
-                            //    preE.EndTime = preE.StartTime;
-                            //}
-
                             // Remove
                             RemoveEvent(container, list, nowE);
-                            //index = list.Count - 1; // todo: optimize: ?
                             index--;
                         }
                         /*
                          * 当 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
                          * 且 此event的param固定
                          * 且 此event当前动作 = 此event上个动作
-                         * (包含一个F的特例) todo: optimize: ?
                         */
                         else if (nowE.IsSmallerThenMaxTime(container) /*||
                                  type == EventType.Fade && nowStartP.SequenceEqual(EventExtension.UnworthyDictionary[EventType.Fade]) */
@@ -239,7 +260,6 @@ namespace OSharp.Storyboard.Management
                         {
                             // Remove
                             RemoveEvent(container, list, nowE);
-                            //index = list.Count - 1; // todo: optimize: ?
                             index--;
                         }
                         // 存在一种非正常的无效情况，例如：
@@ -282,7 +302,7 @@ namespace OSharp.Storyboard.Management
             }
         }
 
-        private static void RemoveEvent(EventContainer sourceContainer, ICollection<Event> eventList, Event e)
+        private static void RemoveEvent(EventContainer sourceContainer, ICollection<CommonEvent> eventList, CommonEvent e)
         {
             sourceContainer.EventList.Remove(e);
             eventList.Remove(e);

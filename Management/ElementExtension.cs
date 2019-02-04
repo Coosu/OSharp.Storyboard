@@ -69,7 +69,7 @@ namespace OSharp.Storyboard.Management
             if (events == null) return;
             foreach (var kv in events)
             {
-                List<Event> list = kv.ToList();
+                List<CommonEvent> list = kv.ToList();
                 for (var i = 0; i < list.Count - 1; i++)
                 {
                     if (list[i].Start == list[i].End) // case 1
@@ -133,7 +133,7 @@ namespace OSharp.Storyboard.Management
                         if (e.Start.SequenceEqual(e.GetUnworthyValue()) &&
                             e.End.SequenceEqual(e.GetUnworthyValue()))
                             continue;
-                        element.ObsoleteList.Add(dic[e.EventType].StartTime, e.StartTime);
+                        AddTimeRage(dic[e.EventType].StartTime, e.StartTime);
                         dic[e.EventType].IsFadingOut = false;
                         dic[e.EventType].StartTime = float.MinValue;
                     }
@@ -144,9 +144,31 @@ namespace OSharp.Storyboard.Management
                     .Where(k => k.Value.IsFadingOut && !k.Value.StartTime.Equals(element.MaxTime))
                     .OrderBy(k => k.Value.StartTime))
                 {
-                    element.ObsoleteList.Add(pair.Value.StartTime, element.MaxTime);
+                    AddTimeRage(pair.Value.StartTime, element.MaxTime);
                     break;
                 }
+            }
+
+            void AddTimeRage(float startTime, float endTime)
+            {
+                if (element.TriggerList
+                        .Where(k =>
+                            k.EventList
+                                .Any(o => EventExtension.UnworthyDictionary.ContainsKey(o.EventType))
+                        )
+                        .Any(k => endTime >= k.StartTime && startTime <= k.EndTime)
+                    ||
+                    element.LoopList
+                        .Where(k =>
+                            k.EventList
+                                .Any(o => EventExtension.UnworthyDictionary.ContainsKey(o.EventType))
+                        )
+                        .Any(k => endTime >= k.StartTime && startTime <= k.EndTime))
+                {
+                    return;
+                }
+
+                element.ObsoleteList.Add(startTime, endTime);
             }
         }
 
@@ -161,8 +183,8 @@ namespace OSharp.Storyboard.Management
                 var list = kv.ToArray();
                 for (var i = 0; i < list.Length - 1; i++)
                 {
-                    Event objNext = list[i + 1];
-                    Event objNow = list[i];
+                    CommonEvent objNext = list[i + 1];
+                    CommonEvent objNow = list[i];
                     if (objNow.StartTime > objNow.EndTime)
                     {
                         var info = $"{{{objNow}}}:\r\n" +

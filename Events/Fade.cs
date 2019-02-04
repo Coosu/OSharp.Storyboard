@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace OSharp.Storyboard.Events
 {
-    public sealed class Fade : Event
+    public sealed class Fade : CommonEvent
     {
         public override EventType EventType => EventType.Fade;
 
