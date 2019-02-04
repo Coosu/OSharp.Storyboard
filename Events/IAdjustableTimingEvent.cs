@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OSharp.Storyboard.Events
+﻿namespace OSharp.Storyboard.Events
 {
     public interface IAdjustableTimingEvent
     {

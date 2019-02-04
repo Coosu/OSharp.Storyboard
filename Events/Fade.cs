@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-
-namespace OSharp.Storyboard.Events
+﻿namespace OSharp.Storyboard.Events
 {
     public sealed class Fade : CommonEvent
     {

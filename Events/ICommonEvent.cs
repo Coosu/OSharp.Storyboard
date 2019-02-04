@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OSharp.Storyboard.Events
+﻿namespace OSharp.Storyboard.Events
 {
     public interface ICommonEvent : IEvent
     {
@@ -10,11 +8,5 @@ namespace OSharp.Storyboard.Events
         float[] End { get; }
         int ParamLength { get; }
         bool IsStatic { get; }
-    }
-
-    public interface IEvent
-    {
-        float StartTime { get; }
-        float EndTime { get; }
     }
 }

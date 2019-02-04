@@ -1,7 +1,6 @@
 ﻿using OSharp.Storyboard.Internal;
 using System;
 using System.IO;
-using System.Text;
 
 namespace OSharp.Storyboard
 {

@@ -1,11 +1,9 @@
 ﻿using OSharp.Storyboard.Common;
 using OSharp.Storyboard.Events;
-using OSharp.Storyboard.Management;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace OSharp.Storyboard
 {
