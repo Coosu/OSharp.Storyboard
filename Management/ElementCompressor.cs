@@ -11,9 +11,15 @@ namespace OSharp.Storyboard.Management
 {
     public class ElementCompressor
     {
-        private readonly IEnumerable<Element> _elements;
         public EventHandler<ErrorEventArgs> OnErrorOccured;
+        public EventHandler<ProgressEventArgs> OnProgressChanged;
+
         private int _threadCount = 1;
+        private readonly object _runLock = new object();
+        private readonly IEnumerable<Element> _elements;
+        private int _pauseThreadCount = 0;
+        private readonly object _pauseThreadLock = new object();
+        private CancellationTokenSource _cancelToken;
 
         public ElementCompressor(IEnumerable<Element> elements)
         {
@@ -30,71 +36,143 @@ namespace OSharp.Storyboard.Management
         public int ThreadCount
         {
             get => _threadCount;
-            set => _threadCount =
-                value < 1
-                    ? 1
-                    : value > 4
-                        ? 4
-                        : value;
+            set
+            {
+                lock (_runLock)
+                {
+                    if (IsRunning)
+                        throw new Exception();
+                }
+
+                _threadCount =
+                    (value < 1
+                        ? 1
+                        : (value > 4
+                            ? 4
+                            : value)
+                    );
+            }
         }
 
         public bool IsRunning { get; private set; }
 
         public async Task CompressAsync()
         {
-            IsRunning = true;
-            var tasks = new Task[ThreadCount];
-            object lockObj = new object();
-            ConcurrentQueue<Element> queue = new ConcurrentQueue<Element>();
-            var cts = new CancellationTokenSource();
-            for (var i = 0; i < tasks.Length; i++)
+            lock (_runLock)
             {
-                tasks[i] = Task.Run(() =>
+                if (IsRunning)
                 {
-                    while (!cts.IsCancellationRequested)
-                    {
-                        Element element;
-                        //lock (lockObj)
-                        {
-                            if (!queue.IsEmpty)
-                            {
-                                if (!queue.TryDequeue(out element))
-                                {
-                                    continue;
-                                }
-                            }
-                            else
-                                continue;
-                        }
+                    throw new Exception("What");
+                }
 
-                        InnerCompress(element);
-                    }
-                }, cts.Token);
+                IsRunning = true;
             }
 
+            var queue = new ConcurrentQueue<Element>();
+
+            var emptyToken = new CancellationTokenSource();
+            _cancelToken = new CancellationTokenSource();
+
+            Task[] tasks = RunDequeueTasks(queue, emptyToken);
+
+            RunEnqueueTask(queue, emptyToken);
+
+            await Task.WhenAll(tasks);
+
+            lock (_runLock)
+            {
+                IsRunning = false;
+            }
+        }
+
+        public async Task CancelTask()
+        {
+            _cancelToken.Cancel();
+            await Task.Run(() =>
+            {
+                while (IsRunning)
+                {
+                    Thread.Sleep(1);
+                }
+            });
+        }
+
+        private void RunEnqueueTask(ConcurrentQueue<Element> queue, CancellationTokenSource emptyToken)
+        {
             var enqueueTask = new Task(() =>
             {
                 foreach (var element in _elements)
                 {
-                    //lock (lockObj)
+                    if (_cancelToken.IsCancellationRequested)
                     {
-                        queue.Enqueue(element);
+                        break;
                     }
+
+                    queue.Enqueue(element);
                 }
 
-                while (!queue.IsEmpty)
+                while (!queue.IsEmpty && !_cancelToken.IsCancellationRequested)
                 {
                     Thread.Sleep(1);
                 }
 
-                cts.Cancel();
-            }, cts.Token);
+                emptyToken.Cancel();
+            }, emptyToken.Token);
 
             enqueueTask.Start();
-
-            await Task.WhenAll(tasks);
-            IsRunning = false;
         }
+
+        private Task[] RunDequeueTasks(ConcurrentQueue<Element> queue, CancellationTokenSource emptyToken)
+        {
+            var tasks = new Task[ThreadCount];
+            object indexLock = new object();
+            int index = 0; //
+            int total = _elements.Count();
+            for (var i = 0; i < tasks.Length; i++)
+            {
+                tasks[i] = Task.Run(() =>
+                {
+                    while (!emptyToken.IsCancellationRequested && !_cancelToken.IsCancellationRequested)
+                    {
+                        Element element;
+
+                        if (!queue.IsEmpty)
+                        {
+                            if (!queue.TryDequeue(out element))
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
+
+                        while (_pauseThreadCount != 0)
+                        {
+                            Thread.Sleep(1);
+                        }
+
+                        InnerCompress(element);
+
+                        lock (indexLock)
+                        {
+                            index++;
+                        }
+
+                        OnProgressChanged?.Invoke(this, new ProgressEventArgs
+                        {
+                            Progress = index,
+                            TotalCount = total
+                        });
+                    }
+                }, emptyToken.Token);
+            }
+
+            return tasks;
+        }
+
+        #region Compress Logic
 
         private void InnerCompress(Element element)
         {
@@ -109,24 +187,38 @@ namespace OSharp.Storyboard.Management
             // 2.整合能整合的
             // 3.考虑单event情况
             // 4.排除第一行误加的情况 (defaultParams)
-            int b = 0;
+            var errorList = new List<string>();
+
             element.OnErrorOccured += (sender, args) =>
             {
-                OnErrorOccured?.Invoke(sender, args);
-                b++;
+                errorList.Add(args.Message);
             };
+
             element.Examine();
             element.OnErrorOccured = null;
 
-            if (b > 0)
+            if (errorList.Count > 0)
             {
                 var arg = new ErrorEventArgs
                 {
-                    Message = $"Examine failed. Found {b} error(s)."
+                    Message = $"Examine failed. Found {errorList.Count} error(s):\r\n" +
+                              string.Join("\r\n", errorList)
                 };
-                OnErrorOccured?.Invoke(this, arg);
-                //if (!arg.TryToContinue)
-                //    continue;
+
+                lock (_pauseThreadLock)
+                {
+                    if (_cancelToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    _pauseThreadCount++;
+                    OnErrorOccured?.Invoke(element, arg);
+                    _pauseThreadCount--;
+                }
+
+                if (!arg.TryToContinue)
+                    return;
             }
 
             element.FillObsoleteList();
@@ -400,5 +492,7 @@ namespace OSharp.Storyboard.Management
             sourceContainer.EventList.Remove(e);
             eventList.Remove(e);
         }
+
+        #endregion Compress Logic
     }
 }

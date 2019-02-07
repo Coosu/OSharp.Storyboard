@@ -1,4 +1,5 @@
-﻿using OSharp.Storyboard.Events;
+﻿using OSharp.Common.Mathematics;
+using OSharp.Storyboard.Events;
 using OSharp.Storyboard.Internal;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ namespace OSharp.Storyboard.Management
     public static class EventCompare
     {
 
-        public static bool InObsoleteTimingRange(this CommonEvent e, EventContainer container, out Common.RangeValue<float> range)
+        public static bool InObsoleteTimingRange(this CommonEvent e, EventContainer container, out RangeValue<float> range)
         {
             return container.ObsoleteList.ContainsTimingPoint(out range, e.StartTime, e.EndTime);
         }

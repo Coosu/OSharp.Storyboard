@@ -159,6 +159,11 @@ namespace OSharp.Storyboard.Management
             return await Task.Run(() => ParseFromFile(filePath));
         }
 
+        public static async Task<ElementGroup> ParseAsync(TextReader textReader)
+        {
+            return await Task.Run(() => Parse(textReader));
+        }
+
         public static ElementGroup ParseFromText(string osbString)
         {
             using (var sr = new StringReader(osbString))
@@ -546,6 +551,11 @@ namespace OSharp.Storyboard.Management
             var obj = new AnimatedElement(type, layer, origin, imagePath, defaultX, defaultY, frameCount, frameDelay, loopType);
             AddElement(obj);
             return obj;
+        }
+
+        public async Task SaveOsbFileAsync(string path)
+        {
+            await Task.Run(() => SaveOsbFile(path));
         }
 
         public void SaveOsbFile(string path)

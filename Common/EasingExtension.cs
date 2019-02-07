@@ -1,9 +1,9 @@
-﻿using OSharp.Storyboard.Events;
-using System;
+﻿using System;
+using OSharp.Storyboard.Events;
 
-namespace OSharp.Storyboard.Internal
+namespace OSharp.Storyboard.Common
 {
-    internal static class EasingExtension
+    public static class EasingExtension
     {
         public static double Reverse(Func<double, double> function, double value) => 1 - function(1 - value);
         public static double ToInOut(Func<double, double> function, double value) => .5 * (value < .5 ? function(2 * value) : (2 - function(2 - 2 * value)));

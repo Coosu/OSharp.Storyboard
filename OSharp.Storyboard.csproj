@@ -19,4 +19,8 @@
     <Folder Include="MGLib\MGLibTest\Properties\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\OSharp.Common\OSharp.Common.csproj" />
+  </ItemGroup>
+
 </Project>
