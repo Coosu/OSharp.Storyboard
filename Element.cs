@@ -80,6 +80,7 @@ namespace OSharp.Storyboard
         }
 
         public bool IsBackground { get; internal set; }
+        public int RowInSource { get; internal set; }
 
         // Loop control
         private bool _isTriggering, _isLooping;

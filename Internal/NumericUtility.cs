@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace OSharp.Storyboard.Internal
@@ -21,6 +22,16 @@ namespace OSharp.Storyboard.Internal
                 .Select(floatList => floatList.Min())
                 .Concat(new[] { float.MaxValue })
                 .Min();
+        }
+
+        public static string ToInvariantString(this float value)
+        {
+            return value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        public static string ToInvariantString(this double value)
+        {
+            return value.ToString(CultureInfo.InvariantCulture);
         }
     }
 }

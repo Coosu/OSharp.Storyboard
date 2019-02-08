@@ -38,7 +38,7 @@ namespace OSharp.Storyboard.Management
                    e.IsStatic();
         }
 
-        private static bool IsDefault(this CommonEvent e)
+        public static bool IsDefault(this CommonEvent e)
         {
             return EventExtension.DefaultDictionary.ContainsKey(e.EventType) &&
                    e.Start.SequenceEqual(EventExtension.DefaultDictionary[e.EventType]);

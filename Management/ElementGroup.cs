@@ -201,7 +201,7 @@ namespace OSharp.Storyboard.Management
                 {
                     try
                     {
-                        currentObj = ParseElement(line, currentObj, group, options);
+                        currentObj = ParseElement(line, rowIndex, currentObj, group, options);
                     }
                     catch (Exception e)
                     {
@@ -228,10 +228,10 @@ namespace OSharp.Storyboard.Management
             P = "P",
             L = "L", T = "T";
 
-        private static Element ParseElement(
-            string line,
+        private static Element ParseElement(string line,
+            int rowIndex,
             Element currentObj,
-            ElementGroup group,
+            ElementGroup @group,
             bool[] options)
         {
             ref bool isLooping = ref options[0];
@@ -254,6 +254,7 @@ namespace OSharp.Storyboard.Management
                         float.Parse(@params[4]),
                         float.Parse(@params[5])
                     );
+                    currentObj.RowInSource = rowIndex;
                     isLooping = false;
                     isTriggering = false;
                     isBlank = false;
@@ -271,6 +272,7 @@ namespace OSharp.Storyboard.Management
                         float.Parse(@params[7]),
                         @params[8]
                     );
+                    currentObj.RowInSource = rowIndex;
                     isLooping = false;
                     isTriggering = false;
                     isBlank = false;
@@ -568,7 +570,7 @@ namespace OSharp.Storyboard.Management
                 sw.WriteLine("//Storyboard Layer 0 (Background)");
                 sw.WriteLine("//Storyboard Layer 1 (Fail)");
                 sw.WriteLine("//Storyboard Layer 3 (Foreground)");
-                WriteOsbString(sw);
+                WriteOsbString(sw, true);
                 sw.WriteLine("//Storyboard Sound Samples");
             }
         }

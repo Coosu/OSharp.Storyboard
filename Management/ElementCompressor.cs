@@ -9,19 +9,22 @@ using System.Threading.Tasks;
 
 namespace OSharp.Storyboard.Management
 {
-    public class ElementCompressor
+    public class ElementCompressor : IDisposable
     {
         public EventHandler<ErrorEventArgs> OnErrorOccured;
         public EventHandler<ProgressEventArgs> OnProgressChanged;
 
         private int _threadCount = 1;
-        private readonly object _runLock = new object();
-        private readonly IEnumerable<Element> _elements;
         private int _pauseThreadCount = 0;
-        private readonly object _pauseThreadLock = new object();
+
+        private readonly ICollection<Element> _elements;
+
+        private object _runLock = new object();
+        private object _pauseThreadLock = new object();
+
         private CancellationTokenSource _cancelToken;
 
-        public ElementCompressor(IEnumerable<Element> elements)
+        public ElementCompressor(ICollection<Element> elements)
         {
             this._elements = elements;
         }
@@ -95,6 +98,18 @@ namespace OSharp.Storyboard.Management
                     Thread.Sleep(1);
                 }
             });
+        }
+
+        public void Dispose()
+        {
+            OnErrorOccured = null;
+            OnProgressChanged = null;
+
+            _runLock = null;
+            _pauseThreadLock = null;
+            _cancelToken?.Dispose();
+
+            _elements?.Clear();
         }
 
         private void RunEnqueueTask(ConcurrentQueue<Element> queue, CancellationTokenSource emptyToken)
@@ -201,7 +216,7 @@ namespace OSharp.Storyboard.Management
             {
                 var arg = new ErrorEventArgs
                 {
-                    Message = $"Examine failed. Found {errorList.Count} error(s):\r\n" +
+                    Message = $"{element.RowInSource} - Examine failed. Found {errorList.Count} error(s):\r\n" +
                               string.Join("\r\n", errorList)
                 };
 
@@ -278,7 +293,7 @@ namespace OSharp.Storyboard.Management
         private static void RemoveByObsoletedList(EventContainer container, List<CommonEvent> eventList)
         {
             if (container.ObsoleteList.TimingList.Count == 0) return;
-            var groups = eventList.GroupBy(k => k.EventType).Where(k => k.Key != EventType.Fade);
+            var groups = eventList.GroupBy(k => k.EventType);
             foreach (var group in groups)
             {
                 var list = group.ToList();
@@ -308,18 +323,48 @@ namespace OSharp.Storyboard.Management
                             // 判断是否此Event在某Obsolete Range内，且此Obsolete Range持续到Container结束。
                             canRemove = nowE.InObsoleteTimingRange(container, out var range) &&
                                         range.EndTime == container.MaxTime;
+
+                            if (canRemove)
+                            {
+                                // M,1,86792,87127,350.1588,489.5946,350.1588,339.5946
+                                // M,2,87881,87965,343.8464,333.9836,350.1588,339.5946
+                                // F,0,87127,,1
+                                // F,0,87713,,0
+                                // R,2,87881,87965,-0.04208252,0
+
+                                // R should be kept, but can be optimized
+                                if (list.Count == 1)
+                                {
+                                    for (var j = 0; j < nowE.End.Length; j++)
+                                    {
+                                        if (nowE.End[j].ToInvariantString().Length > nowE.Start[j].ToInvariantString().Length)
+                                            nowE.End[j] = nowE.Start[j];
+                                    }
+
+                                    if (nowE.IsSmallerThenMaxTime(container))
+                                    {
+                                        nowE.EndTime = nowE.StartTime;
+                                    }
+                                }
+                                else
+                                {
+                                    RemoveEvent(container, list, nowE);
+                                    i--;
+                                }
+                            }
+
                         }
                         else
                         {
                             // 判断是否此Event在某Obsolete Range内，且下一Event的StartTime也在此Obsolete Range内。
                             canRemove = container.ObsoleteList.ContainsTimingPoint(out _,
                                 nowE.StartTime, nowE.EndTime, nextE.StartTime);
-                        }
 
-                        if (canRemove)
-                        {
-                            RemoveEvent(container, list, nowE);
-                            i--;
+                            if (canRemove)
+                            {
+                                RemoveEvent(container, list, nowE);
+                                i--;
+                            }
                         }
                     }
 
@@ -347,8 +392,8 @@ namespace OSharp.Storyboard.Management
                     CommonEvent nowE = list[index];
 
                     if (container is Element ele &&
-                        ele.TriggerList.Any(k => nowE.EndTime >= k.StartTime || nowE.StartTime <= k.EndTime) &&
-                        ele.LoopList.Any(k => nowE.EndTime >= k.StartTime || nowE.StartTime <= k.EndTime))
+                        ele.TriggerList.Any(k => nowE.EndTime >= k.StartTime && nowE.StartTime <= k.EndTime) &&
+                        ele.LoopList.Any(k => nowE.EndTime >= k.StartTime && nowE.StartTime <= k.EndTime))
                     {
                         index--;
                         continue;
@@ -356,7 +401,9 @@ namespace OSharp.Storyboard.Management
                     // 首个event     
                     if (index == 0)
                     {
+                        //如果总计只剩一条命令了，不处理
                         if (eventList.Count <= 1) return;
+
                         //S,0,300,,1
                         //S,0,400,500,0.5
                         /* 
@@ -366,10 +413,21 @@ namespace OSharp.Storyboard.Management
                          * 且 此event.param=default
                          * 且 唯一
                          */
-                        if (nowE.IsTimeInRange(container) && nowE.IsStaticAndDefault())
+                        if (nowE.IsTimeInRange(container) && nowE.IsStaticAndDefault() &&
+                            list.Count == 1)
                         {
                             // Remove
                             RemoveEvent(container, list, nowE);
+                        }
+                        else if (nowE.IsTimeInRange(container) && nowE.IsStatic() &&
+                            list.Count > 1)
+                        {
+                            var nextE = list[1];
+                            if (EventCompare.IsEventSequent(nowE, nextE))
+                            {
+                                // Remove
+                                RemoveEvent(container, list, nowE);
+                            }
                         }
                         /*
                          * 当 此event为move，param固定，且唯一时

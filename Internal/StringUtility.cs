@@ -11,7 +11,7 @@ namespace OSharp.Storyboard.Internal
         public static void WriteGroupedEvent(this TextWriter sw, IEnumerable<CommonEvent> events, int index)
         {
             var indent = new string(' ', index);
-            var groupedEvents = events.GroupBy(k => k.EventType);
+            var groupedEvents = events.OrderBy(k=>k.EventType).GroupBy(k => k.EventType);
             foreach (var grouping in groupedEvents)
                 foreach (CommonEvent e in grouping)
                     sw.WriteLine(indent + e);
