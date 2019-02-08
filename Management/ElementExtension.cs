@@ -194,7 +194,7 @@ namespace OSharp.Storyboard.Management
                             Message = info
                         };
                         container.OnErrorOccured?.Invoke(container, arg);
-                        if (!arg.TryToContinue)
+                        if (!arg.Continue)
                         {
                             return;
                         };
@@ -208,7 +208,7 @@ namespace OSharp.Storyboard.Management
                             Message = info
                         };
                         container.OnErrorOccured?.Invoke(container, arg);
-                        if (!arg.TryToContinue)
+                        if (!arg.Continue)
                         {
                             return;
                         }

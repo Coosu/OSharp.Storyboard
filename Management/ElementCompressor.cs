@@ -11,8 +11,13 @@ namespace OSharp.Storyboard.Management
 {
     public class ElementCompressor : IDisposable
     {
-        public EventHandler<ErrorEventArgs> OnErrorOccured;
-        public EventHandler<ProgressEventArgs> OnProgressChanged;
+        public EventHandler<EventArgs> OperationStart;
+        public EventHandler<EventArgs> OperationEnd;
+        public EventHandler<ErrorEventArgs> ErrorOccured; //lock
+        public EventHandler<SituationEventArgs> ElementFound; //lock
+        public EventHandler<SituationEventArgs> SituationFound; //lock
+        public EventHandler<SituationEventArgs> SituationChanged; //lock
+        public EventHandler<ProgressEventArgs> ProgressChanged;
 
         private int _threadCount = 1;
         private int _pauseThreadCount = 0;
@@ -102,8 +107,8 @@ namespace OSharp.Storyboard.Management
 
         public void Dispose()
         {
-            OnErrorOccured = null;
-            OnProgressChanged = null;
+            ErrorOccured = null;
+            ProgressChanged = null;
 
             _runLock = null;
             _pauseThreadLock = null;
@@ -175,7 +180,7 @@ namespace OSharp.Storyboard.Management
                             index++;
                         }
 
-                        OnProgressChanged?.Invoke(this, new ProgressEventArgs
+                        ProgressChanged?.Invoke(this, new ProgressEventArgs
                         {
                             Progress = index,
                             TotalCount = total
@@ -228,11 +233,11 @@ namespace OSharp.Storyboard.Management
                     }
 
                     _pauseThreadCount++;
-                    OnErrorOccured?.Invoke(element, arg);
+                    ErrorOccured?.Invoke(element, arg);
                     _pauseThreadCount--;
                 }
 
-                if (!arg.TryToContinue)
+                if (!arg.Continue)
                     return;
             }
 
