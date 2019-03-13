@@ -1,4 +1,6 @@
-﻿using MGLib.Osu.Reader.Osb;
+﻿
+#if false
+using MGLib.Osu.Reader.Osb;
 using OSharp.Storyboard.Events;
 using OSharp.Storyboard.Management;
 using System;
@@ -324,3 +326,4 @@ namespace OSharp.Storyboard.External
         }
     }
 }
+#endif
