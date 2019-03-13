@@ -41,6 +41,8 @@ namespace OSharp.Storyboard
         public IEnumerable<Vector> VectorList =>
             EventList.Where(k => k.EventType == EventType.Vector).Select(k => k as Vector);
 
+        public Element BaseElement { get; internal set; }
+
         public virtual void Adjust(float offsetX, float offsetY, int offsetTiming)
         {
             var events = EventList.GroupBy(k => k.EventType);

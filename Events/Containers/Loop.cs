@@ -18,7 +18,8 @@ namespace OSharp.Storyboard.Events.Containers
         public override float MinTime => EventList.Count > 0 ? EventList.Min(k => k.StartTime) : 0;
         public override float MaxStartTime => EventList.Count > 0 ? EventList.Max(k => k.StartTime) : 0;
         public override float MinEndTime => EventList.Count > 0 ? EventList.Min(k => k.EndTime) : 0;
-        //public bool HasFade => EventList.Any(k => k.EventType == EventType.Fade);
+
+        public Element BaseElement { get; internal set; }
 
         public Loop(float startTime, int loopCount)
         {

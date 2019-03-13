@@ -11,10 +11,10 @@ namespace OSharp.Storyboard.Management
 {
     public class ElementCompressor : IDisposable
     {
-        public EventHandler<EventArgs> OperationStart;
-        public EventHandler<EventArgs> OperationEnd;
+        public EventHandler<CompressorEventArgs> OperationStart;
+        public EventHandler<CompressorEventArgs> OperationEnd;
         public EventHandler<ErrorEventArgs> ErrorOccured; //lock
-        public EventHandler<SituationEventArgs> ElementFound; //lock
+        //public EventHandler<SituationEventArgs> ElementFound; //lock
         public EventHandler<SituationEventArgs> SituationFound; //lock
         public EventHandler<SituationEventArgs> SituationChanged; //lock
         public EventHandler<ProgressEventArgs> ProgressChanged;
@@ -26,8 +26,12 @@ namespace OSharp.Storyboard.Management
 
         private object _runLock = new object();
         private object _pauseThreadLock = new object();
+        private object _situationFoundLock = new object();
+        private object _situationChangedLock = new object();
 
         private CancellationTokenSource _cancelToken;
+
+        public Guid Guid { get; } = Guid.NewGuid();
 
         public ElementCompressor(ICollection<Element> elements)
         {
@@ -74,6 +78,7 @@ namespace OSharp.Storyboard.Management
                 }
 
                 IsRunning = true;
+                OperationStart?.Invoke(this, new CompressorEventArgs(Guid));
             }
 
             var queue = new ConcurrentQueue<Element>();
@@ -90,6 +95,7 @@ namespace OSharp.Storyboard.Management
             lock (_runLock)
             {
                 IsRunning = false;
+                OperationEnd?.Invoke(this, new CompressorEventArgs(Guid));
             }
         }
 
@@ -180,7 +186,7 @@ namespace OSharp.Storyboard.Management
                             index++;
                         }
 
-                        ProgressChanged?.Invoke(this, new ProgressEventArgs
+                        ProgressChanged?.Invoke(this, new ProgressEventArgs(Guid)
                         {
                             Progress = index,
                             TotalCount = total
@@ -249,7 +255,7 @@ namespace OSharp.Storyboard.Management
         /// <summary>
         /// 预压缩
         /// </summary>
-        private static void PreOptimize(EventContainer container)
+        private void PreOptimize(EventContainer container)
         {
             if (container is Element ele)
             {
@@ -271,7 +277,7 @@ namespace OSharp.Storyboard.Management
         /// <summary>
         /// 正常压缩
         /// </summary>
-        private static void NormalOptimize(EventContainer container)
+        private void NormalOptimize(EventContainer container)
         {
             if (container is Element ele)
             {
@@ -295,7 +301,7 @@ namespace OSharp.Storyboard.Management
         /// <summary>
         /// 根据ObsoletedList，移除不必要的命令。
         /// </summary>
-        private static void RemoveByObsoletedList(EventContainer container, List<CommonEvent> eventList)
+        private void RemoveByObsoletedList(EventContainer container, List<CommonEvent> eventList)
         {
             if (container.ObsoleteList.TimingList.Count == 0) return;
             var groups = eventList.GroupBy(k => k.EventType);
@@ -343,23 +349,34 @@ namespace OSharp.Storyboard.Management
                                     for (var j = 0; j < nowE.End.Length; j++)
                                     {
                                         if (nowE.End[j].ToInvariantString().Length > nowE.Start[j].ToInvariantString().Length)
-                                            nowE.End[j] = nowE.Start[j];
+                                        {
+                                            RaiseSituationEvent(container, SituationType.ThisLastSingleInLastObsoleteToFixTail,
+                                                () => { nowE.End[j] = nowE.Start[j]; },
+                                                nowE);
+                                        }
                                     }
 
                                     if (nowE.IsSmallerThenMaxTime(container))
                                     {
-                                        nowE.EndTime = nowE.StartTime;
+                                        RaiseSituationEvent(container, SituationType.ThisLastSingleInLastObsoleteToFixEndTime,
+                                            () => { nowE.EndTime = nowE.StartTime; },
+                                            nowE);
                                     }
                                 }
                                 else
                                 {
-                                    RemoveEvent(container, list, nowE);
-                                    i--;
+                                    RaiseSituationEvent(container, SituationType.ThisLastInLastObsoleteToRemove,
+                                        () =>
+                                        {
+                                            RemoveEvent(container, list, nowE);
+                                            i--;
+                                        },
+                                        nowE);
                                 }
                             }
 
-                        }
-                        else
+                        } // 若当前Event是此种类最后一个（无下一个Event)。
+                        else // 若有下一个Event。
                         {
                             // 判断是否此Event在某Obsolete Range内，且下一Event的StartTime也在此Obsolete Range内。
                             canRemove = container.ObsoleteList.ContainsTimingPoint(out _,
@@ -367,15 +384,18 @@ namespace OSharp.Storyboard.Management
 
                             if (canRemove)
                             {
-                                RemoveEvent(container, list, nowE);
-                                i--;
+                                RaiseSituationEvent(container, SituationType.NextHeadAndThisInObsoleteToRemove,
+                                    () =>
+                                    {
+                                        RemoveEvent(container, list, nowE);
+                                        i--;
+                                    },
+                                    nowE, nextE);
                             }
-                        }
-                    }
-
-                    // 判断当前种类最后一个动作是否正处于物件透明状态，而且此状态最大时间即是obj最大时间
-                }
-            }
+                        } // 若有下一个Event。
+                    } // 判断是否此Event为控制Obsolete Range的Event。
+                } // list的循环
+            } // group的循环
         }
 
         /// <summary>
@@ -383,7 +403,7 @@ namespace OSharp.Storyboard.Management
         /// </summary>
         /// <param name="container"></param>
         /// <param name="eventList"></param>
-        private static void RemoveByLogic(EventContainer container, List<CommonEvent> eventList)
+        private void RemoveByLogic(EventContainer container, List<CommonEvent> eventList)
         {
             var groups = eventList.GroupBy(k => k.EventType);
             foreach (var group in groups)
@@ -403,7 +423,7 @@ namespace OSharp.Storyboard.Management
                         index--;
                         continue;
                     }
-                    // 首个event     
+                    // 若是首个event
                     if (index == 0)
                     {
                         //如果总计只剩一条命令了，不处理
@@ -416,27 +436,29 @@ namespace OSharp.Storyboard.Management
                          * 且 此event开始时间 > obj最小时间 (或包括此event有两个以上的最小时间)
                          * 且 此event的param固定
                          * 且 此event.param=default
-                         * 且 唯一
                          */
+
+                        // 唯一时
                         if (nowE.IsTimeInRange(container) && nowE.IsStaticAndDefault() &&
                             list.Count == 1)
                         {
-                            // Remove
-                            RemoveEvent(container, list, nowE);
+                            RaiseSituationEvent(container, SituationType.ThisFirstSingleIsStaticAndDefaultToRemove,
+                                () => { RemoveEvent(container, list, nowE); },
+                                nowE);
                         }
+                        // 不唯一时
                         else if (nowE.IsTimeInRange(container) && nowE.IsStatic() &&
                             list.Count > 1)
                         {
                             var nextE = list[1];
                             if (EventCompare.IsEventSequent(nowE, nextE))
                             {
-                                // Remove
-                                RemoveEvent(container, list, nowE);
+                                RaiseSituationEvent(container, SituationType.ThisFirstIsStaticAndSequentWithNextHeadToRemove,
+                                    () => { RemoveEvent(container, list, nowE); },
+                                    nowE);
                             }
                         }
-                        /*
-                         * 当 此event为move，param固定，且唯一时
-                         */
+                        // 当 此event为move，param固定，且唯一时
                         else if (type == EventType.Move
                                  && container is Element element)
                         {
@@ -447,37 +469,60 @@ namespace OSharp.Storyboard.Management
                                 var move = (Move)nowE;
                                 if (nowE.Start.All(k => k == (int)k)) //若为小数，不归并
                                 {
-                                    element.DefaultX = move.StartX;
-                                    element.DefaultY = move.StartY;
+                                    RaiseSituationEvent(container,
+                                        SituationType.MoveSingleIsStaticToRemoveAndChangeInitial,
+                                        () =>
+                                        {
+                                            element.DefaultX = move.StartX;
+                                            element.DefaultY = move.StartY;
 
-                                    // Remove
-                                    RemoveEvent(container, list, nowE);
+                                            RemoveEvent(container, list, nowE);
+                                        },
+                                        nowE);
                                 }
                                 else if (move.EqualsInitialPosition(element))
                                 {
-                                    // Remove
-                                    RemoveEvent(container, list, nowE);
+                                    RaiseSituationEvent(container, SituationType.MoveSingleEqualsInitialToRemove,
+                                        () => { RemoveEvent(container, list, nowE); },
+                                        nowE);
                                 }
                                 else
                                 {
-                                    element.DefaultX = 0;
-                                    element.DefaultY = 0;
+                                    if (element.DefaultX != 0 || element.DefaultY != 0)
+                                    {
+                                        RaiseSituationEvent(container, SituationType.InitialToZero,
+                                            () =>
+                                            {
+                                                element.DefaultX = 0;
+                                                element.DefaultY = 0;
+                                            },
+                                            nowE);
+                                    }
                                 }
                             }
                             else
                             {
-                                element.DefaultX = 0;
-                                element.DefaultY = 0;
+                                if (element.DefaultX != 0 || element.DefaultY != 0)
+                                {
+                                    RaiseSituationEvent(container, SituationType.InitialToZero,
+                                        () =>
+                                        {
+                                            element.DefaultX = 0;
+                                            element.DefaultY = 0;
+                                        },
+                                        nowE);
+                                }
                             }
                         }
+
                         break;
-                    }
-                    else
+                    } // 若是首个event
+                    else // 若不是首个event
                     {
                         CommonEvent preE = list[index - 1];
                         //if (container is Element ele2 &&
-                        //    ele2.TriggerList.Any(k => nowE.EndTime >= k.StartTime && nowE.StartTime <= k.EndTime) &&
-                        //    ele2.LoopList.Any(k => nowE.EndTime >= k.StartTime && nowE.StartTime <= k.EndTime))
+                        //    ele2.TriggerList.Any(k => preE.EndTime >= k.StartTime && preE.StartTime <= k.EndTime) &&
+                        //    ele2.LoopList.Any(k => preE.EndTime >= k.StartTime && preE.StartTime <= k.EndTime))
                         //{
                         //    index--;
                         //    continue;
@@ -490,11 +535,15 @@ namespace OSharp.Storyboard.Management
                             && preE.IsStatic()
                             && EventCompare.IsEventSequent(preE, nowE))
                         {
-                            preE.EndTime = nowE.EndTime;  // 整合至前面: 前一个命令的结束时间延伸
+                            RaiseSituationEvent(container, SituationType.ThisPrevIsStaticAndSequentToCombine,
+                                () =>
+                                {
+                                    preE.EndTime = nowE.EndTime; // 整合至前面: 前一个命令的结束时间延伸
 
-                            // Remove
-                            RemoveEvent(container, list, nowE);
-                            index--;
+                                    RemoveEvent(container, list, nowE);
+                                    index--;
+                                },
+                                preE, nowE);
                         }
                         /*
                          * 当 此event结束时间 < obj最大时间 (或包括此event有两个以上的最大时间)
@@ -506,9 +555,13 @@ namespace OSharp.Storyboard.Management
                                  && nowE.IsStatic()
                                  && EventCompare.IsEventSequent(preE, nowE))
                         {
-                            // Remove
-                            RemoveEvent(container, list, nowE);
-                            index--;
+                            RaiseSituationEvent(container, SituationType.ThisIsStaticAndSequentWithPrevToCombine,
+                                () =>
+                                {
+                                    RemoveEvent(container, list, nowE);
+                                    index--;
+                                },
+                                preE, nowE);
                         }
                         // 存在一种非正常的无效情况，例如：
                         // F,0,0,,0
@@ -523,37 +576,69 @@ namespace OSharp.Storyboard.Management
                         else if (nowE.StartTime == preE.EndTime &&
                                  preE.StartTime == preE.EndTime)
                         {
-                            if (index > 1)
+                            if (index > 1 ||
+                                preE.EqualsMultiMinTime(container) ||
+                                preE.IsStatic() && EventCompare.IsEventSequent(preE, nowE))
                             {
-                                // Remove
-                                RemoveEvent(container, list, preE);
-                                index--;
-                            }
-                            else if (preE.EqualsMultiMinTime(container))
-                            {
-                                // Remove
-                                RemoveEvent(container, list, preE);
-                                index--;
-                            }
-                            else if (preE.IsStatic() && EventCompare.IsEventSequent(preE, nowE))
-                            {
-                                // Remove
-                                RemoveEvent(container, list, preE);
-                                index--;
+                                RaiseSituationEvent(container, SituationType.PrevIsStaticAndTimeOverlapWithThisStartTimeToRemove,
+                                    () =>
+                                    {
+                                        RemoveEvent(container, list, preE);
+                                        index--;
+                                    },
+                                    preE, nowE);
                             }
                             else
                                 index--;
                         }
                         else index--;
-                    }
-                }
-            }
+                    } // 若不是首个event
+                } // list的循环
+            } // group的循环
         }
 
         private static void RemoveEvent(EventContainer sourceContainer, ICollection<CommonEvent> eventList, CommonEvent e)
         {
             sourceContainer.EventList.Remove(e);
             eventList.Remove(e);
+        }
+
+        private void RaiseSituationEvent(EventContainer container, SituationType situationType, Action continueAction, params CommonEvent[] events)
+        {
+            RaiseSituationEvent(container, situationType, continueAction, null, events);
+        }
+
+        private void RaiseSituationEvent(EventContainer container, SituationType situationType, Action continueAction, Action breakAction, params CommonEvent[] events)
+        {
+            var args = new SituationEventArgs(Guid, situationType)
+            {
+                Element = container is Element e ? e : container.BaseElement,
+                Container = container is Element ? null : container,
+                Events = events
+            };
+
+            if (SituationFound != null)
+            {
+                lock (_situationFoundLock)
+                {
+                    SituationFound?.Invoke(this, args);
+                }
+            }
+
+            if (args.Continue)
+            {
+                continueAction?.Invoke();
+
+                if (SituationChanged != null)
+                {
+                    lock (_situationChangedLock)
+                    {
+                        SituationChanged?.Invoke(this, args);
+                    }
+                }
+            }
+            else
+                breakAction?.Invoke();
         }
 
         #endregion Compress Logic

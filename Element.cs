@@ -27,6 +27,8 @@ namespace OSharp.Storyboard
         public List<Loop> LoopList { get; } = new List<Loop>();
         public List<Trigger> TriggerList { get; } = new List<Trigger>();
 
+        public new Element BaseElement => null;
+
         public override float MaxTime =>
              NumericUtility.GetMaxValue(
                  EventList.Select(k => k.EndTime),

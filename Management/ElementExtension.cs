@@ -120,8 +120,16 @@ namespace OSharp.Storyboard.Management
                         dic[e.EventType].IsFadingOut = true;
                     }
 
+                    // event.Start和End都为无用值时，开始计时
+                    if (e.Start.SequenceEqual(e.GetUnworthyValue()) &&
+                        e.End.SequenceEqual(e.GetUnworthyValue()) &&
+                        dic[e.EventType].IsFadingOut == false)
+                    {
+                        dic[e.EventType].StartTime = e.StartTime;
+                        dic[e.EventType].IsFadingOut = true;
+                    }
                     // event.End为无用值时，开始计时
-                    if (e.End.SequenceEqual(e.GetUnworthyValue()) &&
+                    else if (e.End.SequenceEqual(e.GetUnworthyValue()) &&
                         dic[e.EventType].IsFadingOut == false)
                     {
                         dic[e.EventType].StartTime = e.EndTime;
@@ -189,7 +197,7 @@ namespace OSharp.Storyboard.Management
                         var info = $"{{{objNow}}}:\r\n" +
                                    $"Start time should not be larger than end time.";
 
-                        var arg = new ErrorEventArgs
+                        var arg = new ErrorEventArgs()
                         {
                             Message = info
                         };

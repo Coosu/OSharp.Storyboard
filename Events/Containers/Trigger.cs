@@ -29,9 +29,7 @@ namespace OSharp.Storyboard.Events.Containers
                 : 0); //if hitsound played at end time
 
         public override float MinEndTime => StartTime; // if no hitsound here
-
-        //public bool HasFade => EventList.Any(k => k.EventType == EventType.Fade);
-
+        
         public Trigger(float startTime, float endTime, TriggerType triggerType, bool listenSample = false, uint? customSampleSet = null)
         {
             StartTime = startTime;

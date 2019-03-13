@@ -2,9 +2,8 @@
 
 namespace OSharp.Storyboard
 {
-    public class ErrorEventArgs : EventArgs
+    public class ErrorEventArgs : StoryboardEventArgs
     {
-        public string Message { get; set; }
-        public bool Continue { get; set; } = false;
+        public override bool Continue { get; set; } = false;
     }
 }
