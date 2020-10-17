@@ -259,6 +259,24 @@ namespace OSharp.Storyboard.Management
                     isTriggering = false;
                     isBlank = false;
                 }
+                else if (@params.Length == 8)
+                {
+                    currentObj = group.CreateAnimation(
+                        @params[0],
+                        @params[1],
+                        @params[2],
+                        @params[3].Trim(QuoteChar),
+                        float.Parse(@params[4]),
+                        float.Parse(@params[5]),
+                        int.Parse(@params[6]),
+                        float.Parse(@params[7]),
+                        "LoopForever"
+                    );
+                    currentObj.RowInSource = rowIndex;
+                    isLooping = false;
+                    isTriggering = false;
+                    isBlank = false;
+                }
                 else if (@params.Length == 9)
                 {
                     currentObj = group.CreateAnimation(
