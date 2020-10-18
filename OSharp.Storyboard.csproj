@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>7.3</LangVersion>
+	  <TargetFrameworks>net461;net472;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -16,12 +15,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="MGLib\MGLibTest\Properties\AssemblyInfo.cs" />
-    <Compile Remove="MGLib\MGLib\obj\Debug\netstandard2.0\MGLib.AssemblyInfo.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="MGLib\MGLibTest\Properties\" />
+    <Compile Remove="MGLib\**" />
+    <EmbeddedResource Remove="MGLib\**" />
+    <None Remove="MGLib\**" />
   </ItemGroup>
 
   <ItemGroup>
