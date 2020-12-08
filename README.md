@@ -1,4 +1,3 @@
-# OSharp.Storyboard
-Use OSharp.Storyboard (osu!storyboard coding Library) to code and generate SBC(.osb code)
+**ACHIEVED** 
 
-Support using in StoryBrew and use ExecuteBrew().
+See: https://github.com/Coosu/Coosu
